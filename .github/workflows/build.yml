@@ -60,12 +60,17 @@ jobs:
           cp "$coverage_file" ./TestResults/coverage.cobertura.xml
 
       - name: Upload coverage to Codecov
+        if: ${{ secrets.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: TrentBest/TheSingularityWorkshop.Visualize
           files: ./TestResults/coverage.cobertura.xml
           fail_ci_if_error: true
+
+      - name: Explain skipped coverage upload
+        if: ${{ secrets.CODECOV_TOKEN == '' }}
+        run: echo "Coverage report was generated; upload skipped because CODECOV_TOKEN is not configured."
 
       - name: Pack
         run: dotnet pack TheSingularityWorkshop.Visualize.csproj --configuration Release --no-build --output ./artifacts
