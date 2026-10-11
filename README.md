@@ -2,7 +2,7 @@
 
 > **Make the living world visible. Keep the world independent of its display.**
 
-TheSingularityWorkshop.Visualize is the GPU-facing presentation project for The Singularity Workshop. Its purpose is to turn the observer-aware output of [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into pixels without making a particular windowing toolkit or graphics API the definition of the world.
+TheSingularityWorkshop.Visualize is the GPU-facing presentation project for The Singularity Workshop. Its purpose is to turn observer-aware presentation data from [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into pixels without making a particular windowing toolkit or graphics API the definition of the world.
 
 The first integration target is **AnyApp on WPF**. A browser/WebGPU path is part of the architecture from the beginning, but it is not claimed to exist yet.
 
@@ -20,7 +20,7 @@ The GPU holds disposable projections of the world. GPU buffers, pose samples, vi
 
 ## Current implementation status
 
-This repository begins with the backend-neutral integration contract, resource descriptions, tests, and architecture documentation. **A working GPU backend and WPF surface are not yet implemented.** A green build of the contracts is not evidence of rendered pixels or GPU performance.
+This repository begins with a backend-neutral frame contract, resource descriptions, tests, and architecture documentation. The contract is deliberately independent of the Renderer package version; a narrow adapter maps Renderer output into VisualizerFrame. **A working GPU backend and WPF surface are not yet implemented.** A green build of the contracts is not evidence of rendered pixels or GPU performance.
 
 The first engineering milestone is a real GPU-backed WPF surface in AnyApp, followed by a known test scene, resource upload, indexed drawing, instancing, and measured compute-to-draw.
 
