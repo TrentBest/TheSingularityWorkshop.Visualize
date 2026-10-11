@@ -1,8 +1,10 @@
-# WPF Direct3D 12 Surface Proof
+# Isolated WPF / Direct3D 12 Surface Experiment
 
-This isolated Windows-only sample is the first native graphics proof implementation: a WPF window hosts a native child HWND, Direct3D 12 creates a DXGI swap chain for that HWND, and the application repeatedly clears and presents real GPU back buffers.
+**Status: exploratory only. Direct3D 12 has not been selected as Visualize's graphics backend.**
 
-## Run
+This Windows-only sample is retained as a small native-surface experiment. It hosts a native child HWND in WPF, creates a Direct3D 12 device and DXGI swap chain, and repeatedly clears and presents GPU back buffers. Its existence must not be mistaken for an architectural commitment or a performance result.
+
+## Run the experiment
 
 On Windows with the .NET 8 SDK and a Direct3D 12-capable device:
 
@@ -10,20 +12,20 @@ On Windows with the .NET 8 SDK and a Direct3D 12-capable device:
 dotnet run --project samples/WpfD3D12Proof/WpfD3D12Proof.csproj --configuration Release
 ```
 
-The sample uses Vortice.Direct3D12 3.8.3 behind this proof-only project. The dependency is intentionally isolated from the backend-neutral Visualize core. The version is listed as compatible with .NET 8, but dependency size, redistribution contents, and the exact package graph still need measurement/audit.
+The sample uses Vortice.Direct3D12 3.8.3 inside this proof-only project. The package graph, deployed footprint, licensing, redistribution contents, and actual device/runtime behavior have not been fully audited.
 
-## Implementation scope (compile-verified; runtime capture pending)
+## What it demonstrates—and what it does not
 
-- The project compiles on the Windows CI runner with zero warnings and errors. A real display/GPU run has not yet been captured, so the following runtime behavior remains to be verified on a Windows host.
-- The source contains initialization for a Direct3D 12 device, direct command queue, descriptor heap, command allocator/list, fence, and DXGI swap chain.
-- The render loop submits a GPU clear, presents, and recreates swap-chain back buffers on resize.
-- Runtime behavior, resize behavior, device compatibility, and clean shutdown still need an actual run and capture.
+- Windows CI compiles the proof with warnings treated as errors.
+- The source initializes a Direct3D 12 device, direct queue, descriptor heap, command allocator/list, fence, and DXGI swap chain.
+- The render loop clears and presents a GPU back buffer and recreates swap-chain buffers on resize.
+- A real hardware/runtime capture has not yet been recorded.
+- It does not draw indexed geometry, demonstrate array-first uploads, prove compute-to-render flow, or provide meaningful performance evidence.
+- It waits for GPU completion each frame; this serializes CPU/GPU work and is explicitly not performance-ready.
+- Device-loss recovery, DPI-specific sizing, multi-buffer frame scheduling, validation-layer diagnostics, and benchmark capture remain unproven.
 
-## What it does not prove
+## Architectural rule
 
-- No indexed geometry is drawn yet.
-- This deliberately waits for GPU completion per frame for correctness; that serializes CPU/GPU work and is not a performance implementation.
-- The sample is not yet wired to VisualizerFrame, Renderer, Gestures, or AnyApp.
-- Device-loss recovery, DPI-specific sizing, multi-buffer frame scheduling, GPU validation-layer diagnostics, and benchmark capture remain future work.
+Do not extend this experiment with an indexed triangle or connect it to VisualizerFrame, Renderer, Gestures, or AnyApp by default. First evaluate the GPU backend candidates against Visualize's array-first workload and choose based on portability, data movement, compute-to-render flow, synchronization, host integration, measured performance, and footprint.
 
-The next milestone is a known indexed triangle with a measured, non-blocking frame-resource strategy, followed by an adapter into the Visualize backend contract.
+See [GPU Backend Strategy](../../docs/GPU_BACKEND_STRATEGY.md) and [ADR-0004](../../docs/decisions/ADR-0004-native-gpu-prototype.md).
