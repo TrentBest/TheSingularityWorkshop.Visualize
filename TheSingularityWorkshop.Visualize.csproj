@@ -20,9 +20,6 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="TheSingularityWorkshop.Renderer" Version="0.1.0-alpha.2" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
   </ItemGroup>
   <ItemGroup>
