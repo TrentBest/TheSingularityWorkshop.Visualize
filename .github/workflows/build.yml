@@ -1,0 +1,100 @@
+name: Build Visualizer
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - master
+      - development
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish the verified package to NuGet.org"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore TheSingularityWorkshop.Visualize.slnx
+
+      - name: Build
+        run: dotnet build TheSingularityWorkshop.Visualize.slnx --configuration Release --no-restore
+
+      - name: Test with coverage
+        run: >
+          dotnet test tests/TheSingularityWorkshop.Visualize.Tests/TheSingularityWorkshop.Visualize.Tests.csproj
+          --configuration Release
+          --no-build
+          --verbosity normal
+          --collect:"XPlat Code Coverage;Format=cobertura"
+          --results-directory ./TestResults
+          --logger "trx;LogFileName=testresults.trx"
+
+      - name: Prepare coverage report
+        shell: bash
+        run: |
+          set -euo pipefail
+          coverage_file="$(find ./TestResults -type f -name 'coverage.cobertura.xml' -print -quit)"
+          if [[ -z "$coverage_file" ]]; then
+            echo "No coverage.cobertura.xml file was produced."
+            find ./TestResults -maxdepth 4 -type f -print || true
+            exit 1
+          fi
+          cp "$coverage_file" ./TestResults/coverage.cobertura.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: TrentBest/TheSingularityWorkshop.Visualize
+          files: ./TestResults/coverage.cobertura.xml
+          fail_ci_if_error: true
+
+      - name: Pack
+        run: dotnet pack TheSingularityWorkshop.Visualize.csproj --configuration Release --no-build --output ./artifacts
+
+      - name: Upload NuGet package artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: visualize-nuget-package
+          path: ./artifacts/*.nupkg
+
+  publish_nuget:
+    needs: build-and-test
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name == 'push' && false }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download NuGet package
+        uses: actions/download-artifact@v8
+        with:
+          name: visualize-nuget-package
+          path: ./artifacts
+
+      - name: Authenticate with NuGet Trusted Publishing
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: TheSingularityWorkshop
+
+      - name: Publish package to NuGet.org
+        run: dotnet nuget push "./artifacts/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --skip-duplicate
