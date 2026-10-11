@@ -20,6 +20,16 @@ public sealed class Visualizer : IAsyncDisposable
     /// <summary>Gets the active backend's capability report.</summary>
     public VisualizerCapabilities Capabilities => _backend.Capabilities;
 
+    /// <summary>Adapts a source renderer frame and submits the resulting snapshot.</summary>
+    public ValueTask<VisualizerFrameResult> RenderAsync<TSourceFrame>(
+        TSourceFrame sourceFrame,
+        IVisualizerFrameAdapter<TSourceFrame> adapter,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(adapter);
+        return RenderAsync(adapter.Adapt(sourceFrame), cancellationToken);
+    }
+
     /// <summary>Validates referenced resources and submits a frame to the backend.</summary>
     public ValueTask<VisualizerFrameResult> RenderAsync(
         VisualizerFrame frame,
