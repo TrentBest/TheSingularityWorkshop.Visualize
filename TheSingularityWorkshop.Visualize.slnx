@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="TheSingularityWorkshop.Visualize.csproj" />
+  <Project Path="tests/TheSingularityWorkshop.Visualize.Tests/TheSingularityWorkshop.Visualize.Tests.csproj" />
+</Solution>
