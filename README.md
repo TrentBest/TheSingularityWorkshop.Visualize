@@ -26,9 +26,9 @@ A rendering architecture becomes difficult to evolve when world meaning, observe
 
 The Workshop's central performance hypothesis is to reduce unnecessary computational detail before drawing, then execute the remaining parallel presentation work efficiently. A GPU backend alone does not prove that a workload is faster; performance claims require measurements on a stated workload and hardware.
 
-## 🩵 03 How
+## 🔺 03 How
 
-![](docs/assets/dividers/teal.svg)
+![](docs/assets/dividers/triangle-red.svg)
 
 The responsibility flow is deliberate:
 
@@ -40,7 +40,7 @@ The responsibility flow is deliberate:
 - **AnyApp, WebPage, and other hosts** own host lifecycle and choose which Experience to compose.
 - **FSM_COS** composes capabilities; it is not a graphics API, renderer, visualizer, or game loop.
 
-### Current implementation status
+### 🟢 Current implementation status
 
 This repository has backend-neutral frame contracts, resource descriptions, tests, and architecture documentation. A narrow adapter maps Renderer output into VisualizerFrame; the contract is deliberately independent of the Renderer package version.
 
@@ -73,13 +73,13 @@ This verifies the current contracts and test suite; it does **not** demonstrate 
 - [Open questions](docs/OPEN_QUESTIONS.md) — review unresolved design decisions.
 - [Decision records](docs/decisions/README.md) — follow architectural choices and their rationale.
 
-## Build and test
+## 🟢 Build and test
 
 ![](docs/assets/dividers/green.svg)
 
 The commands above use the solution file and the installed .NET 8 SDK. CI also collects Cobertura coverage and uploads build, test, and package artifacts for review.
 
-## Release discipline
+## 🟣 Release discipline
 
 ![](docs/assets/dividers/violet.svg)
 
