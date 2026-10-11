@@ -1,0 +1,18 @@
+<Window x:Class="TheSingularityWorkshop.Visualize.WpfD3D12Proof.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:TheSingularityWorkshop.Visualize.WpfD3D12Proof"
+        Title="Workshop — Direct3D 12 Surface Proof"
+        Width="1100" Height="720" MinWidth="640" MinHeight="420"
+        Background="#10151D" Foreground="#E7EDF5">
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Padding="18" Background="#192330">
+      <StackPanel>
+        <TextBlock FontSize="20" FontWeight="SemiBold">The Singularity Workshop</TextBlock>
+        <TextBlock Margin="0,6,0,0" Foreground="#A9B8C9">Native Direct3D 12 · WPF HwndHost · clear and present proof</TextBlock>
+        <TextBlock Margin="0,6,0,0" FontSize="12" Foreground="#E7C27D">This is a GPU surface milestone, not yet the Visualizer's indexed-draw renderer.</TextBlock>
+      </StackPanel>
+    </Border>
+    <local:D3D12SurfaceHost x:Name="GpuSurface" />
+  </DockPanel>
+</Window>
