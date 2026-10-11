@@ -1,6 +1,6 @@
 # Gestures and the Pose Pipeline
 
-**Status:** Cross-repository design alignment. The proposed Gestures package does not yet exist.
+**Status:** Cross-repository design alignment. The standalone [TheSingularityWorkshop.Gestures](https://github.com/TrentBest/TheSingularityWorkshop.Gestures) repository now contains an early .NET 8 CPU reference implementation; its initial pull request is open and its API is not yet frozen.
 
 ## 1. The Workshop meaning of a Gesture
 
