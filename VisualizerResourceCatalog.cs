@@ -1,5 +1,3 @@
-using TheSingularityWorkshop.Renderer;
-
 namespace TheSingularityWorkshop.Visualize;
 
 /// <summary>A thread-safe catalog of backend-neutral geometry and material descriptions.</summary>
@@ -7,7 +5,7 @@ namespace TheSingularityWorkshop.Visualize;
 public sealed class VisualizerResourceCatalog : IVisualizerResourceProvider
 {
     private readonly object _gate = new();
-    private readonly Dictionary<RenderResourceId, VisualizerGeometry> _geometry = [];
+    private readonly Dictionary<VisualizerResourceId, VisualizerGeometry> _geometry = [];
     private readonly Dictionary<RenderResourceId, VisualizerMaterial> _materials = [];
 
     /// <summary>Registers or replaces geometry for a logical resource identifier.</summary>
