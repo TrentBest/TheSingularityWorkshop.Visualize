@@ -97,11 +97,17 @@ Only after measuring the living battlefield slice:
 - GPU-driven culling and indirect drawing;
 - broader pose evaluation;
 - particle systems for dust, smoke, sparks, debris, and weather;
-- material/lighting and shadow systems;
+- physics-grounded lighting and independently scheduled shadow work, with explicit light-source conventions and dependency-aware invalidation;
+- lighting and shadow capability experiments across applicable Event Horizons, including a dark base, moving headlamps, and atmospheric occlusion;
+- optional LUT/native-math/approximation benchmarks only when profiling identifies a relevant bottleneck;
 - streaming and resource residency;
 - asynchronous compute where measured beneficial;
 - device-loss recovery;
 - regression benchmarks for population, memory, and frame latency.
+
+## Lighting and math: deliberately staged
+
+See [Physics-based lighting, shadows, and extensible math](LIGHTING_AND_SHADOWS.md). First establish a small correct lighting path and its source conventions. Then separate the work descriptions, test invalidation, and introduce independent cadence. Only after a representative scene exists should we compare more expensive lighting techniques or alternative math implementations. No standalone math package or LUT dependency is required for the first visible scene.
 
 ## Release gates
 
