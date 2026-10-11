@@ -1,36 +1,38 @@
-# ADR-0004: Native GPU Prototype Candidate
+# ADR-0004: Isolated Direct3D 12 Surface Experiment
 
-- **Status:** Provisional investigation direction; not a permanent backend selection.
+- **Status:** Superseded as a backend-selection direction; retained only as a record of an isolated experiment.
 - **Date:** 2026-10-11
 
 ## Context
 
-The first host is AnyApp/WPF, and the project targets .NET 8. We need a real GPU-backed surface and must keep the core free from WPF/native handles. A browser/WebGPU path must remain feasible.
+Visualize needs an efficient GPU execution path for AnyApp/WPF while preserving a browser/WebGPU path and keeping graphics API details out of the core contracts. The Workshop is data-oriented and array-friendly: the architecture should make bulk geometry, transforms, pose data, visibility, and instance data natural to upload and process, rather than centering the design on per-object CPU submission.
 
-## Investigation findings
+## What was tried
 
-- Silk.NET.Direct3D12 2.23.0 is a stable published .NET Standard-compatible binding and is a plausible candidate for a .NET 8 native prototype.
-- Current Vortice.Windows package targeting must be checked carefully against the Workshop's .NET baseline; current versions may target newer .NET versions.
-- WPF can host a native child HWND through HwndHost, which offers a plausible place to attach a DXGI swap chain without representing scene objects as WPF controls.
-- A browser surface must use browser-compatible GPU APIs. Native Direct3D 12 handles cannot be reused directly in the browser.
+An isolated WPF sample was created using Vortice.Direct3D12. It hosts a native child window and clears/presents a DXGI swap chain. This verifies only that a particular native-surface experiment can be compiled in CI; a real hardware capture is still outstanding. It does not render geometry, establish performance, or demonstrate that Direct3D 12 is the right foundation.
 
 ## Decision
 
-Prototype Direct3D 12 as the first native candidate using a maintained .NET binding isolated behind a backend-specific project. Prototype browser WebGPU separately. Do not claim D3D12 is the final universal API, and do not commit to a binding until the actual package footprint and host integration are measured.
+**No graphics API has been selected. Do not extend the Direct3D 12 sample by default.** Treat it as a disposable reference experiment, not the architecture or the next mandatory milestone.
 
-## Required evidence
+The next step is to compare native and browser-capable paths against the same array-first workload. Candidates include Vulkan, WebGPU, and a cross-backend implementation if it preserves the control and data flow Visualize requires. Direct3D 12 may only return to consideration if the comparison gives a reason to do so; its existing implementation is not a reason by itself.
 
-- clear-and-present on a real WPF-hosted GPU surface;
-- resize and clean shutdown;
-- indexed draw;
-- resource upload and device-resource lifetime;
-- compute-to-draw path;
-- measured CPU/GPU timings and package/runtime footprint;
-- documented device/driver requirements.
+## Evaluation requirements
+
+- Represent hot data as contiguous arrays/streams with explicit layouts and stable resource revisions.
+- Measure conversion, allocation, copy, upload, CPU submission, GPU execution, synchronization, and presentation costs separately where practical.
+- Include indexed and instanced rendering plus a compute result consumed by a render pass.
+- Preserve backend-neutral core contracts and allow backend-specific shaders/capabilities.
+- Compare AnyApp/WPF lifecycle and resize behavior with the browser/WebGPU path.
+- Audit .NET bindings, transitive packages, runtime footprint, licensing, supported devices, debugging, and shader tooling.
+- Record real hardware/device/driver evidence and use equivalent workloads before making performance claims.
 
 ## References
 
-- [Silk.NET.Direct3D12 2.23.0](https://www.nuget.org/packages/Silk.NET.Direct3D12/2.23.0)
-- [Vortice.Direct3D12](https://www.nuget.org/packages/Vortice.Direct3D12)
+- [GPU backend strategy](../GPU_BACKEND_STRATEGY.md)
+- [Open questions](../OPEN_QUESTIONS.md)
+- [Vulkan](https://www.vulkan.org/)
+- [WebGPU specification](https://www.w3.org/TR/webgpu/)
+- [wgpu project](https://github.com/gfx-rs/wgpu)
 - [WPF and Win32 interoperation](https://github.com/dotnet/docs-desktop/blob/main/dotnet-desktop-guide/wpf/advanced/wpf-and-win32-interoperation.md)
-- [Silk.NET Direct3D 11 example](https://github.com/dotnet/Silk.NET/blob/main/examples/CSharp/Direct3D11%20Tutorials/Tutorial%201.3%20-%20Textures/Program.cs)
+- [Isolated WPF/Direct3D 12 experiment](../../samples/WpfD3D12Proof/README.md)
