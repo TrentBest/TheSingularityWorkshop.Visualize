@@ -73,3 +73,21 @@ Do not silently emulate an unsupported feature in a way that changes correctness
 - [wgpu project](https://github.com/gfx-rs/wgpu)
 
 These are research starting points, not endorsements. The exact .NET bindings, supported API versions, package versions, license compatibility, and current maintenance status must be checked before adding a dependency.
+
+
+## 8. .NET binding investigation (2026-10-11)
+
+The first pass of current dependency research narrows the native prototype candidates:
+
+- [Silk.NET.Direct3D12 2.23.0](https://www.nuget.org/packages/Silk.NET.Direct3D12/2.23.0) is a stable published release with .NET Standard 2.0 compatibility and active ecosystem maintenance. It is a plausible .NET 8 binding for a Direct3D 12 prototype. The package download is comparatively large, so its actual transitive/runtime footprint must be measured rather than ignored.
+- [Vortice.Direct3D12 / Vortice.Windows](https://www.nuget.org/packages/Vortice.Direct3D12) provides modern low-level bindings, but the current Vortice.Windows project documentation targets newer .NET versions; version/target compatibility must be checked before considering it for our .NET 8 baseline. Do not take a current package version merely because it is newer.
+- Microsoft's [WPF/Win32 interoperation guide](https://github.com/dotnet/docs-desktop/blob/main/dotnet-desktop-guide/wpf/advanced/wpf-and-win32-interoperation.md) describes HwndHost as the supported mechanism for hosting a native child HWND inside a WPF visual tree. That is a plausible route for a swap-chain surface without making WPF controls the scene renderer.
+- Silk.NET's [Direct3D 11 example](https://github.com/dotnet/Silk.NET/blob/main/examples/CSharp/Direct3D11%20Tutorials/Tutorial%201.3%20-%20Textures/Program.cs) demonstrates the general DXGI swap-chain pattern, but it is not a substitute for a D3D12 prototype. We should implement the selected native path directly and keep the WPF surface integration separate.
+
+### Provisional prototype plan
+
+1. Prototype a native Direct3D 12 device/swap-chain surface hosted by a WPF HwndHost in AnyApp.
+2. Prefer a maintained .NET binding for the first proof, but record dependency footprint and isolate it behind the Visualizer backend project.
+3. Prove clear-and-present, resize, indexed draw, and cleanup before connecting the full Renderer command model.
+4. In parallel or immediately afterward, prove a browser WebGPU surface with the same conceptual frame and resource contract.
+5. Compare measured behavior and implementation cost. This is a candidate investigation, not a permanent API selection.
