@@ -38,6 +38,9 @@ Compact evaluated pose / instance data
 Renderer selects representation for observer
               |
               v
+Thin adapter maps Renderer frame into VisualizerFrame
+              |
+              v
 Visualizer submits GPU work
               |
               v
