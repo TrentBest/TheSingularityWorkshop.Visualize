@@ -1,6 +1,7 @@
 using System.Numerics;
 using TheSingularityWorkshop.Renderer;
 using TheSingularityWorkshop.Visualize;
+using Xunit;
 
 namespace TheSingularityWorkshop.Visualize.Tests;
 
