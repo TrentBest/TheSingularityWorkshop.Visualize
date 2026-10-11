@@ -63,7 +63,7 @@ The intended per-frame sequence is:
 4. Reuse valid horizon output; recompute and transfer only what changed or must be refreshed.
 5. Execute compact arrays and batched work on the GPU, then compose near and far representations correctly.
 
-Cache invalidation must account for relevant world changes, observer movement/orientation, resource revisions, lighting, and horizon-specific freshness rules. The implementation must define and test these rules; distance alone is not a sufficient invalidation policy.
+Cache invalidation must account for relevant world changes, observer movement/orientation, resource revisions, lighting, and horizon-specific freshness rules. Lighting and shadows are independent work domains: a changed light may invalidate affected lighting and shadow results without rebuilding unrelated geometry or valid distant horizons. Each domain can have its own freshness policy, subject to dependency-driven refreshes when correctness requires it. The implementation must define and test these rules; distance alone is not a sufficient invalidation policy. See [Physics-based lighting, shadows, and extensible math](LIGHTING_AND_SHADOWS.md).
 
 **Role separation:** FSM_API is the stateful coordination/scheduling layer, not the GPU rasterizer. The GPU performs data-parallel arithmetic and graphics work suited to it. The backend should receive batched arrays and compact work descriptions, not require one managed wrapper or draw submission per world entity. The optimization target is the complete perception-to-presentation path, including cache reuse and final composition.
 
@@ -129,7 +129,13 @@ Renderer's Event Horizons are changes in computational representation, not merel
 
 Visualizer should support multiple representations and update strategies without redefining the policy that selects them. It may use instancing, compact buffers, GPU culling, compute-generated pose data, or indirect drawing when supported and measured.
 
-## 9. Non-goals
+## 9. Lighting and other independently scheduled visual domains
+
+Visualize must leave room for physically grounded lighting: explicit light-source data, intensity and falloff conventions, surface response, occlusion, and atmospheric effects. The selected backend determines which calculations and approximations it can execute; it must not redefine the meaning of the world’s light sources. Lighting and shadow work should be independently describable and schedulable per applicable Event Horizon, with dependency-aware invalidation and capability-driven alternatives.
+
+The architecture also leaves room for optional math implementations, LUTs, polynomial approximations, ray tracing, and baked lighting. These are possible capabilities, not mandatory dependencies or present performance claims. Native math may outperform a LUT; select optimizations only after measuring the actual workload and error. Detailed design and incremental proof plan: [Physics-based lighting, shadows, and extensible math](LIGHTING_AND_SHADOWS.md).
+
+## 10. Non-goals
 
 Visualizer is not:
 - a new game engine or world simulation;
@@ -140,7 +146,7 @@ Visualizer is not:
 - a requirement that every entity have a CPU object updated every frame;
 - a claim that “GPU accelerated” automatically means fast.
 
-## 10. Architectural invariants
+## 11. Architectural invariants
 
 1. The Experience remains authoritative.
 2. GPU state is derived, disposable, and rebuildable.
