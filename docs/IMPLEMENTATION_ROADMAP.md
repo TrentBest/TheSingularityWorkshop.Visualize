@@ -63,7 +63,7 @@ This roadmap separates architectural preparation from evidence of a functioning 
 
 ## Milestone 6 — Renderer integration
 
-- Consume Renderer RenderFrame and RenderDrawCommand.
+- Implement and test a narrow adapter from Renderer RenderFrame and RenderDrawCommand to VisualizerFrame and VisualizerDrawCommand.
 - Preserve Event Horizon policy as Renderer-owned.
 - Support a near/middle/far representation transition without identity discontinuity.
 - Render a physical squad standard as a world object.
