@@ -8,5 +8,5 @@ public interface IVisualizerResourceProvider
     bool TryGetGeometry(VisualizerResourceId id, out VisualizerGeometry? geometry);
 
     /// <summary>Attempts to resolve a material resource.</summary>
-    bool TryGetMaterial(RenderResourceId id, out VisualizerMaterial? material);
+    bool TryGetMaterial(VisualizerResourceId id, out VisualizerMaterial? material);
 }
