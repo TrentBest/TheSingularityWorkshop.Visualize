@@ -23,6 +23,9 @@
     <PackageReference Include="TheSingularityWorkshop.Renderer" Version="0.1.0-alpha.2" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="LICENSE" Pack="true" PackagePath="" />
   </ItemGroup>
