@@ -34,9 +34,11 @@ public sealed class Visualizer : IAsyncDisposable
         for (var i = 0; i < frame.Commands.Count; i++)
         {
             var command = frame.Commands[i];
-            if (!_resources.TryGetGeometry(command.Geometry, out _))
+            if (!_resources.TryGetGeometry(command.Geometry, out var geometry) || geometry is null)
                 throw new InvalidOperationException($"Frame command {i} references missing geometry resource {command.Geometry.Value}.");
-            if (!_resources.TryGetMaterial(command.Material, out _))
+            if ((long)command.FirstIndex + command.IndexCount > geometry.Indices.Count)
+                throw new InvalidOperationException($"Frame command {i} requests indices outside geometry resource {command.Geometry.Value}.");
+            if (!_resources.TryGetMaterial(command.Material, out var material) || material is null)
                 throw new InvalidOperationException($"Frame command {i} references missing material resource {command.Material.Value}.");
         }
 
