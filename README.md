@@ -10,7 +10,7 @@
 
 TheSingularityWorkshop.Visualize is the GPU-facing presentation project for The Singularity Workshop. It turns observer-aware presentation data from [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into pixels without making a particular windowing toolkit or graphics API the definition of the world.
 
-The first integration target is **AnyApp on WPF**. A browser/WebGPU path is part of the architecture from the beginning, but it is not claimed to exist yet.
+The first desktop host is **AnyApp on WPF**. A browser/WebGPU path is part of the architecture from the beginning, but it is not claimed to exist yet. **No graphics API has been selected.** The next milestone is to choose a path that fits the Workshop's array-first data model—not simply to extend whichever API was prototyped first.
 
 ## 🟦 01 What
 
@@ -26,7 +26,7 @@ The GPU holds disposable projections of the world. GPU buffers, pose samples, vi
 
 A rendering architecture becomes difficult to evolve when world meaning, observer-relative detail, graphics execution, and window lifecycle are tangled together. Visualize gives GPU-facing execution a focused boundary so hosts and graphics backends can evolve without becoming the authority over the world.
 
-The Workshop's central performance hypothesis is to reduce unnecessary computational detail before drawing, then execute the remaining parallel presentation work efficiently. A GPU backend alone does not prove that a workload is faster; performance claims require measurements on a stated workload and hardware.
+The Workshop's central performance hypothesis is to reduce unnecessary computational detail before drawing, then execute the remaining parallel presentation work efficiently. Array-first data layouts, bulk transfer, instancing, and GPU compute are candidates to measure—not performance claims by themselves.
 
 ## 🔺 03 How
 
@@ -38,7 +38,7 @@ The responsibility flow is deliberate:
 - **FSM_API** supplies stateful behavior and scheduling.
 - **[Gestures](https://github.com/TrentBest/TheSingularityWorkshop.Gestures)** defines reusable procedural motion and CPU reference evaluation.
 - **Renderer** selects observer-relative representation and computational detail through Event Horizons.
-- **Visualize** executes presentation work and produces pixels through a graphics backend and host surface.
+- **Visualize** executes presentation work and produces pixels through a selected graphics backend and host surface.
 - **AnyApp, WebPage, and other hosts** own host lifecycle and choose which Experience to compose.
 - **FSM_COS** composes capabilities; it is not a graphics API, renderer, visualizer, or game loop.
 
@@ -48,7 +48,7 @@ The responsibility flow is deliberate:
 
 This repository has backend-neutral frame contracts, resource descriptions, tests, and architecture documentation. A narrow adapter maps Renderer output into VisualizerFrame; the contract is deliberately independent of the Renderer package version.
 
-An isolated WPF/Direct3D 12 clear-and-present proof exists under `samples/WpfD3D12Proof`. It implements a native child HWND, Direct3D 12 device/queue, DXGI swap chain, and clear/present submission. Windows CI builds it with zero warnings and errors, but a real hardware/runtime capture has not yet been recorded. It is not connected to `VisualizerFrame`, AnyApp, or Renderer, does not draw geometry, and uses correctness-first rather than performance-ready per-frame synchronization.
+An isolated WPF/Direct3D 12 clear-and-present experiment exists under `samples/WpfD3D12Proof`. It compiles in Windows CI, but a real hardware/runtime capture has not yet been recorded. It draws no geometry, uses correctness-first per-frame synchronization, and is **not a selected backend**. Do not extend or integrate it by default; first compare backend candidates against an array-first workload.
 
 ## 🟢 04 See it in a minute
 
@@ -62,7 +62,7 @@ dotnet build TheSingularityWorkshop.Visualize.slnx --configuration Release
 dotnet test TheSingularityWorkshop.Visualize.slnx --configuration Release
 ```
 
-This verifies the current contracts and test suite; it does **not** demonstrate an end-to-end rendered scene. The next engineering milestone is a real GPU-backed WPF surface in AnyApp, followed by a known test scene, resource upload, indexed drawing, instancing, and measured compute-to-draw.
+This verifies the current contracts and test suite; it does **not** demonstrate an end-to-end rendered scene. The next engineering milestone is a backend evaluation using contiguous geometry/instance arrays, bulk upload, indexed and instanced drawing, and compute-to-render flow, with native and browser constraints recorded.
 
 ## 🟪 05 Available documentation and theory
 
@@ -70,8 +70,8 @@ This verifies the current contracts and test suite; it does **not** demonstrate 
 
 - [Architecture](docs/ARCHITECTURE.md) — follow data from authoritative state to the host surface and understand which layer owns each decision.
 - [Gestures and procedural motion](docs/GESTURES_AND_POSE_PIPELINE.md) — see how physical procedures become evaluated pose data without making Visualize the owner of motion semantics.
-- [GPU backend strategy](docs/GPU_BACKEND_STRATEGY.md) — compare backend responsibilities and the intended native/browser directions.
-- [WPF Direct3D 12 surface proof](samples/WpfD3D12Proof/README.md) — inspect exactly what the isolated Windows proof implements and what remains unproven.
+- [GPU backend strategy](docs/GPU_BACKEND_STRATEGY.md) — compare backend responsibilities and the intended native/browser directions, with array-first execution as a constraint.
+- [Isolated WPF/Direct3D 12 experiment](samples/WpfD3D12Proof/README.md) — inspect the exploratory native-surface proof and its limitations.
 - [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md) — see the engineering milestones and their current boundaries.
 - [Performance and benchmark rules](docs/PERFORMANCE.md) — understand how performance evidence must be collected and reported.
 - [Open questions](docs/OPEN_QUESTIONS.md) — review unresolved design decisions.
@@ -87,7 +87,7 @@ The commands above use the solution file and the installed .NET 8 SDK. CI also c
 
 ![](docs/assets/dividers/violet.svg)
 
-The package is not ready for NuGet merely because its contracts compile. A supported GPU backend, host integration, tests, documented device requirements, performance evidence, package review, and dependency/license audit are required. Any NuGet publishing workflow must remain disabled by default and may only be enabled with explicit approval.
+The package is not ready for NuGet merely because its contracts compile. A selected and supported GPU backend, host integration, tests, documented device requirements, performance evidence, package review, and dependency/license audit are required. Any NuGet publishing workflow must remain disabled by default and may only be enabled with explicit approval.
 
 ---
 
