@@ -67,7 +67,7 @@ These are conceptual ownership boundaries. They do not require every concept to 
 
 ## 4. Resource identity and lifetime
 
-Renderer commands identify geometry and materials by RenderResourceId. A GPU backend must not assume that an ID is a raw device pointer or that the ID alone describes all required data.
+Renderer commands identify geometry and materials by RenderResourceId. Visualizer currently defines its own VisualizerResourceId and VisualizerFrame so its core can build and evolve independently of the Renderer package release cadence. A GPU backend must not assume that an ID is a raw device pointer or that the ID alone describes all required data.
 
 Visualizer needs a resource-provider boundary that resolves logical IDs to immutable or versioned resource descriptions. A backend can then map those descriptions to native GPU objects and maintain a device-local cache.
 
