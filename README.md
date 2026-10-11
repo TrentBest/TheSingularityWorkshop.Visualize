@@ -1,1 +1,55 @@
 # TheSingularityWorkshop.Visualize
+
+> **Make the living world visible. Keep the world independent of its display.**
+
+TheSingularityWorkshop.Visualize is the GPU-facing presentation project for The Singularity Workshop. Its purpose is to turn the observer-aware output of [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into pixels without making a particular windowing toolkit or graphics API the definition of the world.
+
+The first integration target is **AnyApp on WPF**. A browser/WebGPU path is part of the architecture from the beginning, but it is not claimed to exist yet.
+
+## The boundary
+
+- **Experience / raWWar** owns world meaning and authoritative state.
+- **FSM_API** supplies stateful behavior and scheduling.
+- **Gestures** will describe procedural physical motion: poses, mathematical transitions, constraints, and bounded individual variation.
+- **Renderer** decides which representation and computational detail an observer needs through Event Horizons.
+- **Visualize** executes presentation work and produces pixels through a graphics backend and a host surface.
+- **AnyApp, WebPage, and other hosts** own their host lifecycle and choose which Experience to compose.
+- **FSM_COS** composes capabilities; it is not a graphics API, renderer, visualizer, or game loop.
+
+The GPU holds disposable projections of the world. GPU buffers, pose samples, visibility lists, and render targets must be reconstructable from authoritative and presentation inputs.
+
+## Current implementation status
+
+This repository begins with the backend-neutral integration contract, resource descriptions, tests, and architecture documentation. **A working GPU backend and WPF surface are not yet implemented.** A green build of the contracts is not evidence of rendered pixels or GPU performance.
+
+The first engineering milestone is a real GPU-backed WPF surface in AnyApp, followed by a known test scene, resource upload, indexed drawing, instancing, and measured compute-to-draw.
+
+## Documentation
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Gestures and procedural motion](docs/GESTURES_AND_POSE_PIPELINE.md)
+- [GPU backend strategy](docs/GPU_BACKEND_STRATEGY.md)
+- [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md)
+- [Performance and benchmark rules](docs/PERFORMANCE.md)
+- [Open questions](docs/OPEN_QUESTIONS.md)
+- [Decision records](docs/decisions/README.md)
+
+## Build and test
+
+Requires the .NET 8 SDK.
+
+~~~powershell
+dotnet restore TheSingularityWorkshop.Visualize.slnx
+dotnet build TheSingularityWorkshop.Visualize.slnx --configuration Release
+dotnet test TheSingularityWorkshop.Visualize.slnx --configuration Release
+~~~
+
+## Release discipline
+
+The package is not ready for NuGet merely because its contracts compile. A supported GPU backend, host integration, tests, documented device requirements, performance evidence, package review, and dependency/license audit are required. Any NuGet publishing workflow must remain disabled by default and may only be enabled with explicit approval.
+
+---
+
+<p align="center">
+  <em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em>
+</p>
