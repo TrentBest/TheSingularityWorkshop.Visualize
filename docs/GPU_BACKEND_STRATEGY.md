@@ -103,3 +103,52 @@ Keep this sample isolated. Do not add indexed drawing, connect it to VisualizerF
 - [WPF and Win32 interoperation](https://github.com/dotnet/docs-desktop/blob/main/dotnet-desktop-guide/wpf/advanced/wpf-and-win32-interoperation.md)
 
 These are research starting points, not endorsements. Verify current binding support, package versions, license compatibility, maintenance status, runtime footprint, and actual performance before selecting a dependency.
+
+## 2.2 Cached horizons are presentation inputs, not merely draw lists
+
+The frame-oriented VisualizerFrame contract is a useful first boundary, but by itself it does not define a persistent Event Horizon cache or guarantee that unchanged distant content avoids reconstruction. The backend strategy must evolve beyond assuming that every display frame is a wholly new list of draws.
+
+Visualize should ultimately be able to distinguish the following kinds of work, without taking ownership of Renderer’s semantic decisions:
+
+- **reuse** an already rendered horizon result;
+- **reproject or shift** cached output when the representation and available depth/coverage make that correct;
+- **update source arrays/resources** when their revisions change;
+- **render geometry/visibility** for a newly required or invalidated representation;
+- **refresh lighting, shadows, or material shading** when their own dependencies change;
+- **compose** cached distant output with newly rendered nearer layers for the current view.
+
+This is a capability target, not a claim that the current backend-neutral contracts already implement these operations. Cache lifetime, validity, dependencies, and device-resource recovery need explicit contracts and tests before the first backend is treated as production-ready.
+
+### A layered cadence model
+
+The display can update every frame while the work underneath it runs at independent rates. A hypothetical scene might update immediate/near geometry at display cadence, local context at a lower cadence, and distant environment content at a much lower cadence—for example, testing a one-minute refresh for content at and beyond 1 km. These intervals are workload settings to measure, never hard-coded universal thresholds.
+
+Geometry and lighting also need not share one cadence. A useful experiment is to establish geometry/visibility and a relevant-light list first, then schedule costly shadowing and shading only when their inputs change or their freshness budget expires. This does not prescribe forward rendering, deferred rendering, ray tracing, or any one algorithm; the backend comparison must determine which staged approach best fits the actual workloads and hardware.
+
+### Background reuse and observer movement
+
+The visible world must extend beyond the Renderer’s immediate focus. The focus determines where detailed computation is justified; it does not mean everything outside the focus disappears. Distant environment representations remain part of the final composition.
+
+When the observer moves, the backend may shift or reproject a cached background instead of rebuilding it, but only when the representation supports that operation:
+
+- orientation changes require the background to follow the new view;
+- translation can reveal parallax and disocclusion, so a single flat image is not generally sufficient;
+- depth-aware reprojection or world-space cached representations can preserve more correct motion;
+- uncovered regions need newly rendered content or an explicit fallback;
+- dynamic objects and light changes should invalidate dependent regions/results without forcing unrelated valid horizons to rebuild.
+
+The implementation should prefer dependency-aware, partial invalidation over a single all-or-nothing scene cache. It must also avoid the opposite mistake: retaining stale pixels after the world has changed merely because the scheduled refresh interval has not elapsed. Correctness-critical events can override the normal cadence.
+
+### Required cache/cadence proof
+
+Before selecting a backend on performance grounds, the benchmark must demonstrate that:
+
+1. a valid far horizon is reused across many display frames without re-running its expensive rendering work;
+2. near-field geometry can change while the far cache remains valid;
+3. observer rotation and translation cause only the invalidation/reprojection required by the selected cache representation;
+4. disoccluded or newly visible regions are filled correctly rather than exposing stale or empty pixels;
+5. a light-source change can refresh affected lighting/shadow results without automatically rebuilding unchanged geometry;
+6. resource/world revisions and explicit freshness deadlines invalidate the correct results;
+7. frame-time percentiles, CPU work, GPU work, transfer volume, allocations, and cache memory are measured together.
+
+The intended result is not “draw the background once and forget it.” It is **retain and reuse every result whose dependencies are still valid, and pay again only for the work that became necessary**.
