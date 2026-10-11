@@ -40,6 +40,15 @@ These questions are deliberately recorded rather than silently decided by implem
 25. How do interruption, injury, equipment changes, collision, and failure affect a running Gesture?
 26. Should TheSingularityWorkshop.Gestures be the standalone package name? It is recommended but not yet created.
 
+## Lighting, shadows, and math
+
+28. What light-source units, intensity conventions, attenuation model, and color representation should the first scene use?
+29. Which physically grounded lighting model is sufficient for the first visible raWWar scene, and what is the reference workload/image for correctness?
+30. Which inputs invalidate lighting versus shadow results, and how should correctness-critical changes override ordinary refresh cadence?
+31. How should MicroBundle arbitration express a lighting or shadow capability that applies across compatible horizons without naming or counting them?
+32. Which shadow and lighting techniques are supported by the selected backend, and what fallback/quality policy applies when a capability is unavailable?
+33. Does profiling justify an optional math package, LUT, polynomial approximation, or another specialized implementation? What precision, domain, storage, and hardware evidence is required?
+
 ## Composition and release
 
 27. Which capabilities should be first-class MicroBundles, and which are backend implementation details?
