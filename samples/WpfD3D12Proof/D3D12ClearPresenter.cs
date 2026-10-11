@@ -37,7 +37,7 @@ internal sealed class D3D12ClearPresenter : IDisposable
 
         _width = Math.Max(1, width);
         _height = Math.Max(1, height);
-        _factory = CreateDXGIFactory2<IDXGIFactory4>();
+        _factory = CreateDXGIFactory2<IDXGIFactory4>(false);
         D3D12CreateDevice(null, FeatureLevel.Level_11_0, out ID3D12Device? device).CheckError();
         _device = device ?? throw new InvalidOperationException("Direct3D 12 device creation returned no device.");
 
@@ -74,7 +74,8 @@ internal sealed class D3D12ClearPresenter : IDisposable
         var start = _rtvHeap.GetCPUDescriptorHandleForHeapStart();
         for (uint i = 0; i < BufferCount; i++)
         {
-            _rtvHandles[i] = new CpuDescriptorHandle(start.Ptr + (nint)(i * _rtvStride));
+            _rtvHandles[i] = start;
+            _rtvHandles[i].Ptr = start.Ptr + (nuint)(i * _rtvStride);
             _backBuffers[i] = _swapChain.GetBuffer<ID3D12Resource>(i);
             _device.CreateRenderTargetView(_backBuffers[i], null, _rtvHandles[i]);
         }
