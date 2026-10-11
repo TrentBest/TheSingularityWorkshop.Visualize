@@ -1,100 +1,86 @@
 # GPU Backend Strategy
 
-**Status:** Research framework. No graphics API has been selected.
+**Status:** Investigation framework. No graphics API or binding has been selected.
 
 ## 1. The objective
 
-We want direct control of GPU resource use, parallel compute, graphics pipelines, synchronization, and presentation—not a dependency on a large game engine that dictates the world's architecture.
+Visualize should exploit the Workshop's data-oriented design instead of inheriting the architecture of a graphics API, windowing toolkit, or game engine. The aim is direct, efficient control over GPU resources, parallel compute, graphics pipelines, synchronization, and presentation—while keeping world meaning and observer-relative detail decisions outside the graphics backend.
 
-That does not mean writing every low-level primitive ourselves or assuming the lowest-level API will win every benchmark. Drivers, API implementation, shader compiler, memory traffic, synchronization, CPU submission, and host integration all contribute to actual performance.
+The optimization target is the whole path: select only the detail an observer needs, express the remaining work in compact arrays, transfer data efficiently, batch submission, execute parallel GPU work, and present with minimal stalls. Low-level APIs can expose control, but control alone is not proof of speed.
 
-## 2. CUDA is not the whole rendering stack
+## 2. Array-first is a design constraint
 
-CUDA is NVIDIA's general-purpose GPU compute platform. It offers a strong programming and profiling model for parallel compute, but it is not a universal cross-vendor graphics and display API. A CUDA kernel does not itself create a WPF surface, rasterize a scene, or present a frame.
+The core workload should prefer contiguous, explicitly laid-out data over a forest of per-object runtime wrappers. Candidate arrays/streams include:
 
-We should learn from CUDA's explicit compute model while keeping the graphics path portable. An NVIDIA-specific compute path may be explored only when a measured workload justifies the added backend and interoperability complexity.
+- vertex and index data;
+- instance transforms and per-instance parameters;
+- pose/joint samples and animation inputs;
+- visibility, LOD, material, and resource-index lists;
+- compact draw/dispatch descriptions.
 
-## 3. Candidates to prototype
+The backend should support bulk uploads and stable resource revisions. Avoid per-object conversion, transient allocation, redundant copies, and CPU loops that merely repackage data the GPU can consume in batches.
+
+This does **not** mean blindly uploading every CPU array every frame. Compare persistent GPU residency, incremental updates, mapped/upload buffers, storage buffers, packed formats, textures, and hybrid approaches against actual update patterns. The GPU copy is disposable derived state; authoritative state remains outside the backend.
+
+## 3. CUDA is not the whole rendering stack
+
+CUDA is NVIDIA's general-purpose GPU compute platform. It can be valuable for measured NVIDIA-specific workloads, but it is not a universal cross-vendor graphics and display API. A CUDA kernel does not by itself create a WPF surface, rasterize a scene, or present a frame. Consider it only when measured benefit justifies vendor-specific code and interoperability complexity.
+
+## 4. Backend candidates
 
 | Candidate | Why investigate it | Risks / limits |
 | --- | --- | --- |
-| **Direct3D 12** | Low-level Windows graphics/compute control; natural native candidate for AnyApp/WPF | Windows-centric; explicit synchronization, resource lifetime, pipeline and device-loss responsibility |
-| **Vulkan** | Explicit cross-platform native graphics/compute | Complex API and synchronization; not directly available as a native API inside browser content |
-| **WebGPU** | Graphics and compute API designed for browser content; natural web path | Browser/device capability variation; cannot assume native and browser feature parity |
-| **Cross-backend library** | May allow shared code while preserving access to modern GPU operations | Abstraction may hide features or constrain access; must audit license, maintenance, and performance |
-| **CUDA** | Strong NVIDIA-specific compute path | Vendor-specific; not a replacement for general graphics/presentation |
+| **Vulkan** | Explicit native graphics and compute across platforms | Significant resource, synchronization, shader, and device-management complexity; not a browser API |
+| **WebGPU** | Graphics and compute designed for browser content; relevant to the web path | Browser/device capability variation; native and browser feature parity cannot be assumed |
+| **Cross-backend implementation** | May share a GPU model across native and browser targets | Abstraction may hide needed control, add overhead, constrain features, or complicate diagnostics |
+| **Direct3D 12** | Explicit Windows graphics/compute control and a possible WPF-native path | Windows-centric; a current isolated experiment exists, but that is not evidence it is the right architectural choice |
+| **CUDA** | Strong NVIDIA-specific compute tooling | Vendor-specific; not a replacement for general graphics/presentation |
 
-Direct3D 12 is not equivalent to “DirectX is deprecated.” Do not assume a DirectX 13 API exists or plan around an unverified successor. The backend boundary exists so that future options can be assessed without rewriting Gesture, Renderer, or Experience semantics.
+The existence of code for a candidate is not a selection criterion. **Do not continue the Direct3D 12 sample by default.** See [ADR-0004](decisions/ADR-0004-native-gpu-prototype.md): it records an isolated experiment, not the chosen direction.
 
-## 4. First decision: a working native surface
+## 5. Compare candidates using the same workload
 
-For the first AnyApp milestone, evaluate:
-- direct native Windows graphics API through a maintained .NET interop library;
-- a credible cross-backend library that can expose the needed low-level control.
+Build a repeatable evaluation that covers:
 
-Do not pick from feature lists alone. Build the same tiny scene through the candidate paths:
-1. create a device and a real WPF-hosted presentation surface;
-2. clear and present;
-3. upload vertex/index buffers;
-4. draw one indexed object;
-5. draw an instanced population;
-6. dispatch a compute pass whose output is consumed by a graphics pass;
-7. resize, close, and recreate resources;
-8. measure CPU submission, GPU pass time, frame-time distribution, memory, transfer volume, and synchronization stalls.
+1. Create a real host surface and GPU device.
+2. Clear and present, including resize and clean shutdown.
+3. Bulk-upload known vertex/index arrays.
+4. Draw indexed and instanced populations.
+5. Dispatch compute whose output is consumed by a render pass.
+6. Exercise changing data and persistent resources, not only static geometry.
+7. Record device/driver, CPU submission time, GPU pass time, frame-time percentiles, allocations, transfer volume, synchronization stalls, memory use, package graph, and deployed footprint.
 
-The WPF surface integration is part of the benchmark. A fast device API that integrates poorly with the host is not a successful Visualizer.
+The first benchmark is a correctness gate, not a performance victory. Compare the same scene, visible detail, resolution, hardware, and interaction workload. Include the host integration in the comparison: a fast GPU path with costly or fragile presentation integration is not a successful Visualizer.
 
-## 5. Shader and data strategy
+## 6. Shader and data strategy
 
-No shader language or GPU data layout is selected. Candidate shader toolchains must be evaluated for:
-- supported native and browser targets;
-- compilation and reflection;
-- pipeline-layout validation;
-- debugging/profiling;
-- reproducible build output;
-- asset packaging and versioning;
-- licensing and redistribution;
-- hot reload for development without runtime shipping surprises.
+No shader language or GPU data layout is selected. Evaluate toolchains for native and browser targets, compilation/reflection, debugging/profiling, reproducible build output, shader asset packaging, hot reload, licensing, and redistribution.
 
-The compact four-channel 8-bit state-texture concept from raWWar is a hypothesis. Compare structured/storage buffers, textures, packed integer layouts, and hybrid designs against real Gesture and instance access patterns. Do not pack unrelated values into one format solely because it looks compact.
+The compact four-channel 8-bit state-texture concept from raWWar is a hypothesis—not a universal format. Compare structured/storage buffers, textures, packed integer layouts, and hybrid designs against real Gesture and instance access patterns. Avoid packing unrelated values solely because a format looks compact.
 
-## 6. Backend-neutral does not mean lowest-common-denominator
+Backend-neutral does not mean lowest-common-denominator. Expose capabilities and limits explicitly, permit backend-specific shaders and advanced operations, and do not silently emulate unsupported features in ways that change correctness or performance.
 
-The public contract should expose capabilities and limits explicitly. It may offer common operations for the supported path and a controlled backend-specific extension mechanism for advanced operations.
+## 7. Host boundaries
 
-Do not silently emulate an unsupported feature in a way that changes correctness or performance. Do not force every backend to use identical shader binaries.
+- Visualize core contracts describe work and resources without WPF controls, HWNDs, or native graphics handles.
+- AnyApp/WPF owns the desktop host lifecycle.
+- WebPage/browser owns browser lifecycle and uses browser-supported GPU APIs.
+- Backend implementations own device resources, uploads, command submission, synchronization, and presentation.
+- Renderer decides observer-relative representation and detail; Visualize should not redo those semantic decisions.
 
-## 7. References
+## 8. Existing Direct3D 12 experiment
 
-- [NVIDIA CUDA Programming Guide](https://docs.nvidia.com/cuda/cuda-programming-guide/index.html)
-- [WebGPU specification](https://www.w3.org/TR/webgpu/)
+The isolated [WPF Direct3D 12 proof](../samples/WpfD3D12Proof/README.md) creates a native child HWND, Direct3D 12 device/queue, DXGI swap chain, and clear/present loop. It is compile-verified in Windows CI, but a real hardware/runtime capture has not been recorded. It draws no geometry and deliberately waits for GPU completion each frame.
+
+Keep this sample isolated. Do not add indexed drawing, connect it to VisualizerFrame, or integrate it with Renderer/AnyApp until the backend strategy is deliberately revisited. Its current value is as a reference experiment and a reminder to demand real runtime evidence.
+
+## 9. Research references
+
 - [Vulkan](https://www.vulkan.org/)
-- [Direct3D 12 documentation](https://learn.microsoft.com/windows/win32/direct3d12/direct3d-12-graphics)
+- [WebGPU specification](https://www.w3.org/TR/webgpu/)
 - [wgpu project](https://github.com/gfx-rs/wgpu)
+- [NVIDIA CUDA Programming Guide](https://docs.nvidia.com/cuda/cuda-programming-guide/index.html)
+- [Direct3D 12 documentation](https://learn.microsoft.com/windows/win32/direct3d12/direct3d-12-graphics)
+- [WPF and Win32 interoperation](https://github.com/dotnet/docs-desktop/blob/main/dotnet-desktop-guide/wpf/advanced/wpf-and-win32-interoperation.md)
 
-These are research starting points, not endorsements. The exact .NET bindings, supported API versions, package versions, license compatibility, and current maintenance status must be checked before adding a dependency.
-
-
-## 8. .NET binding investigation (2026-10-11)
-
-The first pass of current dependency research narrows the native prototype candidates:
-
-- [Silk.NET.Direct3D12 2.23.0](https://www.nuget.org/packages/Silk.NET.Direct3D12/2.23.0) is a stable published release with .NET Standard 2.0 compatibility and active ecosystem maintenance. It is a plausible .NET 8 binding for a Direct3D 12 prototype. The package download is comparatively large, so its actual transitive/runtime footprint must be measured rather than ignored.
-- [Vortice.Direct3D12 3.8.3](https://www.nuget.org/packages/Vortice.Direct3D12/3.8.3) is listed as compatible with .NET 8 as well as newer targets, despite the upstream repository's current development branch focusing on newer .NET versions. It is the binding used by the isolated WPF clear-and-present proof. Its dependency graph includes prerelease SharpGen runtime packages, so the exact graph, footprint, license, and redistribution contents still require audit.
-- Microsoft's [WPF/Win32 interoperation guide](https://github.com/dotnet/docs-desktop/blob/main/dotnet-desktop-guide/wpf/advanced/wpf-and-win32-interoperation.md) describes HwndHost as the supported mechanism for hosting a native child HWND inside a WPF visual tree. That is a plausible route for a swap-chain surface without making WPF controls the scene renderer.
-- Silk.NET's [Direct3D 11 example](https://github.com/dotnet/Silk.NET/blob/main/examples/CSharp/Direct3D11%20Tutorials/Tutorial%201.3%20-%20Textures/Program.cs) demonstrates the general DXGI swap-chain pattern, but it is not a substitute for a D3D12 prototype. We should implement the selected native path directly and keep the WPF surface integration separate.
-
-### Provisional prototype plan
-
-1. Prototype a native Direct3D 12 device/swap-chain surface hosted by a WPF HwndHost in AnyApp.
-2. Prefer a maintained .NET binding for the first proof, but record dependency footprint and isolate it behind the Visualizer backend project.
-3. Prove clear-and-present, resize, indexed draw, and cleanup before connecting the full Renderer command model.
-4. In parallel or immediately afterward, prove a browser WebGPU surface with the same conceptual frame and resource contract.
-5. Compare measured behavior and implementation cost. This is a candidate investigation, not a permanent API selection.
-
-
-## 9. First native surface proof (2026-10-11)
-
-The isolated [WPF Direct3D 12 proof](../samples/WpfD3D12Proof/README.md) now creates a native child HWND, Direct3D 12 device and direct queue, DXGI swap chain, RTV heap, back buffers, command allocator/list, and fence. It clears and presents a real GPU back buffer and recreates swap-chain buffers on resize. A Windows CI workflow builds the proof separately from the backend-neutral contract project.
-
-This is deliberately a correctness-first proof. It waits for GPU completion before allocator reuse, draws no indexed geometry, and is not yet connected to VisualizerFrame or AnyApp. It is not performance evidence and must not be described as a finished renderer. The next gate is a known indexed triangle and non-blocking frame-resource scheduling, followed by an adapter into the core contract.
+These are research starting points, not endorsements. Verify current binding support, package versions, license compatibility, maintenance status, runtime footprint, and actual performance before selecting a dependency.
