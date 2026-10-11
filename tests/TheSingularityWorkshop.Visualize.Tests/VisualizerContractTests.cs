@@ -11,7 +11,7 @@ public sealed class VisualizerContractTests
     {
         var catalog = new VisualizerResourceCatalog();
         var geometryId = new VisualizerResourceId(1);
-        var materialId = new RenderResourceId(2);
+        var materialId = new VisualizerResourceId(2);
         var geometry = new VisualizerGeometry(
             1,
             [new VisualizerVertex(Vector3.Zero, Vector3.UnitZ, Vector2.Zero, Vector4.One)],
@@ -44,7 +44,7 @@ public sealed class VisualizerContractTests
         var view = new VisualizerView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity);
         var frame = new VisualizerFrame(view,
         [
-            new VisualizerDrawCommand(new RenderResourceId(10), new RenderResourceId(20), Matrix4x4.Identity, 3, 0, 0, default)
+            new VisualizerDrawCommand(new VisualizerResourceId(10), new VisualizerResourceId(20), Matrix4x4.Identity, 3, 0, 0, default)
         ]);
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -71,7 +71,7 @@ public sealed class VisualizerContractTests
     public async Task Visualizer_RejectsDrawRangeBeyondGeometry()
     {
         var catalog = new VisualizerResourceCatalog();
-        catalog.SetGeometry(new RenderResourceId(10), new VisualizerGeometry(
+        catalog.SetGeometry(new VisualizerResourceId(10), new VisualizerGeometry(
             1,
             [
                 new VisualizerVertex(Vector3.Zero, Vector3.UnitZ, Vector2.Zero, Vector4.One),
@@ -79,14 +79,14 @@ public sealed class VisualizerContractTests
                 new VisualizerVertex(Vector3.UnitY, Vector3.UnitZ, Vector2.UnitY, Vector4.One)
             ],
             [0, 1, 2]));
-        catalog.SetMaterial(new RenderResourceId(20), new VisualizerMaterial(1, Vector4.One));
+        catalog.SetMaterial(new VisualizerResourceId(20), new VisualizerMaterial(1, Vector4.One));
 
         var backend = new RecordingBackend();
         var visualizer = new Visualizer(backend, catalog);
-        var frame = new RenderFrame(
-            new RenderView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity),
+        var frame = new VisualizerFrame(
+            new VisualizerView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity),
             [
-                new RenderDrawCommand(new RenderResourceId(10), new RenderResourceId(20), Matrix4x4.Identity, 3, 1, 0, default)
+                new VisualizerDrawCommand(new VisualizerResourceId(10), new VisualizerResourceId(20), Matrix4x4.Identity, 3, 1, 0, default)
             ]);
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -106,7 +106,7 @@ public sealed class VisualizerContractTests
             new("Recording", "Test", false, false, false, false);
 
         public ValueTask<VisualizerFrameResult> RenderAsync(
-            RenderFrame frame,
+            VisualizerFrame frame,
             IVisualizerResourceProvider resources,
             CancellationToken cancellationToken = default)
         {
