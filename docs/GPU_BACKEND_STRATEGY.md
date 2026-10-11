@@ -22,6 +22,25 @@ The backend should support bulk uploads and stable resource revisions. Avoid per
 
 This does **not** mean blindly uploading every CPU array every frame. Compare persistent GPU residency, incremental updates, mapped/upload buffers, storage buffers, packed formats, textures, and hybrid approaches against actual update patterns. The GPU copy is disposable derived state; authoritative state remains outside the backend.
 
+### 2.1 Event-Horizon-first execution
+
+The Renderer’s Event Horizons are the first optimization boundary—not a graphics API's LOD feature. Perception determines which representation is required, how much work is justified, and how frequently that representation needs evaluation. Visualize should consume those decisions rather than independently reconstructing world semantics.
+
+The intended frame path is:
+
+1. **Observe:** determine the observer/camera relationship and current perception budgets.
+2. **Classify and invalidate:** identify which horizon representations are visible, stale, newly required, or still valid.
+3. **Schedule with FSM_API:** use FSM state and processing groups to coordinate horizon work, dependencies, cadence, and transitions. Far horizons may be evaluated less frequently than near ones.
+4. **Reuse before recomputing:** preserve valid distant representations. A horizon may be a cached texture, impostor, mesh/instance buffer, or another representation appropriate to its content; a horizon is not required to be a separate full-screen image.
+5. **Execute the due work:** produce or update compact arrays, upload only changed data where practical, dispatch suitable parallel GPU work, and batch presentation.
+6. **Compose the result:** reuse valid far-field output and combine it with updated nearer representations in correct depth/order and with appropriate transitions.
+
+An unchanged horizon must not be regenerated simply because a new display frame is presented. Its cache needs explicit validity/invalidation rules—for example, changes to the world representation, observer movement or orientation, lighting, resources, or horizon-specific freshness budgets. Those rules must be tested for correctness, not inferred from distance alone.
+
+**FSM_API and the GPU have complementary roles.** FSM_API is the stateful coordination and scheduling layer: it determines which work is valid, due, dependent, or deferred. It should not be mistaken for the pixel rasterizer or assumed to replace GPU-parallel arithmetic. The GPU executes data-parallel transforms, culling, procedural evaluation, and graphics/compute workloads where measurements show they belong. The backend should accept batched arrays and explicit work descriptions rather than requiring one managed object and one submission per world item.
+
+The benchmark must therefore measure the whole perception-to-presentation pipeline, including horizon invalidation, cache reuse, CPU scheduling/submission, data movement, GPU execution, and final composition. A raw triangle benchmark cannot validate this architecture.
+
 ## 3. CUDA is not the whole rendering stack
 
 CUDA is NVIDIA's general-purpose GPU compute platform. It can be valuable for measured NVIDIA-specific workloads, but it is not a universal cross-vendor graphics and display API. A CUDA kernel does not by itself create a WPF surface, rasterize a scene, or present a frame. Consider it only when measured benefit justifies vendor-specific code and interoperability complexity.
