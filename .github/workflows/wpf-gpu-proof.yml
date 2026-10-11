@@ -1,0 +1,35 @@
+name: WPF Direct3D 12 proof
+
+on:
+  push:
+    branches: [master, development]
+    paths:
+      - "samples/WpfD3D12Proof/**"
+      - ".github/workflows/wpf-gpu-proof.yml"
+  pull_request:
+    branches: [master, development]
+    paths:
+      - "samples/WpfD3D12Proof/**"
+      - ".github/workflows/wpf-gpu-proof.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows-proof:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore samples/WpfD3D12Proof/WpfD3D12Proof.csproj
+
+      - name: Build
+        run: dotnet build samples/WpfD3D12Proof/WpfD3D12Proof.csproj --configuration Release --no-restore
