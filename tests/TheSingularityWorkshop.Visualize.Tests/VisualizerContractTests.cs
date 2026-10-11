@@ -48,7 +48,10 @@ public sealed class VisualizerContractTests
             new RenderDrawCommand(new RenderResourceId(10), new RenderResourceId(20), Matrix4x4.Identity, 3, 0, 0, default)
         ]);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await visualizer.RenderAsync(frame));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await visualizer.RenderAsync(frame);
+        });
         Assert.Equal(0, backend.SubmissionCount);
         await visualizer.DisposeAsync();
     }
@@ -63,6 +66,36 @@ public sealed class VisualizerContractTests
         await visualizer.DisposeAsync();
 
         Assert.Equal(1, backend.DisposeCount);
+    }
+ 
+    [Fact]
+    public async Task Visualizer_RejectsDrawRangeBeyondGeometry()
+    {
+        var catalog = new VisualizerResourceCatalog();
+        catalog.SetGeometry(new RenderResourceId(10), new VisualizerGeometry(
+            1,
+            [
+                new VisualizerVertex(Vector3.Zero, Vector3.UnitZ, Vector2.Zero, Vector4.One),
+                new VisualizerVertex(Vector3.UnitX, Vector3.UnitZ, Vector2.UnitX, Vector4.One),
+                new VisualizerVertex(Vector3.UnitY, Vector3.UnitZ, Vector2.UnitY, Vector4.One)
+            ],
+            [0, 1, 2]));
+        catalog.SetMaterial(new RenderResourceId(20), new VisualizerMaterial(1, Vector4.One));
+
+        var backend = new RecordingBackend();
+        var visualizer = new Visualizer(backend, catalog);
+        var frame = new RenderFrame(
+            new RenderView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity),
+            [
+                new RenderDrawCommand(new RenderResourceId(10), new RenderResourceId(20), Matrix4x4.Identity, 3, 1, 0, default)
+            ]);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await visualizer.RenderAsync(frame);
+        });
+        Assert.Equal(0, backend.SubmissionCount);
+        await visualizer.DisposeAsync();
     }
 
     private sealed class RecordingBackend : IVisualizerBackend
