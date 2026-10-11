@@ -118,7 +118,8 @@ internal sealed class D3D12ClearPresenter : IDisposable
         var start = _rtvHeap.GetCPUDescriptorHandleForHeapStart();
         for (uint i = 0; i < BufferCount; i++)
         {
-            _rtvHandles[i] = new CpuDescriptorHandle(start.Ptr + (nint)(i * _rtvStride));
+            _rtvHandles[i] = start;
+            _rtvHandles[i].Ptr = start.Ptr + (nuint)(i * _rtvStride);
             _backBuffers[i] = _swapChain.GetBuffer<ID3D12Resource>(i);
             _device.CreateRenderTargetView(_backBuffers[i], null, _rtvHandles[i]);
         }
