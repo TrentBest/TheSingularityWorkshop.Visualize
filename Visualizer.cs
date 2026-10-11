@@ -1,5 +1,3 @@
-using TheSingularityWorkshop.Renderer;
-
 namespace TheSingularityWorkshop.Visualize;
 
 /// <summary>Coordinates Renderer frames, logical resources, and a concrete presentation backend.</summary>
@@ -24,7 +22,7 @@ public sealed class Visualizer : IAsyncDisposable
 
     /// <summary>Validates referenced resources and submits a frame to the backend.</summary>
     public ValueTask<VisualizerFrameResult> RenderAsync(
-        RenderFrame frame,
+        VisualizerFrame frame,
         CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
