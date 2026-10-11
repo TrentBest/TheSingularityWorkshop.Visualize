@@ -1,5 +1,4 @@
 using System.Numerics;
-using TheSingularityWorkshop.Renderer;
 using TheSingularityWorkshop.Visualize;
 using Xunit;
 
@@ -11,7 +10,7 @@ public sealed class VisualizerContractTests
     public void ResourceCatalog_ResolvesRegisteredGeometryAndMaterial()
     {
         var catalog = new VisualizerResourceCatalog();
-        var geometryId = new RenderResourceId(1);
+        var geometryId = new VisualizerResourceId(1);
         var materialId = new RenderResourceId(2);
         var geometry = new VisualizerGeometry(
             1,
@@ -42,10 +41,10 @@ public sealed class VisualizerContractTests
     {
         var backend = new RecordingBackend();
         var visualizer = new Visualizer(backend, new VisualizerResourceCatalog());
-        var view = new RenderView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity);
-        var frame = new RenderFrame(view,
+        var view = new VisualizerView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity);
+        var frame = new VisualizerFrame(view,
         [
-            new RenderDrawCommand(new RenderResourceId(10), new RenderResourceId(20), Matrix4x4.Identity, 3, 0, 0, default)
+            new VisualizerDrawCommand(new RenderResourceId(10), new RenderResourceId(20), Matrix4x4.Identity, 3, 0, 0, default)
         ]);
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
