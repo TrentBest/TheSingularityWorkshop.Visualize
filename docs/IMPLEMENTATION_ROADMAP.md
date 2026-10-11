@@ -8,6 +8,9 @@ This roadmap separates architectural preparation from evidence of a functioning 
 - Verify AnyApp's actual WPF lifecycle and target framework.
 - Record dependencies, licensing, CI, release-gate conventions, and current package/runtime footprints.
 - Define the initial data-oriented workload: contiguous geometry/index arrays, instance transforms, visibility/material indices, bulk updates, and compute output consumed by rendering.
+- Model Renderer Event Horizons as the first work-selection boundary: distinguish representations that are valid and reusable from those requiring recomputation.
+- Define FSM_API's role in coordinating horizon processing groups, dependency order, update cadence, and invalidation; keep GPU-parallel arithmetic and rasterization in the GPU backend.
+- Include camera/observer movement, near-field changes, distant-horizon cache reuse, and deliberate invalidation in the benchmark workload.
 - Compare native and browser-capable backend candidates against the same conceptual workload.
 - Record explicit trade-offs, evidence gaps, and the reason for the selected direction before extending any one prototype.
 
