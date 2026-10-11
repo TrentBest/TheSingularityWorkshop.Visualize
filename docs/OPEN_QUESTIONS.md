@@ -14,7 +14,7 @@ These questions are deliberately recorded rather than silently decided by implem
 ## Resource model
 
 7. What are the canonical geometry, index, material, texture, shader, and resource-revision contracts?
-8. How do logical RenderResourceId values map to versioned CPU-side descriptions and backend device resources?
+8. How should the Renderer-to-Visualizer adapter map Renderer RenderResourceId values to VisualizerResourceId and versioned CPU-side descriptions?
 9. What are the rules for uploads, eviction, residency, device loss, and resource recreation?
 10. What does RenderFrame need to communicate about transparency, ordering, render passes, and instancing?
 
