@@ -24,7 +24,7 @@ The GPU holds disposable projections of the world. GPU buffers, pose samples, vi
 
 ## Current implementation status
 
-This repository begins with a backend-neutral frame contract, resource descriptions, tests, and architecture documentation. The contract is deliberately independent of the Renderer package version; a narrow adapter maps Renderer output into VisualizerFrame. **An isolated WPF/Direct3D 12 clear-and-present proof is now checked in under `samples/WpfD3D12Proof`.** It creates a native child HWND, Direct3D 12 device/queue, DXGI swap chain, and clears/presents back buffers. It is not yet connected to `VisualizerFrame`, AnyApp, or the Renderer; it does not draw geometry and its per-frame synchronization is correctness-first, not performance-ready.
+This repository begins with a backend-neutral frame contract, resource descriptions, tests, and architecture documentation. The contract is deliberately independent of the Renderer package version; a narrow adapter maps Renderer output into VisualizerFrame. **An isolated WPF/Direct3D 12 clear-and-present proof is now checked in under `samples/WpfD3D12Proof`.** The source implements native child HWND, Direct3D 12 device/queue, DXGI swap chain, and clear/present submission; Windows CI now builds it with zero warnings and errors, but a real hardware/runtime capture has not yet been recorded. It is not yet connected to `VisualizerFrame`, AnyApp, or the Renderer; it does not draw geometry and its per-frame synchronization is correctness-first, not performance-ready.
 
 The first engineering milestone is a real GPU-backed WPF surface in AnyApp, followed by a known test scene, resource upload, indexed drawing, instancing, and measured compute-to-draw.
 
