@@ -137,6 +137,10 @@ When the observer moves, the backend may shift or reproject a cached background 
 - uncovered regions need newly rendered content or an explicit fallback;
 - dynamic objects and light changes should invalidate dependent regions/results without forcing unrelated valid horizons to rebuild.
 
+Lighting and shadows are separate schedulable domains within the relevant horizon. A capability can contribute a lighting or shadow bucket to each compatible horizon without hard-coding horizon names or counts. For example, a CrispShadows MicroBundle may provide a shadow method and freshness policy; arbitration decides where it is supported and applicable. A lit base, moving headlamps, and distant environmental illumination can therefore use different refresh policies while sharing one display frame.
+
+Lighting should be grounded in physical source/material meaning, while the execution method remains replaceable. Keep room for native math, baked lighting, ray-based methods, LUTs, and polynomial approximations without making any of them mandatory before profiling. In particular, LUTs are not inherently faster than hardware math and must be compared for cache behavior, memory, precision, and visual error. See [Physics-based lighting, shadows, and extensible math](LIGHTING_AND_SHADOWS.md).
+
 The implementation should prefer dependency-aware, partial invalidation over a single all-or-nothing scene cache. It must also avoid the opposite mistake: retaining stale pixels after the world has changed merely because the scheduled refresh interval has not elapsed. Correctness-critical events can override the normal cadence.
 
 ### Required cache/cadence proof
