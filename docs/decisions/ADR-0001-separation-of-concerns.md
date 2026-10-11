@@ -17,7 +17,7 @@ Keep four responsibilities distinct:
 
 ## Consequences
 
-- World and Renderer contracts remain free of WPF/native graphics handles.
+- World and Renderer contracts remain free of WPF/native graphics handles. Visualizer core does not pin itself to a particular Renderer package version; an explicit adapter maps frames across the boundary.
 - A new backend can be evaluated without rewriting Gesture definitions or Experience data.
 - Backend-specific features must be capability-reported.
 - More interfaces are introduced, so each abstraction must be justified by a real integration and not expanded speculatively.
