@@ -18,38 +18,54 @@ This separation is important to the Workshop's core hypothesis: reduce cost by r
 Authoritative Experience state
         |
         v
-FSM_API behavior / scheduled evaluation
+FSM_API: stateful coordination and scheduled evaluation
         |
         v
-Gesture procedures and evaluated pose data
+Gesture procedures / evaluated pose data
         |
         v
-Renderer: observer + Event Horizon policy
+Renderer: observer perception + Event Horizon policy
         |
-        | RenderFrame / RenderDrawCommand
+        | horizon representations + render work
+        v
+FSM_API: schedule horizon work, dependencies, cadence, invalidation
+        |
         v
 Visualizer contracts
-  - resource resolution
+  - batched arrays / resource revisions
   - device capabilities
-  - backend execution
-  - diagnostics
+  - backend execution / diagnostics
         |
         v
-Graphics backend
-  - buffers / textures / pipelines
-  - graphics and compute passes
-  - synchronization
+GPU backend
+  - reuse valid distant representations
+  - upload changed arrays
+  - compute / graphics passes
+  - synchronization and composition
         |
         v
-Host surface
+Host surface -> pixels
   - AnyApp + WPF first
   - browser + WebGPU path
-        |
-        v
-Pixels
 ~~~
 
-This is a proposed end-to-end architecture. Only existing code and explicitly verified milestones may be described as implemented.
+This is the intended responsibility flow, not a claim that all stages are implemented. Renderer determines what representation is warranted for an observer. FSM_API coordinates stateful work and scheduling; Visualizer and its GPU backend execute the due presentation work.
+
+### Event Horizons as the work boundary
+
+Event Horizons are observer-relative computational boundaries, not simply conventional mesh LOD bands. They determine which representation is required and how often it needs evaluation. A far horizon may retain a valid cached representation while near horizons change every frame. A horizon's representation can be a texture, impostor, mesh/instance buffer, or another suitable cached form; it does not have to be a separate full-screen image.
+
+The intended per-frame sequence is:
+
+1. Determine observer/camera state and the current perception budget.
+2. Have Renderer classify the required representations and expose the work that is newly needed or invalidated.
+3. Use FSM_API processing groups to coordinate dependencies, cadence, and which horizon work is due.
+4. Reuse valid horizon output; recompute and transfer only what changed or must be refreshed.
+5. Execute compact arrays and batched work on the GPU, then compose near and far representations correctly.
+
+Cache invalidation must account for relevant world changes, observer movement/orientation, resource revisions, lighting, and horizon-specific freshness rules. The implementation must define and test these rules; distance alone is not a sufficient invalidation policy.
+
+**Role separation:** FSM_API is the stateful coordination/scheduling layer, not the GPU rasterizer. The GPU performs data-parallel arithmetic and graphics work suited to it. The backend should receive batched arrays and compact work descriptions, not require one managed wrapper or draw submission per world entity. The optimization target is the complete perception-to-presentation path, including cache reuse and final composition.
 
 ## 3. Ownership boundaries
 
