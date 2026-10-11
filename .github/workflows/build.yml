@@ -1,4 +1,4 @@
-name: Build Visualizer
+name: Build, test, and package Visualize
 
 on:
   push:
@@ -18,9 +18,6 @@ on:
 
 permissions:
   contents: read
-
-env:
-  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 jobs:
   build-and-test:
@@ -63,17 +60,12 @@ jobs:
           cp "$coverage_file" ./TestResults/coverage.cobertura.xml
 
       - name: Upload coverage to Codecov
-        if: ${{ env.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v6
         with:
-          token: ${{ env.CODECOV_TOKEN }}
+          token: ${{ secrets.CODECOV_TOKEN }}
           slug: TrentBest/TheSingularityWorkshop.Visualize
           files: ./TestResults/coverage.cobertura.xml
           fail_ci_if_error: true
-
-      - name: Explain skipped coverage upload
-        if: ${{ env.CODECOV_TOKEN == '' }}
-        run: echo "Coverage report was generated; upload skipped because CODECOV_TOKEN is not configured."
 
       - name: Pack
         run: dotnet pack TheSingularityWorkshop.Visualize.csproj --configuration Release --no-build --output ./artifacts
@@ -84,10 +76,16 @@ jobs:
           name: visualize-nuget-package
           path: ./artifacts/*.nupkg
 
+      - name: Upload test and coverage artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: visualize-test-results
+          path: ./TestResults/*
+
   publish_nuget:
     needs: build-and-test
     runs-on: ubuntu-24.04
-    if: ${{ github.event_name == 'push' && false }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true && false }}
     permissions:
       contents: read
       id-token: write
