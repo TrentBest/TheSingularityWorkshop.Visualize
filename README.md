@@ -14,7 +14,7 @@ The first integration target is **AnyApp on WPF**. A browser/WebGPU path is part
 
 - **Experience / raWWar** owns world meaning and authoritative state.
 - **FSM_API** supplies stateful behavior and scheduling.
-- **Gestures** will describe procedural physical motion: poses, mathematical transitions, constraints, and bounded individual variation.
+- **[Gestures](https://github.com/TrentBest/TheSingularityWorkshop.Gestures)** defines the reusable procedural-motion model and CPU reference evaluator: poses, normalized progression, semantic anchors, and bounded individual variation.
 - **Renderer** decides which representation and computational detail an observer needs through Event Horizons.
 - **Visualize** executes presentation work and produces pixels through a graphics backend and a host surface.
 - **AnyApp, WebPage, and other hosts** own their host lifecycle and choose which Experience to compose.
