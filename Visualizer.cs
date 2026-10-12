@@ -48,6 +48,14 @@ public sealed class Visualizer : IAsyncDisposable
                 throw new InvalidOperationException($"Frame command {i} requests indices outside geometry resource {command.Geometry.Value}.");
             if (!_resources.TryGetMaterial(command.Material, out var material) || material is null)
                 throw new InvalidOperationException($"Frame command {i} references missing material resource {command.Material.Value}.");
+
+            if (command.Instances.IsValid)
+            {
+                if (!_resources.TryGetInstances(command.Instances, out var instances) || instances is null)
+                    throw new InvalidOperationException($"Frame command {i} references missing instance resource {command.Instances.Value}.");
+                if ((long)command.FirstInstance + command.InstanceCount > instances.Instances.Count)
+                    throw new InvalidOperationException($"Frame command {i} requests instances outside instance resource {command.Instances.Value}.");
+            }
         }
 
         return _backend.RenderAsync(frame, _resources, cancellationToken);
