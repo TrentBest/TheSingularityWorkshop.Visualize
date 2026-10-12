@@ -10,7 +10,7 @@
 
 TheSingularityWorkshop.Visualize is the GPU-facing presentation project for The Singularity Workshop. It turns observer-aware presentation data from [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into pixels without making a particular windowing toolkit or graphics API the definition of the world.
 
-The first desktop host is **AnyApp on WPF**. A browser/WebGPU path is part of the architecture from the beginning, but it is not claimed to exist yet. **No graphics API has been selected.** The next milestone is to choose a path that fits the Workshop's array-first data model—not simply to extend whichever API was prototyped first.
+The first desktop host is **AnyApp on WPF**. A standalone browser/WebGPU instancing proof now demonstrates a real GPU draw workload, but it is not yet a .NET backend or integrated Workshop pipeline. **No production graphics API has been selected.** The next milestone is to connect the proven workload to Visualize's backend-neutral contracts and compare integration costs.
 
 ## 🟦 01 What
 
@@ -62,7 +62,7 @@ dotnet build TheSingularityWorkshop.Visualize.slnx --configuration Release
 dotnet test TheSingularityWorkshop.Visualize.slnx --configuration Release
 ```
 
-This verifies the current contracts and test suite; it does **not** demonstrate an end-to-end rendered scene. The next engineering milestone is a backend evaluation using contiguous geometry/instance arrays, bulk upload, indexed and instanced drawing, and compute-to-render flow, with native and browser constraints recorded.
+To see actual GPU drawing, run the [WebGPU Instancing Proof](samples/WebGpuInstancingProof/README.md): it draws 1,000–50,000 instances through an instanced GPU draw and exposes upload/cadence counters. The sample requires a WebGPU-capable browser and a local static server. It is deliberately standalone: it does **not** yet exercise the .NET backend contracts, Renderer Event Horizons, or FSM scheduling. The .NET commands below verify the current contracts and test suite.
 
 ## 🟪 05 Available documentation and theory
 
@@ -71,7 +71,7 @@ This verifies the current contracts and test suite; it does **not** demonstrate 
 - [Architecture](docs/ARCHITECTURE.md) — follow data from authoritative state to the host surface and understand which layer owns each decision.
 - [Gestures and procedural motion](docs/GESTURES_AND_POSE_PIPELINE.md) — see how physical procedures become evaluated pose data without making Visualize the owner of motion semantics.
 - [GPU backend strategy](docs/GPU_BACKEND_STRATEGY.md) — compare backend responsibilities and the intended native/browser directions, with array-first execution as a constraint.
-- [Isolated WPF/Direct3D 12 experiment](samples/WpfD3D12Proof/README.md) — inspect the exploratory native-surface proof and its limitations.
+- [WebGPU instancing proof](samples/WebGpuInstancingProof/README.md) — run a visible GPU-instanced workload with a moving observer, population control, and near/far refresh cadence; includes honest limits and run instructions.\n- [Isolated WPF/Direct3D 12 experiment](samples/WpfD3D12Proof/README.md) — inspect the exploratory native-surface proof and its limitations.
 - [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md) — see the engineering milestones and their current boundaries.
 - [Performance and benchmark rules](docs/PERFORMANCE.md) — understand how performance evidence must be collected and reported.
 - [Open questions](docs/OPEN_QUESTIONS.md) — review unresolved design decisions.
