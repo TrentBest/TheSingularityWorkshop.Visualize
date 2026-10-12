@@ -62,7 +62,7 @@ dotnet build TheSingularityWorkshop.Visualize.slnx --configuration Release
 dotnet test TheSingularityWorkshop.Visualize.slnx --configuration Release
 ```
 
-This verifies the current contracts and test suite; it does **not** demonstrate an end-to-end rendered scene. The next engineering milestone is a backend evaluation using contiguous geometry/instance arrays, bulk upload, indexed and instanced drawing, and compute-to-render flow, with native and browser constraints recorded.
+This verifies the current contracts and test suite; it does **not** demonstrate an end-to-end rendered scene. The shared [array-first GPU workload contract](samples/ArrayFirstWorkload/README.md) now defines equivalent data, cadence, invalidation, and measurement profiles for candidate backends. It is a definition, not an executable benchmark yet.
 
 ## 🟪 05 Available documentation and theory
 
@@ -71,6 +71,7 @@ This verifies the current contracts and test suite; it does **not** demonstrate 
 - [Architecture](docs/ARCHITECTURE.md) — follow data from authoritative state to the host surface and understand which layer owns each decision.
 - [Gestures and procedural motion](docs/GESTURES_AND_POSE_PIPELINE.md) — see how physical procedures become evaluated pose data without making Visualize the owner of motion semantics.
 - [GPU backend strategy](docs/GPU_BACKEND_STRATEGY.md) — compare backend responsibilities and the intended native/browser directions, with array-first execution as a constraint.
+- [Array-first GPU workload contract](samples/ArrayFirstWorkload/README.md) — inspect the shared comparison profiles and evidence required before choosing a backend.
 - [Isolated WPF/Direct3D 12 experiment](samples/WpfD3D12Proof/README.md) — inspect the exploratory native-surface proof and its limitations.
 - [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md) — see the engineering milestones and their current boundaries.
 - [Performance and benchmark rules](docs/PERFORMANCE.md) — understand how performance evidence must be collected and reported.
