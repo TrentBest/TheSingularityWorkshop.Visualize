@@ -71,6 +71,13 @@ dotnet build TheSingularityWorkshop.Visualize.slnx --configuration Release
 dotnet test TheSingularityWorkshop.Visualize.slnx --configuration Release
 ```
 
+
+### Soldier-first scaling lab
+
+The [Soldier Field lab](samples/SoldierField/WebGpuRunner/README.md) renders a procedural science-fiction exoskeleton trooper and lets you scale the population by ×10 and ×100 across eight independent horizon workloads. It is an initial visible soldier target, not a production model or performance result. Its repeated per-horizon population is an intentional stress-test policy, and its current cadence is demonstration-only—not yet driven by Renderer bucket APIs.
+
+Run `py -m http.server 8080` from the repository root and open [http://localhost:8080/samples/SoldierField/WebGpuRunner/](http://localhost:8080/samples/SoldierField/WebGpuRunner/) in a WebGPU-capable browser. No external model download is required.
+
 The live browser runner is an end-to-end GPU draw proof. It is **not yet** wired to Renderer Event Horizon bucket/dependency APIs, and it is not a native-vs-browser benchmark. Those are the next integration and measurement milestones.
 
 ## 🟪 05 Available documentation and theory
@@ -83,6 +90,7 @@ The live browser runner is an end-to-end GPU draw proof. It is **not yet** wired
 - [Array-first GPU workload contract](samples/ArrayFirstWorkload/README.md) — generate deterministic contiguous inputs and inspect the shared comparison profiles.
 - [Dataset generator](samples/ArrayFirstWorkload/Generator/README.md) — run the .NET 8 tool to produce vertex, index, and instance binary arrays with SHA-256 manifests.
 - [Shared-data WebGPU runner](samples/ArrayFirstWorkload/WebGpuRunner/README.md) — upload those exact arrays and draw indexed instances in a browser supporting WebGPU.
+- [Soldier Field scaling lab](samples/SoldierField/WebGpuRunner/README.md) — render an original procedural sci-fi exoskeleton soldier and compare per-horizon workload scaling.
 - [Isolated WPF/Direct3D 12 experiment](samples/WpfD3D12Proof/README.md) — inspect the exploratory native-surface proof and its limitations.
 - [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md) — see the engineering milestones and their current boundaries.
 - [Performance and benchmark rules](docs/PERFORMANCE.md) — understand how performance evidence must be collected and reported.
