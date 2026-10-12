@@ -187,9 +187,20 @@ async function loadAndRender() {
       fetchBytes(base, "indices.u32le", files["indices.u32le"]),
       fetchBytes(base, "instances.f32le", files["instances.f32le"])
     ]);
-    if (indices.byteLength % 4 !== 0 || instances.byteLength !== instanceCount * 80)
-      throw new Error("Binary lengths do not match the dataset manifest.");
-    indexCount = indices.byteLength / 4;
+    const vertexCount = Number(manifest.VertexCount);
+    const declaredIndexCount = Number(manifest.IndexCount);
+    if (!Number.isSafeInteger(vertexCount) || vertexCount <= 0 ||
+        !Number.isSafeInteger(declaredIndexCount) || declaredIndexCount <= 0 ||
+        vertices.byteLength !== vertexCount * 12 ||
+        indices.byteLength !== declaredIndexCount * 4 ||
+        instances.byteLength !== instanceCount * 80)
+      throw new Error("Binary lengths do not match the vertex, index, and instance counts in the dataset manifest.");
+    indexCount = declaredIndexCount;
+    const indexView = new DataView(indices);
+    for (let i = 0; i < indexCount; i++) {
+      if (indexView.getUint32(i * 4, true) >= vertexCount)
+        throw new Error("Index " + i + " references a vertex outside the declared vertex array.");
+    }
     vertexBuffer = createBuffer(vertices, GPUBufferUsage.VERTEX, "shared-dataset-vertices");
     indexBuffer = createBuffer(indices, GPUBufferUsage.INDEX, "shared-dataset-indices");
     // Keep the original array layout intact: near records are first, far records follow.
