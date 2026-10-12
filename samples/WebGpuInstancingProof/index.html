@@ -65,7 +65,7 @@ function buildInstances(n){
  const cols=Math.ceil(Math.sqrt(n));
  for(let i=0;i<n;i++){
   const x=(i%cols)/cols*2-1, y=Math.floor(i/cols)/cols*2-1;
-  const near=Math.abs(x)<.25;
+  const near=i<Math.floor(n*.25);
   const o=i*8; data[o]=x;data[o+1]=y;data[o+2]=Math.max(.006,1/cols*.72);data[o+3]=near?0:1;
   data[o+4]=near?.35:.15;data[o+5]=near?.85:.55;data[o+6]=near?1:.95;data[o+7]=.9;
  }
@@ -92,8 +92,9 @@ function frame(now){
   lastFar=now;farRefresh++;
   for(let i=0;i<population;i++){const o=i*8;if(data[o+3]>=.5){const pulse=.5+.5*Math.sin(now*.001+i*.013);data[o+4]=.08+pulse*.18;data[o+5]=.28+pulse*.4;}}
   // One contiguous far-bucket upload. Near transforms/colors remain untouched.
-  const cols=Math.ceil(Math.sqrt(population));
-  for(let i=0;i<population;i++){const o=i*8;if(data[o+3]>=.5){device.queue.writeBuffer(buffer,o*4,data.buffer,o*4,32);uploaded+=32;}}
+  const nearBytes=Math.floor(population*.25)*32;
+  const farBytes=data.byteLength-nearBytes;
+  if(farBytes>0){device.queue.writeBuffer(buffer,nearBytes,data.buffer,nearBytes,farBytes);uploaded+=farBytes;}
  }
  // Small near-region update, kept separate from far refreshes.
  for(let i=0;i<population;i++){const o=i*8;if(data[o+3]<.5){const x=(i%Math.ceil(Math.sqrt(population)))/Math.ceil(Math.sqrt(population))*2-1;data[o]=x;}}
