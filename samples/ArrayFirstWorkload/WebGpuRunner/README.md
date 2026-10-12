@@ -21,6 +21,7 @@ The runner loads `dataset-manifest.json`, then fetches `vertices.f32le`, `indice
 - The far cohort remains cached between refreshes and is updated/uploaded every 12 frames.
 - Both cohorts use the same 80-byte instance records as the generated dataset; there is no second instance generator.
 - The page reports cumulative near upload bytes, far refresh count, far upload bytes, and GPU command submissions. These are work counters, **not** timing or performance claims.
+- Reloading the dataset cancels the previous animation loop, releases its buffers, unconfigures the canvas context, and destroys the previous device before starting another run.
 - One indexed instanced draw consumes the uploaded instance storage buffer each frame.
 
 This makes the cadence executable rather than merely describing it in the workload contract. It is still a focused harness: the cadence is currently a deterministic sample policy, not yet wired to the Renderer Event Horizon bucket/dependency APIs.
