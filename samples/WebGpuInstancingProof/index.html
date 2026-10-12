@@ -18,7 +18,7 @@ label{display:block;margin:18px 0 8px}input{width:100%}.status{color:#9ed8b0}
 </style>
 </head>
 <body>
-<header><h1>Visualize · GPU instancing proof</h1><p>One triangle mesh, a contiguous instance buffer, a moving observer, and independent near/far refresh cadence.</p></header>
+<header><h1>Visualize · GPU instancing proof</h1><p>One procedural triangle, a contiguous instance buffer, a moving observer, and independent near/far refresh cadence.</p></header>
 <main><canvas id="view" aria-label="Animated GPU-rendered instance field"></canvas><aside>
 <div class="metric"><strong id="status">Starting…</strong><span>WebGPU device</span></div>
 <div class="metric"><strong id="fps">—</strong><span>Frames per second (rolling estimate)</span></div>
@@ -59,7 +59,7 @@ struct Out { @builtin(position) position: vec4f, @location(0) color: vec4f };
 `});
 const pipeline=device.createRenderPipeline({layout:'auto',vertex:{module:shader,entryPoint:'vs'},fragment:{module:shader,entryPoint:'fs',targets:[{format,blend:{color:{srcFactor:'src-alpha',dstFactor:'one-minus-src-alpha',operation:'add'},alpha:{srcFactor:'one',dstFactor:'one-minus-src-alpha',operation:'add'}}}]},primitive:{topology:'triangle-list'},multisample:{count:1}});
 let population=20000, data, buffer, globalsBuffer, bindGroup, nearRefresh=0,farRefresh=0,uploaded=0,observer=0,speed=1, last=performance.now(),frames=0,fps=0,lastFar=0;
-const globals=new Float32Array([0,0,1,1]);
+const globals=new Float32Array(8);
 function buildInstances(n){
  population=n; data=new Float32Array(n*8);
  const cols=Math.ceil(Math.sqrt(n));
@@ -97,9 +97,9 @@ function frame(now){
   if(farBytes>0){device.queue.writeBuffer(buffer,nearBytes,data.buffer,nearBytes,farBytes);uploaded+=farBytes;}
  }
  // Small near-region update, kept separate from far refreshes.
- for(let i=0;i<population;i++){const o=i*8;if(data[o+3]<.5){const x=(i%Math.ceil(Math.sqrt(population)))/Math.ceil(Math.sqrt(population))*2-1;data[o]=x;}}
+ const nearCount=Math.floor(population*.25);\n for(let i=0;i<nearCount;i++){const o=i*8;data[o+1]+=Math.sin(now*.001+i*.07)*.00002;}
  device.queue.writeBuffer(buffer,0,data.buffer,0,Math.min(data.byteLength,Math.max(8,Math.floor(population*.25)*32)));uploaded+=Math.min(data.byteLength,Math.max(8,Math.floor(population*.25)*32));
- globals[0]=observer;globals[1]=0;globals[2]=canvas.height/canvas.width;globals[3]=1;
+ globals[0]=observer;globals[1]=0;globals[2]=0;globals[3]=0;globals[4]=canvas.height/canvas.width;globals[5]=1;globals[6]=0;globals[7]=0;
  device.queue.writeBuffer(globalsBuffer,0,globals);
  const encoder=device.createCommandEncoder(),pass=encoder.beginRenderPass({colorAttachments:[{view:context.getCurrentTexture().createView(),clearValue:{r:.025,g:.04,b:.06,a:1},loadOp:'clear',storeOp:'store'}]});
  pass.setPipeline(pipeline);pass.setBindGroup(0,bindGroup);pass.draw(3,population);pass.end();device.queue.submit([encoder.finish()]);
