@@ -17,9 +17,19 @@ if (!int.TryParse(args[0], NumberStyles.None, CultureInfo.InvariantCulture, out 
 }
 
 var outputDirectory = Path.GetFullPath(args[1]);
-var seed = args.Length == 3 && int.TryParse(args[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedSeed)
-    ? unchecked((uint)parsedSeed)
-    : 20261012u;
+var seed = 20261012u;
+if (args.Length == 3)
+{
+    if (uint.TryParse(args[2], NumberStyles.None, CultureInfo.InvariantCulture, out var unsignedSeed))
+        seed = unsignedSeed;
+    else if (int.TryParse(args[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var signedSeed))
+        seed = unchecked((uint)signedSeed);
+    else
+    {
+        Console.Error.WriteLine("Seed must be a 32-bit unsigned integer or a signed 32-bit integer bit pattern.");
+        return 2;
+    }
+}
 
 Directory.CreateDirectory(outputDirectory);
 var vertices = new float[]
