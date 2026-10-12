@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "deterministic-dataset-generator-available",
+  "status": "shared-dataset-and-webgpu-near-far-cadence-implemented",
   "seed": 20261012,
   "geometry": {
     "kind": "indexed-unit-triangle",
@@ -38,7 +38,8 @@
       "farRefreshEveryFrames": 12,
       "changeObserverEveryFrames": 0,
       "changeSourceRevisionEveryFrames": 0,
-      "requiresComputeToRender": false
+      "requiresComputeToRender": false,
+      "implementationStatus": "webgpu-indexed-instanced-draw"
     },
     {
       "id": "near-field-update",
@@ -51,7 +52,8 @@
       "farRefreshEveryFrames": 12,
       "changeObserverEveryFrames": 0,
       "changeSourceRevisionEveryFrames": 0,
-      "requiresComputeToRender": false
+      "requiresComputeToRender": false,
+      "implementationStatus": "webgpu-near-cohort-upload-every-frame"
     },
     {
       "id": "far-field-cadence",
@@ -64,7 +66,8 @@
       "farRefreshEveryFrames": 12,
       "changeObserverEveryFrames": 0,
       "changeSourceRevisionEveryFrames": 0,
-      "requiresComputeToRender": false
+      "requiresComputeToRender": false,
+      "implementationStatus": "webgpu-far-cohort-upload-every-12-frames"
     },
     {
       "id": "invalidation",
@@ -76,7 +79,8 @@
       "farRefreshEveryFrames": 12,
       "changeObserverEveryFrames": 0,
       "changeSourceRevisionEveryFrames": 60,
-      "requiresComputeToRender": false
+      "requiresComputeToRender": false,
+      "implementationStatus": "contract-only"
     },
     {
       "id": "compute-to-render",
@@ -89,7 +93,8 @@
       "farRefreshEveryFrames": 12,
       "changeObserverEveryFrames": 0,
       "changeSourceRevisionEveryFrames": 0,
-      "requiresComputeToRender": true
+      "requiresComputeToRender": true,
+      "implementationStatus": "contract-only"
     },
     {
       "id": "resize-lifecycle",
@@ -101,7 +106,8 @@
       "farRefreshEveryFrames": 12,
       "changeObserverEveryFrames": 120,
       "changeSourceRevisionEveryFrames": 0,
-      "requiresComputeToRender": false
+      "requiresComputeToRender": false,
+      "implementationStatus": "contract-only"
     }
   ],
   "timing": {
@@ -115,8 +121,10 @@
     ]
   },
   "notes": [
-    "The generator creates deterministic CPU-side datasets only; it does not execute a GPU workload or benchmark.",
+    "The .NET generator creates deterministic CPU-side datasets; the WebGPU runner uploads and draws those arrays and executes the near/far upload cadence noted in the implemented profiles.",
+    "The browser runner's cadence is a deterministic proof policy, not yet wired to Renderer Event Horizon bucket/dependency APIs.",
     "80-byte instance stride is the logical reference layout; each API adapter must document physical layout conversion.",
-    "Do not compare candidate results unless the same logical data, cadence, and invalidation events are used."
+    "Do not compare candidate results unless the same logical data, cadence, and invalidation events are used.",
+    "No backend timing or production performance claim is made by the current runner."
   ]
 }
