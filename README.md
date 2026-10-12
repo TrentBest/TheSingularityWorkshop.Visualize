@@ -10,7 +10,7 @@
 
 TheSingularityWorkshop.Visualize is the GPU-facing presentation project for The Singularity Workshop. It turns observer-aware presentation data from [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into pixels without making a particular windowing toolkit or graphics API the definition of the world.
 
-The first desktop host is **AnyApp on WPF**. A browser/WebGPU path is part of the architecture from the beginning, but it is not claimed to exist yet. **No graphics API has been selected.** The next milestone is to choose a path that fits the Workshop's array-first data model—not simply to extend whichever API was prototyped first.
+The first desktop host is **AnyApp on WPF**. A small browser/WebGPU proof now consumes the same generated binary workload as the dataset generator. This is evidence that shared arrays can reach an actual GPU draw path—not a production backend or a performance result. **No graphics API has been selected.**
 
 ## 🟦 01 What
 
@@ -73,6 +73,7 @@ This verifies the current contracts and test suite; it does **not** demonstrate 
 - [GPU backend strategy](docs/GPU_BACKEND_STRATEGY.md) — compare backend responsibilities and the intended native/browser directions, with array-first execution as a constraint.
 - [Array-first GPU workload contract](samples/ArrayFirstWorkload/README.md) — generate deterministic contiguous inputs and inspect the shared comparison profiles.
 - [Dataset generator](samples/ArrayFirstWorkload/Generator/README.md) — run the .NET 8 tool to produce vertex, index, and instance binary arrays with SHA-256 manifests.
+- [Shared-data WebGPU runner](samples/ArrayFirstWorkload/WebGpuRunner/README.md) — upload those exact arrays and draw indexed instances in a browser supporting WebGPU.
 - [Isolated WPF/Direct3D 12 experiment](samples/WpfD3D12Proof/README.md) — inspect the exploratory native-surface proof and its limitations.
 - [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md) — see the engineering milestones and their current boundaries.
 - [Performance and benchmark rules](docs/PERFORMANCE.md) — understand how performance evidence must be collected and reported.
