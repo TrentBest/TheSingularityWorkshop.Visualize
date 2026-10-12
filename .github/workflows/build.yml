@@ -36,19 +36,27 @@ jobs:
         with:
           node-version: 22
 
-      - name: Validate WebGPU runner JavaScript syntax
+      - name: Validate browser WebGPU runner JavaScript syntax
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
-          html = Path("samples/ArrayFirstWorkload/WebGpuRunner/index.html").read_text(encoding="utf-8")
-          match = re.search(r'<script type="module">(.*?)</script>', html, re.S)
-          if not match:
-              raise SystemExit("Could not find the WebGPU runner module script.")
-          Path("/tmp/webgpu-runner-check.mjs").write_text(match.group(1), encoding="utf-8")
+          import subprocess
+
+          runners = [
+              Path("samples/ArrayFirstWorkload/WebGpuRunner/index.html"),
+              Path("samples/SoldierField/WebGpuRunner/index.html"),
+          ]
+          for index, runner in enumerate(runners):
+              html = runner.read_text(encoding="utf-8")
+              match = re.search(r'<script type="module">(.*?)</script>', html, re.S)
+              if not match:
+                  raise SystemExit(f"Could not find module script in {runner}.")
+              check_file = Path(f"/tmp/webgpu-runner-check-{index}.mjs")
+              check_file.write_text(match.group(1), encoding="utf-8")
+              subprocess.run(["node", "--check", str(check_file)], check=True)
           PY
-          node --check /tmp/webgpu-runner-check.mjs
 
       - name: Restore
         run: dotnet restore TheSingularityWorkshop.Visualize.slnx
