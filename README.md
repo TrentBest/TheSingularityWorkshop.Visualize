@@ -10,7 +10,7 @@
 
 TheSingularityWorkshop.Visualize is the GPU-facing presentation project for The Singularity Workshop. It turns observer-aware presentation data from [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into pixels without making a particular windowing toolkit or graphics API the definition of the world.
 
-The first desktop host is **AnyApp on WPF**. A browser/WebGPU path is part of the architecture from the beginning, but it is not claimed to exist yet. **No graphics API has been selected.** The next milestone is to choose a path that fits the Workshop's array-first data model—not simply to extend whichever API was prototyped first.
+The first desktop host is **AnyApp on WPF**. A small browser/WebGPU proof now consumes the same generated binary workload as the dataset generator. This is evidence that shared arrays can reach an actual GPU draw path—not a production backend or a performance result. **No graphics API has been selected.**
 
 ## 🟦 01 What
 
@@ -54,7 +54,16 @@ An isolated WPF/Direct3D 12 clear-and-present experiment exists under `samples/W
 
 ![](docs/assets/dividers/green.svg)
 
-You need the **.NET 8 SDK**. From the repository root, restore, build, and run the current test suite:
+You need the **.NET 8 SDK**, Python 3, and a browser with WebGPU enabled. To see the current GPU demo from the repository root:
+
+```powershell
+dotnet run --project samples/ArrayFirstWorkload/Generator -- 10000 ./artifacts/workload-10000
+py -m http.server 8080
+```
+
+Open [http://localhost:8080/samples/ArrayFirstWorkload/WebGpuRunner/](http://localhost:8080/samples/ArrayFirstWorkload/WebGpuRunner/). Keep the dataset path as `/artifacts/workload-10000` and select **Load dataset and render**. The animated scene renders near and far cohorts from the generated, hash-verified arrays, updates/uploads the near cohort each frame, and refreshes the far cohort every 12 frames. It reports upload accounting and browser/JavaScript timing samples; these are **not GPU execution timings**. See the [runner guide](samples/ArrayFirstWorkload/WebGpuRunner/README.md) for requirements and limitations.
+
+To verify the .NET contracts and tests:
 
 ```powershell
 dotnet restore TheSingularityWorkshop.Visualize.slnx
@@ -62,7 +71,7 @@ dotnet build TheSingularityWorkshop.Visualize.slnx --configuration Release
 dotnet test TheSingularityWorkshop.Visualize.slnx --configuration Release
 ```
 
-This verifies the current contracts and test suite; it does **not** demonstrate an end-to-end rendered scene. The next engineering milestone is a backend evaluation using contiguous geometry/instance arrays, bulk upload, indexed and instanced drawing, and compute-to-render flow, with native and browser constraints recorded.
+The live browser runner is an end-to-end GPU draw proof. It is **not yet** wired to Renderer Event Horizon bucket/dependency APIs, and it is not a native-vs-browser benchmark. Those are the next integration and measurement milestones.
 
 ## 🟪 05 Available documentation and theory
 
@@ -71,6 +80,9 @@ This verifies the current contracts and test suite; it does **not** demonstrate 
 - [Architecture](docs/ARCHITECTURE.md) — follow data from authoritative state to the host surface and understand which layer owns each decision.
 - [Gestures and procedural motion](docs/GESTURES_AND_POSE_PIPELINE.md) — see how physical procedures become evaluated pose data without making Visualize the owner of motion semantics.
 - [GPU backend strategy](docs/GPU_BACKEND_STRATEGY.md) — compare backend responsibilities and the intended native/browser directions, with array-first execution as a constraint.
+- [Array-first GPU workload contract](samples/ArrayFirstWorkload/README.md) — generate deterministic contiguous inputs and inspect the shared comparison profiles.
+- [Dataset generator](samples/ArrayFirstWorkload/Generator/README.md) — run the .NET 8 tool to produce vertex, index, and instance binary arrays with SHA-256 manifests.
+- [Shared-data WebGPU runner](samples/ArrayFirstWorkload/WebGpuRunner/README.md) — upload those exact arrays and draw indexed instances in a browser supporting WebGPU.
 - [Isolated WPF/Direct3D 12 experiment](samples/WpfD3D12Proof/README.md) — inspect the exploratory native-surface proof and its limitations.
 - [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md) — see the engineering milestones and their current boundaries.
 - [Performance and benchmark rules](docs/PERFORMANCE.md) — understand how performance evidence must be collected and reported.

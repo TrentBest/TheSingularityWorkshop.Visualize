@@ -31,6 +31,25 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Setup Node.js for browser-runner syntax validation
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Validate WebGPU runner JavaScript syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path("samples/ArrayFirstWorkload/WebGpuRunner/index.html").read_text(encoding="utf-8")
+          match = re.search(r'<script type="module">(.*?)</script>', html, re.S)
+          if not match:
+              raise SystemExit("Could not find the WebGPU runner module script.")
+          Path("/tmp/webgpu-runner-check.mjs").write_text(match.group(1), encoding="utf-8")
+          PY
+          node --check /tmp/webgpu-runner-check.mjs
+
       - name: Restore
         run: dotnet restore TheSingularityWorkshop.Visualize.slnx
 

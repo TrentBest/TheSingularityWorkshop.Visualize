@@ -59,7 +59,9 @@ The existence of code for a candidate is not a selection criterion. **Do not con
 
 ## 5. Compare candidates using the same workload
 
-Build a repeatable evaluation that covers:
+The shared [Array-First GPU Workload Contract](../samples/ArrayFirstWorkload/README.md) defines initial scale, near-field update, far-field cadence, invalidation, compute-to-render, and resize profiles. Its adjacent `workload.json` captures the logical instance layout, seed, population sizes, cadence settings, and target measurement window. It is deliberately marked definition-only until a runner consumes it.
+
+The evaluation must cover:
 
 1. Create a real host surface and GPU device.
 2. Clear and present, including resize and clean shutdown.

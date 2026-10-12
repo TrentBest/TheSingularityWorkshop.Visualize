@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "status": "shared-dataset-and-webgpu-near-far-cadence-implemented",
+  "seed": 20261012,
+  "geometry": {
+    "kind": "indexed-unit-triangle",
+    "vertexCount": 3,
+    "indexCount": 3,
+    "indices": [
+      0,
+      1,
+      2
+    ],
+    "instanceLayout": [
+      {
+        "name": "worldTransform",
+        "type": "float32x4x4",
+        "bytes": 64
+      },
+      {
+        "name": "color",
+        "type": "float32x4",
+        "bytes": 16
+      }
+    ],
+    "instanceStrideBytes": 80
+  },
+  "profiles": [
+    {
+      "id": "static-scale",
+      "instanceCounts": [
+        1000,
+        10000,
+        50000
+      ],
+      "nearFraction": 0.1,
+      "nearUpdateEveryFrames": 1,
+      "farRefreshEveryFrames": 12,
+      "changeObserverEveryFrames": 0,
+      "changeSourceRevisionEveryFrames": 0,
+      "requiresComputeToRender": false,
+      "implementationStatus": "webgpu-indexed-instanced-draw"
+    },
+    {
+      "id": "near-field-update",
+      "instanceCounts": [
+        10000,
+        50000
+      ],
+      "nearFraction": 0.1,
+      "nearUpdateEveryFrames": 1,
+      "farRefreshEveryFrames": 12,
+      "changeObserverEveryFrames": 0,
+      "changeSourceRevisionEveryFrames": 0,
+      "requiresComputeToRender": false,
+      "implementationStatus": "webgpu-near-cohort-upload-every-frame"
+    },
+    {
+      "id": "far-field-cadence",
+      "instanceCounts": [
+        10000,
+        50000
+      ],
+      "nearFraction": 0.1,
+      "nearUpdateEveryFrames": 1,
+      "farRefreshEveryFrames": 12,
+      "changeObserverEveryFrames": 0,
+      "changeSourceRevisionEveryFrames": 0,
+      "requiresComputeToRender": false,
+      "implementationStatus": "webgpu-far-cohort-upload-every-12-frames"
+    },
+    {
+      "id": "invalidation",
+      "instanceCounts": [
+        10000
+      ],
+      "nearFraction": 0.1,
+      "nearUpdateEveryFrames": 1,
+      "farRefreshEveryFrames": 12,
+      "changeObserverEveryFrames": 0,
+      "changeSourceRevisionEveryFrames": 60,
+      "requiresComputeToRender": false,
+      "implementationStatus": "contract-only"
+    },
+    {
+      "id": "compute-to-render",
+      "instanceCounts": [
+        10000,
+        50000
+      ],
+      "nearFraction": 0.1,
+      "nearUpdateEveryFrames": 1,
+      "farRefreshEveryFrames": 12,
+      "changeObserverEveryFrames": 0,
+      "changeSourceRevisionEveryFrames": 0,
+      "requiresComputeToRender": true,
+      "implementationStatus": "contract-only"
+    },
+    {
+      "id": "resize-lifecycle",
+      "instanceCounts": [
+        10000
+      ],
+      "nearFraction": 0.1,
+      "nearUpdateEveryFrames": 1,
+      "farRefreshEveryFrames": 12,
+      "changeObserverEveryFrames": 120,
+      "changeSourceRevisionEveryFrames": 0,
+      "requiresComputeToRender": false,
+      "implementationStatus": "contract-only"
+    }
+  ],
+  "timing": {
+    "warmupSeconds": 10,
+    "measurementSeconds": 60,
+    "minimumFrames": 600,
+    "percentiles": [
+      50,
+      95,
+      99
+    ]
+  },
+  "notes": [
+    "The .NET generator creates deterministic CPU-side datasets; the WebGPU runner uploads and draws those arrays and executes the near/far upload cadence noted in the implemented profiles.",
+    "The browser runner's cadence is a deterministic proof policy, not yet wired to Renderer Event Horizon bucket/dependency APIs.",
+    "80-byte instance stride is the logical reference layout; each API adapter must document physical layout conversion.",
+    "Do not compare candidate results unless the same logical data, cadence, and invalidation events are used.",
+    "No backend timing or production performance claim is made by the current runner."
+  ]
+}
