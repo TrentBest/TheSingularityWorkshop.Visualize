@@ -71,7 +71,8 @@ This verifies the current contracts and test suite; it does **not** demonstrate 
 - [Architecture](docs/ARCHITECTURE.md) — follow data from authoritative state to the host surface and understand which layer owns each decision.
 - [Gestures and procedural motion](docs/GESTURES_AND_POSE_PIPELINE.md) — see how physical procedures become evaluated pose data without making Visualize the owner of motion semantics.
 - [GPU backend strategy](docs/GPU_BACKEND_STRATEGY.md) — compare backend responsibilities and the intended native/browser directions, with array-first execution as a constraint.
-- [Array-first GPU workload contract](samples/ArrayFirstWorkload/README.md) — inspect the shared comparison profiles and evidence required before choosing a backend.
+- [Array-first GPU workload contract](samples/ArrayFirstWorkload/README.md) — generate deterministic contiguous inputs and inspect the shared comparison profiles.
+- [Dataset generator](samples/ArrayFirstWorkload/Generator/README.md) — run the .NET 8 tool to produce vertex, index, and instance binary arrays with SHA-256 manifests.
 - [Isolated WPF/Direct3D 12 experiment](samples/WpfD3D12Proof/README.md) — inspect the exploratory native-surface proof and its limitations.
 - [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md) — see the engineering milestones and their current boundaries.
 - [Performance and benchmark rules](docs/PERFORMANCE.md) — understand how performance evidence must be collected and reported.
