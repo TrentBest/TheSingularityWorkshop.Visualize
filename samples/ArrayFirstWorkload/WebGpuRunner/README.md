@@ -13,7 +13,7 @@ py -m http.server 8080
 
 Open [http://localhost:8080/samples/ArrayFirstWorkload/WebGpuRunner/](http://localhost:8080/samples/ArrayFirstWorkload/WebGpuRunner/) and leave the dataset directory as `/artifacts/workload-10000`. Generate a 1k or 50k dataset and change the directory field to test another population.
 
-The runner loads `dataset-manifest.json`, then fetches `vertices.f32le`, `indices.u32le`, and `instances.f32le`. It checks schema version, cohort counts, byte order, stride, byte lengths, and each binary array's SHA-256 against the manifest before creating GPU buffers. A size-correct but altered dataset is rejected.
+The runner loads `dataset-manifest.json`, then fetches `vertices.f32le`, `indices.u32le`, and `instances.f32le`. It checks schema version, cohort counts, byte order, stride, declared vertex/index/instance counts, binary lengths, index bounds, and each binary array's SHA-256 against the manifest before creating GPU buffers. A size-correct but altered dataset or out-of-range index is rejected.
 
 ## Executed workload
 
