@@ -36,6 +36,9 @@ dl{display:grid;grid-template-columns:1fr auto;gap:.35rem;margin:1rem 0}dt{color
 <dt>Index bytes</dt><dd id="indexBytes">—</dd>
 <dt>Instance bytes</dt><dd id="instanceBytes">—</dd>
 <dt>GPU submissions</dt><dd id="submissions">0</dd>
+<dt>Near bytes uploaded</dt><dd id="nearUploads">0</dd>
+<dt>Far refreshes</dt><dd id="farRefreshes">0</dd>
+<dt>Far bytes uploaded</dt><dd id="farUploads">0</dd>
 <dt>Adapter</dt><dd id="adapter">—</dd>
 </dl>
 <p id="status" role="status">Press “Load dataset and render”. WebGPU requires a secure context (localhost is allowed) and compatible hardware/browser.</p>
@@ -53,7 +56,17 @@ let vertexBuffer;
 let indexBuffer;
 let instanceBuffer;
 let instanceCount = 0;
+let nearInstanceCount = 0;
+let farInstanceCount = 0;
 let submissionCount = 0;
+let nearUploadBytes = 0;
+let farRefreshCount = 0;
+let farUploadBytes = 0;
+let frameIndex = 0;
+let nearUpload;
+let farUpload;
+let nearBaseX;
+let farBaseX;
 let frameHandle = 0;
 let indexCount = 0;
 let depthTexture;
@@ -84,14 +97,20 @@ struct VertexOut {
 `;
 
 function readManifest(manifest) {
-  if (manifest.schemaVersion !== 1 || manifest.instanceStrideBytes !== 80 ||
-      manifest.VertexCount !== undefined || manifest.IndexCount !== undefined) {
-    // Field names are emitted by System.Text.Json from PascalCase record properties.
-    // Accept the exact generator schema and fail loudly on incompatible datasets.
-  }
   const count = Number(manifest.InstanceCount);
-  if (!Number.isSafeInteger(count) || count <= 0 || manifest.InstanceStrideBytes !== 80)
-    throw new Error("Unsupported manifest: expected a positive InstanceCount and 80-byte instance stride.");
+  const nearCount = Number(manifest.NearInstanceCount);
+  const farCount = Number(manifest.FarInstanceCount);
+  if (manifest.SchemaVersion !== 1 ||
+      !Number.isSafeInteger(count) || count <= 0 ||
+      !Number.isSafeInteger(nearCount) || nearCount < 1 ||
+      !Number.isSafeInteger(farCount) || farCount < 0 ||
+      nearCount + farCount !== count ||
+      manifest.InstanceStrideBytes !== 80 ||
+      manifest.ByteOrder !== "little-endian") {
+    throw new Error("Unsupported manifest: expected schema v1, little-endian data, valid near/far counts, and an 80-byte instance stride.");
+  }
+  nearInstanceCount = nearCount;
+  farInstanceCount = farCount;
   return count;
 }
 
@@ -144,7 +163,21 @@ async function loadAndRender() {
     indexCount = indices.byteLength / 4;
     vertexBuffer = createBuffer(vertices, GPUBufferUsage.VERTEX, "shared-dataset-vertices");
     indexBuffer = createBuffer(indices, GPUBufferUsage.INDEX, "shared-dataset-indices");
-    instanceBuffer = createBuffer(instances, GPUBufferUsage.STORAGE, "shared-dataset-instances");
+    // Keep the original array layout intact: near records are first, far records follow.
+    // The GPU buffer is writable so this same dataset can exercise cohort refresh cadence.
+    instanceBuffer = createBuffer(instances, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST, "shared-dataset-instances");
+    const instanceBytes = new Uint8Array(instances);
+    const nearByteLength = nearInstanceCount * 80;
+    const farByteLength = farInstanceCount * 80;
+    nearUpload = new Uint8Array(nearByteLength);
+    farUpload = new Uint8Array(farByteLength);
+    nearUpload.set(instanceBytes.subarray(0, nearByteLength));
+    farUpload.set(instanceBytes.subarray(nearByteLength));
+    const initialView = new DataView(instances);
+    nearBaseX = new Float32Array(nearInstanceCount);
+    farBaseX = new Float32Array(farInstanceCount);
+    for (let i = 0; i < nearInstanceCount; i++) nearBaseX[i] = initialView.getFloat32(i * 80 + 48, true);
+    for (let i = 0; i < farInstanceCount; i++) farBaseX[i] = initialView.getFloat32(nearByteLength + i * 80 + 48, true);
 
     const shader = device.createShaderModule({ code: shaderCode });
     pipeline = device.createRenderPipeline({
@@ -158,14 +191,50 @@ async function loadAndRender() {
     setText("indexBytes", indices.byteLength.toLocaleString());
     setText("instanceBytes", instances.byteLength.toLocaleString());
     setText("submissions", "0");
-    status.textContent = "Dataset loaded. Rendering from the actual generated buffers.";
+    setText("nearUploads", "0");
+    setText("farRefreshes", "0");
+    setText("farUploads", "0");
+    submissionCount = 0;
+    nearUploadBytes = 0;
+    farRefreshCount = 0;
+    farUploadBytes = 0;
+    frameIndex = 0;
+    status.textContent = "Dataset loaded. Near cohort updates every frame; far cohort refreshes every 12 frames.";
     const bindGroup = device.createBindGroup({
       layout: pipeline.getBindGroupLayout(0),
       entries: [{ binding: 0, resource: { buffer: instanceBuffer } }]
     });
 
+    function updateCohorts() {
+      frameIndex++;
+      // Deterministic, bounded motion makes the near-field upload real work each frame.
+      // The far cohort is deliberately reused between 12-frame refreshes.
+      const nearView = new DataView(nearUpload.buffer, nearUpload.byteOffset, nearUpload.byteLength);
+      const nearShift = Math.sin(frameIndex * 0.02) * 1.5;
+      for (let i = 0; i < nearInstanceCount; i++)
+        nearView.setFloat32(i * 80 + 48, nearBaseX[i] + nearShift, true);
+      if (nearUpload.byteLength > 0) {
+        device.queue.writeBuffer(instanceBuffer, 0, nearUpload);
+        nearUploadBytes += nearUpload.byteLength;
+        setText("nearUploads", nearUploadBytes.toLocaleString());
+      }
+
+      if (farInstanceCount > 0 && frameIndex % 12 === 0) {
+        const farView = new DataView(farUpload.buffer, farUpload.byteOffset, farUpload.byteLength);
+        const farShift = Math.cos(frameIndex * 0.005) * 0.75;
+        for (let i = 0; i < farInstanceCount; i++)
+          farView.setFloat32(i * 80 + 48, farBaseX[i] + farShift, true);
+        device.queue.writeBuffer(instanceBuffer, nearUpload.byteLength, farUpload);
+        farRefreshCount++;
+        farUploadBytes += farUpload.byteLength;
+        setText("farRefreshes", farRefreshCount);
+        setText("farUploads", farUploadBytes.toLocaleString());
+      }
+    }
+
     function frame() {
       if (!device || !context) return;
+      updateCohorts();
       const encoder = device.createCommandEncoder({ label: "array-first-frame" });
       const pass = encoder.beginRenderPass({
         colorAttachments: [{ view: context.getCurrentTexture().createView(), clearValue: { r: 0.025, g: 0.035, b: 0.05, a: 1 }, loadOp: "clear", storeOp: "store" }]
