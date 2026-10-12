@@ -157,6 +157,8 @@ function disposeCurrentRun() {
 }
 
 async function loadAndRender() {
+  const loadButton = document.querySelector("#load");
+  loadButton.disabled = true;
   disposeCurrentRun();
   try {
     status.textContent = "Requesting WebGPU adapter…";
@@ -279,7 +281,10 @@ async function loadAndRender() {
     }
     frameHandle = requestAnimationFrame(frame);
   } catch (error) {
+    disposeCurrentRun();
     status.textContent = String(error?.stack || error);
+  } finally {
+    loadButton.disabled = false;
   }
 }
 
