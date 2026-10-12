@@ -1,22 +1,38 @@
 {
   "schemaVersion": 1,
-  "status": "definition-only",
+  "status": "deterministic-dataset-generator-available",
   "seed": 20261012,
   "geometry": {
     "kind": "indexed-unit-triangle",
     "vertexCount": 3,
     "indexCount": 3,
-    "indices": [0, 1, 2],
+    "indices": [
+      0,
+      1,
+      2
+    ],
     "instanceLayout": [
-      { "name": "worldTransform", "type": "float32x4x4", "bytes": 64 },
-      { "name": "color", "type": "float32x4", "bytes": 16 }
+      {
+        "name": "worldTransform",
+        "type": "float32x4x4",
+        "bytes": 64
+      },
+      {
+        "name": "color",
+        "type": "float32x4",
+        "bytes": 16
+      }
     ],
     "instanceStrideBytes": 80
   },
   "profiles": [
     {
       "id": "static-scale",
-      "instanceCounts": [1000, 10000, 50000],
+      "instanceCounts": [
+        1000,
+        10000,
+        50000
+      ],
       "nearFraction": 0.1,
       "nearUpdateEveryFrames": 1,
       "farRefreshEveryFrames": 12,
@@ -26,7 +42,10 @@
     },
     {
       "id": "near-field-update",
-      "instanceCounts": [10000, 50000],
+      "instanceCounts": [
+        10000,
+        50000
+      ],
       "nearFraction": 0.1,
       "nearUpdateEveryFrames": 1,
       "farRefreshEveryFrames": 12,
@@ -36,7 +55,10 @@
     },
     {
       "id": "far-field-cadence",
-      "instanceCounts": [10000, 50000],
+      "instanceCounts": [
+        10000,
+        50000
+      ],
       "nearFraction": 0.1,
       "nearUpdateEveryFrames": 1,
       "farRefreshEveryFrames": 12,
@@ -46,7 +68,9 @@
     },
     {
       "id": "invalidation",
-      "instanceCounts": [10000],
+      "instanceCounts": [
+        10000
+      ],
       "nearFraction": 0.1,
       "nearUpdateEveryFrames": 1,
       "farRefreshEveryFrames": 12,
@@ -56,7 +80,10 @@
     },
     {
       "id": "compute-to-render",
-      "instanceCounts": [10000, 50000],
+      "instanceCounts": [
+        10000,
+        50000
+      ],
       "nearFraction": 0.1,
       "nearUpdateEveryFrames": 1,
       "farRefreshEveryFrames": 12,
@@ -66,7 +93,9 @@
     },
     {
       "id": "resize-lifecycle",
-      "instanceCounts": [10000],
+      "instanceCounts": [
+        10000
+      ],
       "nearFraction": 0.1,
       "nearUpdateEveryFrames": 1,
       "farRefreshEveryFrames": 12,
@@ -79,11 +108,15 @@
     "warmupSeconds": 10,
     "measurementSeconds": 60,
     "minimumFrames": 600,
-    "percentiles": [50, 95, 99]
+    "percentiles": [
+      50,
+      95,
+      99
+    ]
   },
   "notes": [
-    "This JSON defines target profiles only; no runner consumes it yet.",
-    "80-byte instance stride is a logical reference layout; candidate APIs may require a different physical GPU layout, which must be documented.",
+    "The generator creates deterministic CPU-side datasets only; it does not execute a GPU workload or benchmark.",
+    "80-byte instance stride is the logical reference layout; each API adapter must document physical layout conversion.",
     "Do not compare candidate results unless the same logical data, cadence, and invalidation events are used."
   ]
 }
