@@ -39,7 +39,7 @@ public enum VisualizerRepresentation
     Interactive = 4
 }
 
-/// <summary>Describes one backend-neutral indexed draw operation.</summary>
+/// <summary>Describes one backend-neutral indexed draw operation, optionally using an instance-data range.</summary>
 public readonly record struct VisualizerDrawCommand
 {
     /// <summary>Initializes an indexed draw command.</summary>
@@ -50,7 +50,10 @@ public readonly record struct VisualizerDrawCommand
         int indexCount,
         int firstIndex,
         int baseVertex,
-        VisualizerRepresentation representation)
+        VisualizerRepresentation representation,
+        VisualizerResourceId instances = default,
+        int instanceCount = 1,
+        int firstInstance = 0)
     {
         if (!geometry.IsValid)
             throw new ArgumentException("A valid geometry resource is required.", nameof(geometry));
@@ -60,6 +63,12 @@ public readonly record struct VisualizerDrawCommand
             throw new ArgumentOutOfRangeException(nameof(indexCount));
         if (firstIndex < 0)
             throw new ArgumentOutOfRangeException(nameof(firstIndex));
+        if (instanceCount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(instanceCount));
+        if (firstInstance < 0)
+            throw new ArgumentOutOfRangeException(nameof(firstInstance));
+        if (!instances.IsValid && (instanceCount != 1 || firstInstance != 0))
+            throw new ArgumentException("An instance-data resource is required for an instanced range.", nameof(instances));
 
         Geometry = geometry;
         Material = material;
@@ -68,15 +77,18 @@ public readonly record struct VisualizerDrawCommand
         FirstIndex = firstIndex;
         BaseVertex = baseVertex;
         Representation = representation;
+        Instances = instances;
+        InstanceCount = instanceCount;
+        FirstInstance = firstInstance;
     }
 
     /// <summary>Gets the geometry resource identifier.</summary>
     public VisualizerResourceId Geometry { get; }
     /// <summary>Gets the material resource identifier.</summary>
     public VisualizerResourceId Material { get; }
-    /// <summary>Gets the world transform.</summary>
+    /// <summary>Gets the world transform for a non-instanced draw.</summary>
     public Matrix4x4 WorldTransform { get; }
-    /// <summary>Gets the number of indices to draw.</summary>
+    /// <summary>Gets the number of indices to draw per instance.</summary>
     public int IndexCount { get; }
     /// <summary>Gets the first index in the geometry resource.</summary>
     public int FirstIndex { get; }
@@ -84,4 +96,10 @@ public readonly record struct VisualizerDrawCommand
     public int BaseVertex { get; }
     /// <summary>Gets the representation selected by the upstream Renderer.</summary>
     public VisualizerRepresentation Representation { get; }
+    /// <summary>Gets the optional instance-data resource identifier; invalid means one non-instanced draw.</summary>
+    public VisualizerResourceId Instances { get; }
+    /// <summary>Gets the number of instances to draw.</summary>
+    public int InstanceCount { get; }
+    /// <summary>Gets the first instance in the instance-data resource.</summary>
+    public int FirstInstance { get; }
 }
