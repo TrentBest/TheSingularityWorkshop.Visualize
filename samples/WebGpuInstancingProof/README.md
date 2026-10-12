@@ -1,6 +1,6 @@
 # WebGPU Instancing Proof
 
-This is the first **visible GPU workload** for Visualize: a single procedural triangle mesh drawn many times from one contiguous GPU storage buffer. It is deliberately a standalone browser proof so it can be run and judged before a .NET backend is selected.
+This is the first **visible GPU workload** for Visualize: a single procedural triangle drawn many times from one contiguous GPU storage buffer. It is deliberately a standalone browser proof so it can be run and judged before a .NET backend is selected.
 
 ## Run it
 
