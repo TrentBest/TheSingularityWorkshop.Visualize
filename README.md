@@ -46,7 +46,7 @@ The responsibility flow is deliberate:
 
 ![](docs/assets/dividers/green.svg)
 
-This repository has backend-neutral frame contracts, resource descriptions, tests, and architecture documentation. A narrow adapter maps Renderer output into VisualizerFrame; the contract is deliberately independent of the Renderer package version.
+This repository has backend-neutral frame contracts, revisioned geometry/material resources, and an immutable instance-buffer contract for indexed instancing. Draw commands can address an explicit range in a contiguous instance array, and Visualizer validates resource/range correctness before backend submission. A narrow adapter maps Renderer output into VisualizerFrame; the contract is deliberately independent of the Renderer package version. These are data/API contracts—not yet a concrete GPU upload or draw implementation.
 
 An isolated WPF/Direct3D 12 clear-and-present experiment exists under `samples/WpfD3D12Proof`. It compiles in Windows CI, but a real hardware/runtime capture has not yet been recorded. It draws no geometry, uses correctness-first per-frame synchronization, and is **not a selected backend**. Do not extend or integrate it by default; first compare backend candidates against an array-first workload.
 
