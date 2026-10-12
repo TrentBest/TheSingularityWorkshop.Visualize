@@ -280,7 +280,6 @@ async function loadAndRender() {
       if (nearUpload.byteLength > 0) {
         device.queue.writeBuffer(instanceBuffer, 0, nearUpload);
         nearUploadBytes += nearUpload.byteLength;
-        setText("nearUploads", nearUploadBytes.toLocaleString());
       }
 
       if (farInstanceCount > 0 && frameIndex % 12 === 0) {
@@ -295,8 +294,11 @@ async function loadAndRender() {
         setText("farUploads", farUploadBytes.toLocaleString());
       }
       fullUpdateBaselineBytes += instanceCount * 80;
-      const actual = nearUploadBytes + farUploadBytes;
-      setText("uploadAvoided", Math.max(0, fullUpdateBaselineBytes - actual).toLocaleString());
+      if (frameIndex % 12 === 0) {
+        const actual = nearUploadBytes + farUploadBytes;
+        setText("nearUploads", nearUploadBytes.toLocaleString());
+        setText("uploadAvoided", Math.max(0, fullUpdateBaselineBytes - actual).toLocaleString());
+      }
     }
 
     function percentile(values, fraction) {
@@ -310,7 +312,8 @@ async function loadAndRender() {
       if (previousFrameTime > 0) {
         frameIntervals.push(now - previousFrameTime);
         if (frameIntervals.length > 240) frameIntervals.shift();
-        setText("frameInterval", percentile(frameIntervals, .5).toFixed(1) + " / " + percentile(frameIntervals, .95).toFixed(1) + " ms");
+        if (frameIndex % 30 === 0)
+          setText("frameInterval", percentile(frameIntervals, .5).toFixed(1) + " / " + percentile(frameIntervals, .95).toFixed(1) + " ms");
       }
       previousFrameTime = now;
       updateCohorts();
@@ -330,8 +333,10 @@ async function loadAndRender() {
       const submitElapsed = performance.now() - submitStart;
       submitDurations.push(submitElapsed);
       if (submitDurations.length > 240) submitDurations.shift();
-      setText("submitTime", percentile(submitDurations, .5).toFixed(2) + " / " + percentile(submitDurations, .95).toFixed(2) + " ms");
-      setText("submissions", submissionCount);
+      if (submissionCount % 30 === 0) {
+        setText("submitTime", percentile(submitDurations, .5).toFixed(2) + " / " + percentile(submitDurations, .95).toFixed(2) + " ms");
+        setText("submissions", submissionCount);
+      }
       frameHandle = requestAnimationFrame(frame);
     }
     frameHandle = requestAnimationFrame(frame);
