@@ -1,6 +1,6 @@
 # Array-First WebGPU Runner
 
-This runner uploads and draws the **same binary arrays emitted by the .NET dataset generator**. It is a real browser WebGPU indexed-instancing path, not the earlier procedural triangle proof.
+This runner uploads and draws the **same binary arrays emitted by the .NET dataset generator**. It is a live browser WebGPU indexed-instancing scene with visibly distinct near/far cohorts, not the earlier procedural triangle proof.
 
 ## Run locally
 
@@ -20,7 +20,9 @@ The runner loads `dataset-manifest.json`, then fetches `vertices.f32le`, `indice
 - The near cohort is updated and uploaded every animation frame.
 - The far cohort remains cached between refreshes and is updated/uploaded every 12 frames.
 - Both cohorts use the same 80-byte instance records as the generated dataset; there is no second instance generator.
-- The page reports cumulative near upload bytes, far refresh count, far upload bytes, and GPU command submissions. These are work counters, **not** timing or performance claims.
+- The scene visually distinguishes near and far instances. Near records render larger with a cyan tint and move/upload every frame; far records render smaller with a violet tint and reuse their last GPU data between 12-frame refreshes.
+- The page reports cumulative near upload bytes, far refresh count, far upload bytes, command submissions, frame-interval p50/p95, and JavaScript-side encode/submit-call p50/p95 over a rolling sample window. Frame intervals include browser scheduling; JS submit time ends when `queue.submit` returns. Neither is GPU execution time.
+- `Upload avoided vs full update` compares actual near/far upload bytes with a simple baseline that uploads every instance record every frame. It is an arithmetic comparison of bytes submitted by this sample, not a measurement of physical bus traffic or a performance claim.
 - Reloading the dataset cancels the previous animation loop, releases its buffers, unconfigures the canvas context, and destroys the previous device before starting another run. Failed initialization also releases partially created resources, and the load control is disabled while initialization is in progress.
 - One indexed instanced draw consumes the uploaded instance storage buffer each frame.
 
