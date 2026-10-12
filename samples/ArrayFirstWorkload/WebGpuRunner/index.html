@@ -8,8 +8,12 @@
 :root{color-scheme:dark;font:15px/1.5 system-ui,sans-serif;background:#11151b;color:#edf2f7}
 body{margin:0;padding:1.25rem;max-width:1100px;margin-inline:auto}
 h1{font-size:1.6rem;margin:.2rem 0}.muted{color:#aab6c5}
-main{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:1rem;margin-top:1rem}
+header p{max-width:75ch}
+main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:1rem;margin-top:1rem}
+.scene{position:relative;min-width:0}
 canvas{display:block;width:100%;aspect-ratio:16/9;background:#080b10;border:1px solid #344050;border-radius:8px}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;padding:.6rem .2rem;color:#b9c7d8;font-size:.85rem}
+.dot{display:inline-block;width:.65rem;height:.65rem;border-radius:50%;margin-right:.35rem}.near{background:#5ce1e6}.far{background:#a58bfa}
 aside{background:#1a212b;border:1px solid #344050;border-radius:8px;padding:1rem}
 label{display:block;margin:.7rem 0 .2rem}input,button{font:inherit;padding:.5rem;border-radius:5px;border:1px solid #4a586a;background:#10151c;color:inherit;width:100%;box-sizing:border-box}
 button{margin-top:.8rem;cursor:pointer;background:#263b50}
@@ -19,12 +23,15 @@ dl{display:grid;grid-template-columns:1fr auto;gap:.35rem;margin:1rem 0}dt{color
 </style>
 </head>
 <body>
-<h1>Array-First WebGPU Runner</h1>
-<p class="muted">Consumes the generated binary dataset directly: indexed geometry plus an 80-byte storage-buffer instance record. This is a GPU execution proof, not yet a full backend benchmark.</p>
+<header>
+<h1>Event Horizon Field — Array-First WebGPU Demo</h1>
+<p class="muted">A live GPU scene driven by the generated shared arrays. Near-field instances move and upload every frame; far-field instances reuse their last GPU data between scheduled refreshes. This is a real instanced draw and upload-cadence demonstration—not yet connected to Renderer’s Event Horizon APIs, and not a GPU timing benchmark.</p>
+</header>
 <main>
-<section>
-<canvas id="surface" width="1280" height="720" aria-label="Instanced triangle render"></canvas>
-<p class="muted">One indexed instanced draw; transform and color records are read from the shared generated instance array.</p>
+<section class="scene">
+<canvas id="surface" width="1280" height="720" aria-label="Animated near and far field instanced triangle render"></canvas>
+<div class="legend"><span><i class="dot near"></i>Near field · refresh every frame</span><span><i class="dot far"></i>Far field · refresh every 12 frames</span></div>
+<p class="muted">One indexed instanced draw per frame. Instance transforms and colors come from the SHA-256-verified dataset; depth tags distinguish near and far representations.</p>
 </section>
 <aside>
 <label for="dataset">Dataset directory (served from this origin)</label>
@@ -36,9 +43,12 @@ dl{display:grid;grid-template-columns:1fr auto;gap:.35rem;margin:1rem 0}dt{color
 <dt>Index bytes</dt><dd id="indexBytes">—</dd>
 <dt>Instance bytes</dt><dd id="instanceBytes">—</dd>
 <dt>GPU submissions</dt><dd id="submissions">0</dd>
+<dt>Frame interval p50 / p95</dt><dd id="frameInterval">—</dd>
+<dt>JS submit p50 / p95</dt><dd id="submitTime">—</dd>
 <dt>Near bytes uploaded</dt><dd id="nearUploads">0</dd>
 <dt>Far refreshes</dt><dd id="farRefreshes">0</dd>
 <dt>Far bytes uploaded</dt><dd id="farUploads">0</dd>
+<dt>Upload avoided vs full update</dt><dd id="uploadAvoided">0</dd>
 <dt>Adapter</dt><dd id="adapter">—</dd>
 </dl>
 <p id="status" role="status">Press “Load dataset and render”. WebGPU requires a secure context (localhost is allowed) and compatible hardware/browser.</p>
@@ -62,7 +72,11 @@ let submissionCount = 0;
 let nearUploadBytes = 0;
 let farRefreshCount = 0;
 let farUploadBytes = 0;
+let fullUpdateBaselineBytes = 0;
 let frameIndex = 0;
+let previousFrameTime = 0;
+let frameIntervals = [];
+let submitDurations = [];
 let nearUpload;
 let farUpload;
 let nearBaseX;
@@ -84,11 +98,14 @@ struct VertexOut {
 @vertex fn vs(@location(0) localPosition: vec3f, @builtin(instance_index) instanceIndex: u32) -> VertexOut {
   let item = instances[instanceIndex];
   let scale = item.transform[0].x;
-  let worldX = item.transform[3].x + localPosition.x * scale;
-  let worldY = item.transform[3].y + localPosition.y * scale;
+  let isNear = item.transform[3].z > -20.0;
+  let depthScale = select(0.62, 1.7, isNear);
+  let worldX = item.transform[3].x + localPosition.x * scale * depthScale;
+  let worldY = item.transform[3].y + localPosition.y * scale * depthScale;
   var out: VertexOut;
   out.position = vec4f(worldX * 0.008, worldY * 0.015, 0.5, 1.0);
-  out.color = item.color;
+  let fieldTint = select(vec3f(0.64, 0.52, 1.0), vec3f(0.35, 0.92, 0.95), isNear);
+  out.color = vec4f(item.color.rgb * fieldTint, item.color.a);
   return out;
 }
 @fragment fn fs(input: VertexOut) -> @location(0) vec4f {
@@ -234,11 +251,18 @@ async function loadAndRender() {
     setText("nearUploads", "0");
     setText("farRefreshes", "0");
     setText("farUploads", "0");
+    setText("uploadAvoided", "0");
+    setText("frameInterval", "—");
+    setText("submitTime", "—");
     submissionCount = 0;
     nearUploadBytes = 0;
     farRefreshCount = 0;
     farUploadBytes = 0;
+    fullUpdateBaselineBytes = 0;
     frameIndex = 0;
+    previousFrameTime = 0;
+    frameIntervals = [];
+    submitDurations = [];
     status.textContent = "Dataset loaded. Near cohort updates every frame; far cohort refreshes every 12 frames.";
     const bindGroup = device.createBindGroup({
       layout: pipeline.getBindGroupLayout(0),
@@ -270,11 +294,27 @@ async function loadAndRender() {
         setText("farRefreshes", farRefreshCount);
         setText("farUploads", farUploadBytes.toLocaleString());
       }
+      fullUpdateBaselineBytes += instanceCount * 80;
+      const actual = nearUploadBytes + farUploadBytes;
+      setText("uploadAvoided", Math.max(0, fullUpdateBaselineBytes - actual).toLocaleString());
     }
 
-    function frame() {
+    function percentile(values, fraction) {
+      if (!values.length) return 0;
+      const sorted = [...values].sort((a, b) => a - b);
+      return sorted[Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * fraction))];
+    }
+
+    function frame(now) {
       if (!device || !context) return;
+      if (previousFrameTime > 0) {
+        frameIntervals.push(now - previousFrameTime);
+        if (frameIntervals.length > 240) frameIntervals.shift();
+        setText("frameInterval", percentile(frameIntervals, .5).toFixed(1) + " / " + percentile(frameIntervals, .95).toFixed(1) + " ms");
+      }
+      previousFrameTime = now;
       updateCohorts();
+      const submitStart = performance.now();
       const encoder = device.createCommandEncoder({ label: "array-first-frame" });
       const pass = encoder.beginRenderPass({
         colorAttachments: [{ view: context.getCurrentTexture().createView(), clearValue: { r: 0.025, g: 0.035, b: 0.05, a: 1 }, loadOp: "clear", storeOp: "store" }]
@@ -287,6 +327,10 @@ async function loadAndRender() {
       pass.end();
       device.queue.submit([encoder.finish()]);
       submissionCount++;
+      const submitElapsed = performance.now() - submitStart;
+      submitDurations.push(submitElapsed);
+      if (submitDurations.length > 240) submitDurations.shift();
+      setText("submitTime", percentile(submitDurations, .5).toFixed(2) + " / " + percentile(submitDurations, .95).toFixed(2) + " ms");
       setText("submissions", submissionCount);
       frameHandle = requestAnimationFrame(frame);
     }
