@@ -54,7 +54,16 @@ An isolated WPF/Direct3D 12 clear-and-present experiment exists under `samples/W
 
 ![](docs/assets/dividers/green.svg)
 
-You need the **.NET 8 SDK**. From the repository root, restore, build, and run the current test suite:
+You need the **.NET 8 SDK**, Python 3, and a browser with WebGPU enabled. To see the current GPU demo from the repository root:
+
+```powershell
+dotnet run --project samples/ArrayFirstWorkload/Generator -- 10000 ./artifacts/workload-10000
+py -m http.server 8080
+```
+
+Open [http://localhost:8080/samples/ArrayFirstWorkload/WebGpuRunner/](http://localhost:8080/samples/ArrayFirstWorkload/WebGpuRunner/). Keep the dataset path as `/artifacts/workload-10000` and select **Load dataset and render**. The animated scene renders near and far cohorts from the generated, hash-verified arrays, updates/uploads the near cohort each frame, and refreshes the far cohort every 12 frames. It reports upload accounting and browser/JavaScript timing samples; these are **not GPU execution timings**. See the [runner guide](samples/ArrayFirstWorkload/WebGpuRunner/README.md) for requirements and limitations.
+
+To verify the .NET contracts and tests:
 
 ```powershell
 dotnet restore TheSingularityWorkshop.Visualize.slnx
@@ -62,7 +71,7 @@ dotnet build TheSingularityWorkshop.Visualize.slnx --configuration Release
 dotnet test TheSingularityWorkshop.Visualize.slnx --configuration Release
 ```
 
-This verifies the current contracts and test suite; it does **not** demonstrate an end-to-end rendered scene. The shared [array-first GPU workload contract](samples/ArrayFirstWorkload/README.md) now defines equivalent data, cadence, invalidation, and measurement profiles for candidate backends. It is a definition, not an executable benchmark yet.
+The live browser runner is an end-to-end GPU draw proof. It is **not yet** wired to Renderer Event Horizon bucket/dependency APIs, and it is not a native-vs-browser benchmark. Those are the next integration and measurement milestones.
 
 ## 🟪 05 Available documentation and theory
 
