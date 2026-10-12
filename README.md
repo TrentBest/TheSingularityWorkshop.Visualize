@@ -71,7 +71,8 @@ To see actual GPU drawing, run the [WebGPU Instancing Proof](samples/WebGpuInsta
 - [Architecture](docs/ARCHITECTURE.md) — follow data from authoritative state to the host surface and understand which layer owns each decision.
 - [Gestures and procedural motion](docs/GESTURES_AND_POSE_PIPELINE.md) — see how physical procedures become evaluated pose data without making Visualize the owner of motion semantics.
 - [GPU backend strategy](docs/GPU_BACKEND_STRATEGY.md) — compare backend responsibilities and the intended native/browser directions, with array-first execution as a constraint.
-- [WebGPU instancing proof](samples/WebGpuInstancingProof/README.md) — run a visible GPU-instanced workload with a moving observer, population control, and near/far refresh cadence; includes honest limits and run instructions.\n- [Isolated WPF/Direct3D 12 experiment](samples/WpfD3D12Proof/README.md) — inspect the exploratory native-surface proof and its limitations.
+- [WebGPU instancing proof](samples/WebGpuInstancingProof/README.md) — run a visible GPU-instanced workload with a moving observer, population control, and near/far refresh cadence; includes honest limits and run instructions.
+- [Isolated WPF/Direct3D 12 experiment](samples/WpfD3D12Proof/README.md) — inspect the exploratory native-surface proof and its limitations.
 - [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md) — see the engineering milestones and their current boundaries.
 - [Performance and benchmark rules](docs/PERFORMANCE.md) — understand how performance evidence must be collected and reported.
 - [Open questions](docs/OPEN_QUESTIONS.md) — review unresolved design decisions.
