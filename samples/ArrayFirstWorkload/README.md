@@ -1,6 +1,6 @@
 # Array-First GPU Workload Contract
 
-**Status: deterministic dataset generation is implemented; GPU execution and benchmarking are not.** This contract is shared ground for native and browser candidates so we do not choose a backend by comparing a clear-only surface with a triangle-only demo.
+**Status: deterministic dataset generation and a first browser GPU consumer are implemented; a complete benchmark is not.** This contract is shared ground for native and browser candidates so we do not choose a backend by comparing a clear-only surface with an unrelated triangle demo.
 
 ## Generate common input arrays
 
@@ -41,4 +41,4 @@ A passing build is not a runtime proof. A visible frame is not a performance res
 
 ## Remaining limitations
 
-The dataset generator does not create a graphics device, upload resources, draw, dispatch compute, replay update traces, capture GPU timings, or select a backend. Existing browser WebGPU instancing and WPF/D3D12 clear-present experiments are still isolated proofs, not equivalent benchmark implementations. Next: add reproducible update traces and CPU-side validation, then implement actual GPU execution for a candidate while preserving identical inputs for the other candidate.
+The generator itself does not create a graphics device or benchmark. The new WebGPU runner does upload these shared arrays and submit an indexed instanced draw, but it does not yet run compute-to-render, replay near/far update traces, capture GPU timings, or measure native-vs-browser performance. The WPF/D3D12 experiment still only proves clear-present lifecycle. Next: add reproducible update traces and correctness counters, then implement and measure the equivalent native GPU path.
