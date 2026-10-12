@@ -138,8 +138,26 @@ function createBuffer(data, usage, label) {
   return buffer;
 }
 
-async function loadAndRender() {
+function disposeCurrentRun() {
   cancelAnimationFrame(frameHandle);
+  frameHandle = 0;
+  for (const buffer of [vertexBuffer, indexBuffer, instanceBuffer]) {
+    if (buffer) buffer.destroy();
+  }
+  if (depthTexture) depthTexture.destroy();
+  vertexBuffer = null;
+  indexBuffer = null;
+  instanceBuffer = null;
+  depthTexture = null;
+  if (context) context.unconfigure();
+  if (device) device.destroy();
+  context = null;
+  device = null;
+  pipeline = null;
+}
+
+async function loadAndRender() {
+  disposeCurrentRun();
   try {
     status.textContent = "Requesting WebGPU adapter…";
     if (!navigator.gpu) throw new Error("This browser does not expose WebGPU.");
