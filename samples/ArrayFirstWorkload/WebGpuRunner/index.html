@@ -114,11 +114,20 @@ function readManifest(manifest) {
   return count;
 }
 
-async function fetchBytes(base, file, expected) {
+async function fetchBytes(base, file, record) {
   const response = await fetch(base.replace(/\/$/, "") + "/" + file, { cache: "no-store" });
   if (!response.ok) throw new Error("Could not load " + file + " (" + response.status + ").");
   const bytes = await response.arrayBuffer();
-  if (expected && bytes.byteLength !== expected) throw new Error(file + " size mismatch: expected " + expected + ", got " + bytes.byteLength + ".");
+  if (!record || !Number.isSafeInteger(record.Bytes) || record.Bytes < 0 ||
+      typeof record.Sha256 !== "string" || !/^[0-9a-f]{64}$/i.test(record.Sha256)) {
+    throw new Error("Manifest has an invalid byte count or SHA-256 record for " + file + ".");
+  }
+  if (bytes.byteLength !== record.Bytes)
+    throw new Error(file + " size mismatch: expected " + record.Bytes + ", got " + bytes.byteLength + ".");
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const actualHash = Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2, "0")).join("");
+  if (actualHash !== record.Sha256.toLowerCase())
+    throw new Error(file + " SHA-256 mismatch: dataset bytes do not match the manifest.");
   return bytes;
 }
 
@@ -154,9 +163,9 @@ async function loadAndRender() {
     if (!files || !files["vertices.f32le"] || !files["indices.u32le"] || !files["instances.f32le"])
       throw new Error("Manifest does not list the expected binary files.");
     const [vertices, indices, instances] = await Promise.all([
-      fetchBytes(base, "vertices.f32le", files["vertices.f32le"].Bytes),
-      fetchBytes(base, "indices.u32le", files["indices.u32le"].Bytes),
-      fetchBytes(base, "instances.f32le", files["instances.f32le"].Bytes)
+      fetchBytes(base, "vertices.f32le", files["vertices.f32le"]),
+      fetchBytes(base, "indices.u32le", files["indices.u32le"]),
+      fetchBytes(base, "instances.f32le", files["instances.f32le"])
     ]);
     if (indices.byteLength % 4 !== 0 || instances.byteLength !== instanceCount * 80)
       throw new Error("Binary lengths do not match the dataset manifest.");
