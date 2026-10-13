@@ -47,25 +47,72 @@ jobs:
       - name: Test GUI.SVG contracts
         run: dotnet test GuiSource/tests/SVG.Tests/TheSingularityWorkshop.GUI.SVG.Tests.csproj --configuration Release
 
-      - name: Pack GUI.SVG
-        run: dotnet pack GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj --configuration Release --no-restore --output ./artifacts/gui-svg
+      - name: Pack GUI Core dependency
+        run: dotnet pack GuiSource/src/Core/TheSingularityWorkshop.GUI.Core.csproj --configuration Release --no-restore --output ./artifacts/gui-svg-feed
 
-      - name: Verify GUI.SVG package artifact
+      - name: Pack GUI.SVG
+        run: dotnet pack GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj --configuration Release --no-restore --output ./artifacts/gui-svg-feed
+
+      - name: Verify GUI.SVG package and dependency artifacts
         shell: bash
         run: |
           set -euo pipefail
-          package="$(find ./artifacts/gui-svg -maxdepth 1 -type f -name 'TheSingularityWorkshop.GUI.SVG.*.nupkg' -print -quit)"
+          package="$(find ./artifacts/gui-svg-feed -maxdepth 1 -type f -name 'TheSingularityWorkshop.GUI.SVG.*.nupkg' -print -quit)"
+          core_package="$(find ./artifacts/gui-svg-feed -maxdepth 1 -type f -name 'TheSingularityWorkshop.GUI.Core.*.nupkg' -print -quit)"
           test -n "$package" && test -s "$package" || { echo "GUI.SVG package was not produced."; exit 1; }
-          unzip -l "$package" > ./artifacts/gui-svg/package-contents.txt
-          grep -q 'lib/net8.0/TheSingularityWorkshop.GUI.SVG.dll' ./artifacts/gui-svg/package-contents.txt
+          test -n "$core_package" && test -s "$core_package" || { echo "GUI Core dependency package was not produced."; exit 1; }
+          unzip -l "$package" > ./artifacts/gui-svg-feed/package-contents.txt
+          grep -q 'lib/net8.0/TheSingularityWorkshop.GUI.SVG.dll' ./artifacts/gui-svg-feed/package-contents.txt
           echo "Verified package: $package"
-          echo "GUI.SVG package built and inspected; publishing remains disabled."
+          echo "Verified dependency package: $core_package"
 
-      - name: Upload GUI.SVG package artifact
+      - name: Create a package-only consumer
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ./package-consumer
+          cat > ./package-consumer/PackageConsumer.csproj <<'EOF'
+          <Project Sdk="Microsoft.NET.Sdk">
+            <PropertyGroup>
+              <OutputType>Exe</OutputType>
+              <TargetFramework>net8.0</TargetFramework>
+              <ImplicitUsings>enable</ImplicitUsings>
+              <Nullable>enable</Nullable>
+            </PropertyGroup>
+            <ItemGroup>
+              <PackageReference Include="TheSingularityWorkshop.GUI.SVG" Version="0.1.0-alpha.1" />
+            </ItemGroup>
+          </Project>
+          EOF
+          cat > ./package-consumer/Program.cs <<'EOF'
+          using TheSingularityWorkshop.Workshop.Gui;
+          using TheSingularityWorkshop.Workshop.Gui.Svg;
+
+          var scene = GuiBuilder.Create("svg-scene", "package-consumer")
+              .Child("svg-circle", "marker", marker => marker
+                  .Property("cx", "50").Property("cy", "50").Property("r", "4")
+                  .Property("fill", "#7ee0bd"))
+              .Build();
+          var svg = new SvgGuiRenderer().Render(scene);
+          if (!svg.Contains("<svg", StringComparison.Ordinal) ||
+              !svg.Contains("id=\"marker\"", StringComparison.Ordinal))
+              throw new InvalidOperationException("Packaged GUI.SVG did not render the expected scene.");
+          Console.WriteLine("Package-only consumer successfully rendered an SVG scene.");
+          EOF
+
+      - name: Restore package-only consumer from local packages
+        run: dotnet restore ./package-consumer/PackageConsumer.csproj --source ./artifacts/gui-svg-feed --source https://api.nuget.org/v3/index.json
+
+      - name: Build and run package-only consumer
+        run: |
+          dotnet build ./package-consumer/PackageConsumer.csproj --configuration Release --no-restore
+          dotnet run --project ./package-consumer/PackageConsumer.csproj --configuration Release --no-build
+
+      - name: Upload GUI.SVG package feed
         uses: actions/upload-artifact@v7
         with:
-          name: gui-svg-nuget-package
-          path: ./artifacts/gui-svg/*.nupkg
+          name: gui-svg-package-feed
+          path: ./artifacts/gui-svg-feed/*.nupkg
           if-no-files-found: error
 
   build-and-test:
