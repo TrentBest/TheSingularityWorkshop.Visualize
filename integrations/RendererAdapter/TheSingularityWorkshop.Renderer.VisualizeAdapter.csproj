@@ -5,18 +5,13 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageId>TheSingularityWorkshop.Renderer.VisualizeAdapter</PackageId>
-    <Version>0.1.0-alpha.1</Version>
-    <Authors>TheSingularityWorkshop</Authors>
-    <Company>The Singularity Workshop</Company>
-    <Description>Explicit bridge from Workshop Renderer frame contracts to Visualize presentation contracts.</Description>
-    <PackageTags>renderer;visualize;adapter;graphics;workshop</PackageTags>
-    <RepositoryUrl>https://github.com/TrentBest/TheSingularityWorkshop.Visualize</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="RendererSource/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../../TheSingularityWorkshop.Visualize.csproj" />
-    <PackageReference Include="TheSingularityWorkshop.Renderer" Version="0.1.0-alpha.2" />
+    <ProjectReference Include="RendererSource/TheSingularityWorkshop.Renderer.csproj" />
   </ItemGroup>
 </Project>
