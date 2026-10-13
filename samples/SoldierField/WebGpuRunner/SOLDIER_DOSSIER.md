@@ -94,7 +94,19 @@ The embarrassing first-love story belongs in this world because prediction can b
 
 A good ambient scene tells us about the technology, the person, and the culture at once. It should still sound like people talking when the player is not listening.
 
-## 08 — Canon decisions still open
+## 08 — The instrumented range: a plate that teaches
+
+The head scientist does not offer an abstract lecture. He hands the player a helmet-linked research tablet and presents demonstrations with a quoted research-credit cost, a setup estimate, and a question worth answering. The initial catalog includes a sternum-plate impact, a thermal-dissipation prototype, and a non-firing cutaway inspection.
+
+The sternum plate is currently tagged as the most frequently hit armor candidate in fictional campaign telemetry. That is a selection premise, not a measured hit percentage: the catalog deliberately stores the hit share as unknown until the campaign simulation can produce a distribution. The research board must eventually be able to derive this selection from actual encounter records rather than treating the label as permanent truth.
+
+The impact sequence is tactile in intent: helmet seals, the prototype discharges, the controller receives a short recoil pulse when browser/gamepad support permits it, the plate develops a blackened crater and glowing edge, and the barrel holds a red heat signature. The scientist says, “As you can see, sire, we still struggle with dissipating the heat…” The visible thermal halo then shows waste heat being routed into the exoskeleton rather than disappearing by narrative convenience.
+
+The player can invest in a cooling iteration. That investment changes the next run's simulated heat parameters and advances the research record. Later, when a nearby soldier fires the improved rifle, he can joke about how the weapon still heats his chassis. This is deliberate continuity: a laboratory result changes a field experience, while the field experience supplies new observations for the next laboratory trial.
+
+All credit prices, setup times, temperatures, hit-rate assumptions, and cooling gains in the current demonstration catalog are fictional gameplay parameters. They are not material test data or certified engineering values. The visible specimen is presently a data-scaled illustration based on the selected part's nominal record dimensions; an independently manipulable 3D plate, material response, projectile physics, and validated physical haptics remain future work.
+
+## 09 — Canon decisions still open
 
 1. **Count:** five assemblies with ocular and auditory pairs grouped bilaterally, or six individual shunts? The current geometry preserves six endpoint IDs.
 2. **Isolation:** is the quiet seam permanent after induction, or can trained maintainers safely return a pathway to biological continuity? The dossier does not assume routine reversal.
