@@ -10,6 +10,12 @@
 
 > **Make the living world visible. Keep the world independent of its display.**
 
+## Current visual showcase
+
+[![Visualize showcase: procedural exoskeleton, semantic parts, mesh generation, and observer-detail concept](docs/assets/visualize-showcase.svg)](samples/SoldierField/WebGpuRunner/README.md)
+
+This illustration is visible directly in the README—no build, console, or launch step is needed to see the current direction. It points to our most developed visual sample: **Soldier Field**, a procedural exoskeleton scene rendered by a separate browser/WebGPU lab. The illustration is an architecture visual, not a captured frame. The live lab, its geometry generators, and its engineering records are documented in the [Soldier Field guide](samples/SoldierField/WebGpuRunner/README.md); the C# Visualize contracts are not yet connected to that browser renderer.
+
 TheSingularityWorkshop.Visualize is the GPU-facing presentation project for The Singularity Workshop. It turns observer-aware presentation data from [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into pixels without making a particular windowing toolkit or graphics API the definition of the world.
 
 The first desktop host is **AnyApp on WPF**. An exploratory browser/WebGPU Soldier Field proves a separate path can consume a deterministic geometry asset and render an instanced soldier workload; it is a lab, not a selected production backend or a claim that the .NET Visualize contracts are already wired end-to-end. **No production graphics API has been selected.** The next milestone is to connect the Workshop's array-first data model to a backend without binding world meaning to one display technology.
@@ -52,11 +58,17 @@ This repository has backend-neutral frame contracts, revisioned geometry/materia
 
 An isolated WPF/Direct3D 12 clear-and-present experiment exists under `samples/WpfD3D12Proof`. It compiles in Windows CI, but a real hardware/runtime capture has not yet been recorded. It draws no geometry, uses correctness-first per-frame synchronization, and is **not a selected backend**. The separate Soldier Field browser lab provides an initial actual-geometry target for measuring crowd scaling; it is exploratory and not a selected production backend.
 
-## 🟢 04 See it in a minute
+## 🟢 04 See the work and explore it
 
 ![](docs/assets/dividers/green.svg)
 
-You need the **.NET 8 SDK**. From the repository root, restore, build, and run the current test suite:
+The illustration above is the no-launch overview. For deeper inspection, the documentation links below take you directly to the implementation and the current visual experiments. GitHub displays this README and its SVG artwork in place; the browser labs are separate HTML/WebGPU or SVG experiments, not embedded executions of the C# assembly.
+
+- **[Soldier Field guide](samples/SoldierField/WebGpuRunner/README.md)** — the most developed procedural 3D sample, its controls, data, and measurement boundaries.
+- **[Primitive Gallery source and guide](samples/PrimitiveGallery/README.md)** — the interactive point/line progression and what each step demonstrates.
+- **[Primitive Gallery page](samples/PrimitiveGallery/index.html)** — inspect the experiment's actual HTML, SVG, and JavaScript.
+
+To run the current .NET test suite, you need the **.NET 8 SDK**. From the repository root:
 
 ```powershell
 dotnet restore TheSingularityWorkshop.Visualize.slnx
