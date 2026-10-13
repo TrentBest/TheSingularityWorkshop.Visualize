@@ -63,6 +63,16 @@ jobs:
       - name: Build
         run: dotnet build TheSingularityWorkshop.Visualize.slnx --configuration Release --no-restore
 
+      - name: Generate Visualizer-backed SVG primitive proof
+        run: dotnet run --project samples/PrimitiveGallery/VisualizeSvgProof/VisualizeSvgProof.csproj --configuration Release -- ./samples/PrimitiveGallery/generated
+
+      - name: Upload Visualizer SVG proof images
+        uses: actions/upload-artifact@v7
+        with:
+          name: visualize-svg-primitive-proof
+          path: ./samples/PrimitiveGallery/generated/*.svg
+          if-no-files-found: error
+
       - name: Test with coverage
         run: >
           dotnet test tests/TheSingularityWorkshop.Visualize.Tests/TheSingularityWorkshop.Visualize.Tests.csproj
