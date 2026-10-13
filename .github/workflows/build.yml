@@ -20,6 +20,52 @@ permissions:
   contents: read
 
 jobs:
+  # Exercise the reusable GUI.SVG package as its own deliverable while the
+  # Visualize contract/build lane runs independently. This creates a CI artifact
+  # only; it does not publish anything to NuGet.
+  gui-svg-package-proof:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout GUI source
+        uses: actions/checkout@v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.GUI
+          ref: development
+          path: GuiSource
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore GUI.SVG
+        run: dotnet restore GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+
+      - name: Test GUI Core contracts
+        run: dotnet test GuiSource/tests/Core.Tests/TheSingularityWorkshop.GUI.Core.Tests.csproj --configuration Release
+
+      - name: Test GUI.SVG contracts
+        run: dotnet test GuiSource/tests/SVG.Tests/TheSingularityWorkshop.GUI.SVG.Tests.csproj --configuration Release
+
+      - name: Pack GUI.SVG
+        run: dotnet pack GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj --configuration Release --no-restore --output ./artifacts/gui-svg
+
+      - name: Verify GUI.SVG package artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          package="./artifacts/gui-svg/TheSingularityWorkshop.GUI.SVG.0.1.0-alpha.1.nupkg"
+          test -s "$package" || { echo "Expected GUI.SVG package was not produced: $package"; exit 1; }
+          unzip -l "$package" | grep -q 'lib/net8.0/TheSingularityWorkshop.GUI.SVG.dll'
+          echo "GUI.SVG package built and inspected; publishing remains disabled."
+
+      - name: Upload GUI.SVG package artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: gui-svg-nuget-package
+          path: ./artifacts/gui-svg/*.nupkg
+          if-no-files-found: error
+
   build-and-test:
     runs-on: ubuntu-24.04
     steps:
