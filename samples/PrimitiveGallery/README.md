@@ -25,6 +25,16 @@ The harness writes the SVG files into `samples/PrimitiveGallery/generated/`. The
 | 05 · Many lines | ![24 line instances generated through Visualizer](generated/05-many-lines-24.svg) | One segment mesh is submitted across 24 instance transforms. |
 | 06 · Lit hemisphere + normals | ![Lit hemisphere and projected normals preview](../../docs/assets/hemisphere-normals-preview.svg)<br> [Download the exact SVG from successful CI run #447](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/38454948993/artifacts/11842082589) | A tessellated hemisphere is submitted as indexed geometry; the SVG proof backend computes a simple Lambert response from its vertex normals and overlays projected normal vectors. This is a backend lighting study, not a production shader. The preview is a documentation illustration; the CI artifact contains the exact output produced by the C# harness. |
 
+## Follow the colored API trail
+
+[Open the [living SVG + color-coded code view](api-consumption.html)](api-consumption.html). The README above already shows the SVG; this companion lays the output beside the source path.
+
+- 🟦 **Scene contract data** — the C# code creates geometry, material resources, and a `VisualizerFrame`.
+- 🟩 **API consumption** — `new Visualizer(...)` and `await visualizer.RenderAsync(example.Frame)` submit that frame through the public Visualize API.
+- 🟨 **SVG presentation** — the proof backend adds the moving marker and dashed trace after receiving the frame. This animation is SVG-specific; it is not an FSM update loop.
+
+The exact call site is in [VisualizeSvgProof/Program.cs](VisualizeSvgProof/Program.cs); the backend implementation is in the same file. The new [GUI.SVG adapter](https://github.com/TrentBest/TheSingularityWorkshop.GUI/tree/development/src/SVG) is a separate initial adapter project; it is **not yet wired into this proof backend**. The next integration step is to replace this proof backend's own SVG serialization with the reusable GUI.SVG manifestation layer without changing the Visualizer contract.
+
 The proof backend is intentionally small and is not a production GPU backend. It does, however, consume the same Visualizer frame/resource contracts and draw commands that the current C# implementation validates. Its SVG output is an inspectable backend result, not an independently drawn HTML demo. Step 06 adds a deliberately simple backend-side Lambert calculation and normal-vector overlay so we can inspect actual indexed surface geometry and its normals. It does not mean lighting is already part of the production Visualizer material contract. The current Visualizer contract has indexed triangle draws, not native point or line-list topology, so points and lines here are represented by tiny triangle meshes.
 
 ## Keep the two experiments distinct
