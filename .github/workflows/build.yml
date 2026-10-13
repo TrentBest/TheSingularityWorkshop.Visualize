@@ -77,6 +77,10 @@ jobs:
           test -s "$gallery"
           grep -q '<linearGradient' "$gallery"
           grep -q '<clipPath' "$gallery"
+          grep -q '<pattern' "$gallery"
+          grep -q '<marker' "$gallery"
+          grep -q '<filter' "$gallery"
+          grep -q '<use' "$gallery"
           grep -q '<animate' "$gallery"
           grep -q 'aria-label="GUI.SVG manifestation gallery"' "$gallery"
       - uses: actions/upload-artifact@v7
