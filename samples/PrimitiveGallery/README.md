@@ -27,7 +27,7 @@ The harness writes the SVG files into `samples/PrimitiveGallery/generated/`. The
 
 ## Follow the colored API trail
 
-[Open the [living SVG + color-coded code view](api-consumption.html)](api-consumption.html). The README above already shows the SVG; this companion lays the output beside the source path.
+Open the [living SVG + color-coded code view](api-consumption.html). The README above already shows the SVG; this companion lays the output beside the source path.
 
 - 🟦 **Scene contract data** — the C# code creates geometry, material resources, and a `VisualizerFrame`.
 - 🟩 **API consumption** — `new Visualizer(...)` and `await visualizer.RenderAsync(example.Frame)` submit that frame through the public Visualize API.
