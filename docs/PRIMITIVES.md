@@ -93,6 +93,8 @@ SVG represents visible geometry through a retained, document-shaped set of eleme
 
 The [Primitive Gallery](../samples/PrimitiveGallery/index.html) is the first visible SVG progression: point, point cloud, connected points, line, and line bundle. It demonstrates basic SVG construction and exposes DOM-generation observations. It does **not** yet project a Soldier Field semantic part into SVG, consume a Visualize C# frame, or establish a shared production rendering backend. See its [manual visual checks and run instructions](../samples/PrimitiveGallery/README.md).
 
+The next live study is [Surface Normals & Light](../samples/NormalLightingLab/index.html). It lets a reader move a light direction, change ambient and diffuse contributions, alter surface sampling density, and reveal the projected surface-normal directions. Its [guide](../samples/NormalLightingLab/README.md) documents the simple Lambert model and the limits of the 2D projection. Like the Primitive Gallery, it is a browser SVG experiment, not yet a consumer of the C# Visualize frame contracts.
+
 A useful next experiment is to preserve one semantic part description and compare representations without changing the meaning of the part:
 
 1. Keep the same stable part ID and source dimensions.
