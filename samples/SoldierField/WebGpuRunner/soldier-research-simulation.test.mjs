@@ -8,7 +8,19 @@ import {
 
 const catalog = JSON.parse(await readFile(new URL("./research-demonstrations.json", import.meta.url), "utf8"));
 const parts = JSON.parse(await readFile(new URL("./soldier-part-records.json", import.meta.url), "utf8"));
+const catalogSchema = JSON.parse(await readFile(new URL("./research-demonstrations.schema.json", import.meta.url), "utf8"));
 
+
+
+test("catalog conforms to its declared required fields and effect contract", () => {
+  assert.equal(catalog.schemaVersion, "1.0.0");
+  assert.equal(catalog.status, catalogSchema.properties.status.const);
+  for (const field of catalogSchema.required) assert.ok(Object.hasOwn(catalog, field), "missing catalog field: " + field);
+  for (const demo of catalog.demonstrations) {
+    for (const field of catalogSchema.$defs.demonstration.required) assert.ok(Object.hasOwn(demo, field), "missing demo field: " + field);
+    for (const field of catalogSchema.$defs.demonstration.properties.effects.required) assert.equal(typeof demo.effects[field], "boolean");
+  }
+});
 
 test("catalog demonstrations and the most-hit hypothesis reference stable part records", () => {
   const ids = new Set(parts.records.map(part => part.partId));
