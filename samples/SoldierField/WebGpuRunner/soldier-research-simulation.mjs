@@ -68,6 +68,7 @@ export function investInCooling(state) {
     coolingTier,
     phase: "catalog",
     lastResult: { ok: true, coolingTier },
+    activeDemonstrationId: null,
     log: [...state.log, `Cooling research funded: Prototype ${String.fromCharCode(65 + coolingTier)}. New heat-routing hypothesis recorded for the next range trial.`]
   };
 }
