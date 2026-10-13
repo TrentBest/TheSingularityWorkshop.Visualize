@@ -60,21 +60,33 @@ static Example BuildConnectedExample(string path)
     var catalog = NewCatalog();
     var pointId = new VisualizerResourceId(1);
     var lineId = new VisualizerResourceId(2);
-    var materialId = new VisualizerResourceId(3);
+    var lineMaterialId = new VisualizerResourceId(3);
+    var pointMaterialIds = new[]
+    {
+        new VisualizerResourceId(4), new VisualizerResourceId(5),
+        new VisualizerResourceId(6), new VisualizerResourceId(7)
+    };
     catalog.SetGeometry(pointId, PointMesh());
     catalog.SetGeometry(lineId, LineMesh());
-    catalog.SetMaterial(materialId, new VisualizerMaterial(1, Vector4.One));
-    var points = new[] { new Vector2(-0.3f, -0.2f), new Vector2(0.3f, -0.2f), new Vector2(0.3f, 0.2f), new Vector2(-0.3f, 0.2f) };
+    catalog.SetMaterial(lineMaterialId, new VisualizerMaterial(1, new Vector4(0.35f, 0.80f, 0.92f, 1)));
+    catalog.SetMaterial(pointMaterialIds[0], new VisualizerMaterial(1, new Vector4(0.49f, 0.91f, 0.75f, 1)));
+    catalog.SetMaterial(pointMaterialIds[1], new VisualizerMaterial(1, new Vector4(1.00f, 0.75f, 0.38f, 1)));
+    catalog.SetMaterial(pointMaterialIds[2], new VisualizerMaterial(1, new Vector4(0.50f, 0.72f, 1.00f, 1)));
+    catalog.SetMaterial(pointMaterialIds[3], new VisualizerMaterial(1, new Vector4(0.72f, 0.57f, 1.00f, 1)));
+    var points = new[] { new Vector2(-0.32f, -0.18f), new Vector2(0.28f, -0.22f), new Vector2(0.36f, 0.12f), new Vector2(-0.18f, 0.24f) };
     var commands = new List<VisualizerDrawCommand>();
-    foreach (var point in points)
-        commands.Add(new VisualizerDrawCommand(pointId, materialId, Matrix4x4.CreateTranslation(point.X, point.Y, 0), 6, 0, 0, VisualizerRepresentation.Near));
+    for (var i = 0; i < points.Length; i++)
+    {
+        var point = points[i];
+        commands.Add(new VisualizerDrawCommand(pointId, pointMaterialIds[i], Matrix4x4.CreateTranslation(point.X, point.Y, 0), 6, 0, 0, VisualizerRepresentation.Near));
+    }
     for (var i = 0; i < points.Length; i++)
     {
         var a = points[i]; var b = points[(i + 1) % points.Length]; var delta = b - a;
         var transform = Matrix4x4.CreateScale(delta.Length() * 2, 1, 1) *
             Matrix4x4.CreateRotationZ(MathF.Atan2(delta.Y, delta.X)) *
             Matrix4x4.CreateTranslation((a.X + b.X) / 2, (a.Y + b.Y) / 2, 0);
-        commands.Add(new VisualizerDrawCommand(lineId, materialId, transform, 6, 0, 0, VisualizerRepresentation.Near));
+        commands.Add(new VisualizerDrawCommand(lineId, lineMaterialId, transform, 6, 0, 0, VisualizerRepresentation.Near));
     }
     return new Example(path, "Four connected points", catalog, new VisualizerFrame(DefaultView(), commands));
 }
@@ -251,9 +263,11 @@ sealed class SvgProofBackend(string path, string title, bool illuminate = false,
         {
             // The moving marker is an SVG presentation effect layered over the actual
             // connected-point geometry submitted through Visualizer.RenderAsync.
-            sb.Append("<path id=\"connected-route\" d=\"M64 154L256 154L256 26L64 26Z\" fill=\"none\" stroke=\"#7ee0bd\" stroke-width=\"1.5\" stroke-dasharray=\"5 7\" opacity=\".85\">")
+            sb.Append("<path id=\"connected-route\" d=\"M57.6 147.6L249.6 160.4L275.2 51.6L102.4 13.2L57.6 147.6\" fill=\"none\" stroke=\"#7ee0bd\" stroke-width=\"1.5\" stroke-dasharray=\"5 7\" opacity=\".85\">")
                 .Append("<animate attributeName=\"stroke-dashoffset\" from=\"0\" to=\"-48\" dur=\"4s\" repeatCount=\"indefinite\"/></path>")
-                .Append("<circle r=\"4.5\" fill=\"#ffcf86\" stroke=\"#fff1ce\" stroke-width=\"1.5\"><animateMotion dur=\"4s\" repeatCount=\"indefinite\" path=\"M64 154L256 154L256 26L64 26Z\"/></circle>");
+                .Append("<circle r=\"5.2\" fill=\"#ffcf86\" stroke=\"#fff1ce\" stroke-width=\"1.5\"><animateMotion dur=\"4s\" repeatCount=\"indefinite\" path=\"M57.6 147.6L249.6 160.4L275.2 51.6L102.4 13.2L57.6 147.6\"/></circle>")
+                .Append("<circle r=\"3.2\" fill=\"#7ee0bd\" opacity=\".72\"><animateMotion begin=\"-0.35s\" dur=\"4s\" repeatCount=\"indefinite\" path=\"M57.6 147.6L249.6 160.4L275.2 51.6L102.4 13.2L57.6 147.6\"/></circle>")
+                .Append("<circle r=\"2.1\" fill=\"#8fcaff\" opacity=\".55\"><animateMotion begin=\"-0.7s\" dur=\"4s\" repeatCount=\"indefinite\" path=\"M57.6 147.6L249.6 160.4L275.2 51.6L102.4 13.2L57.6 147.6\"/></circle>");
         }
         sb.Append("</svg>");
         File.WriteAllText(path, sb.ToString());
