@@ -173,7 +173,7 @@ sealed class SvgProofBackend(string path, string title) : IVisualizerBackend
         sb.Append("</svg>");
         File.WriteAllText(path, sb.ToString());
         stopwatch.Stop();
-        return ValueTask.FromResult(new VisualizerFrameResult(++_frame, frame.Commands.Count, stopwatch.Elapsed, wasPresented: true));
+        return ValueTask.FromResult(new VisualizerFrameResult(++_frame, frame.Commands.Count, stopwatch.Elapsed, wasPresented: false));
     }
 
     private static string Px(float x) => (160 + x * 320).ToString("0.###", CultureInfo.InvariantCulture);
