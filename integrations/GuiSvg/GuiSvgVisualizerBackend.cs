@@ -93,7 +93,8 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
                     var a = Vector3.Transform(geometry.Vertices[(int)geometry.Indices[index + command.BaseVertex]].Position, transform);
                     var b = Vector3.Transform(geometry.Vertices[(int)geometry.Indices[index + 1 + command.BaseVertex]].Position, transform);
                     var c = Vector3.Transform(geometry.Vertices[(int)geometry.Indices[index + 2 + command.BaseVertex]].Position, transform);
-                    var path = $"M{X(a.X)} {Y(a.Y)}L{X(b.X)} {Y(b.Y)}L{X(c.X)} {Y(c.Y)}Z";
+                    var path = FormattableString.Invariant(
+                        $"M{F(X(a.X))} {F(Y(a.Y))}L{F(X(b.X))} {F(Y(b.Y))}L{F(X(c.X))} {F(Y(c.Y))}Z");
                     var fill = Color(tint);
                     scene.Child("svg-path", $"draw-{drawIndex++}", node => node
                         .Property("d", path)
@@ -153,6 +154,7 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
 
     private static double X(float x) => 50 + x * 100;
     private static double Y(float y) => 28.125 - y * 100;
+    private static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 
     private static string Color(Vector4 color)
     {
