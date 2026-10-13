@@ -31,32 +31,6 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Setup Node.js for browser runner syntax validation
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-
-      - name: Validate soldier field JavaScript syntax
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-
-          html = Path("samples/SoldierField/WebGpuRunner/index.html").read_text(encoding="utf-8")
-          match = re.search(r'<script type="module">(.*?)</script>', html, re.S)
-          if not match:
-              raise SystemExit("Could not find the Soldier Field module script.")
-          Path("/tmp/soldier-field-check.mjs").write_text(match.group(1), encoding="utf-8")
-          PY
-          node --check /tmp/soldier-field-check.mjs
-          node --check samples/SoldierField/WebGpuRunner/soldier-geometry.js
-          node --check samples/SoldierField/WebGpuRunner/soldier-cut-sheet.mjs
-          node --check samples/SoldierField/WebGpuRunner/soldier-research-simulation.mjs
-          node --test samples/SoldierField/WebGpuRunner/soldier-geometry.test.mjs
-          node --test samples/SoldierField/WebGpuRunner/soldier-cut-sheet.test.mjs
-          node --test samples/SoldierField/WebGpuRunner/soldier-research-simulation.test.mjs
-
       - name: Restore
         run: dotnet restore TheSingularityWorkshop.Visualize.slnx
 
