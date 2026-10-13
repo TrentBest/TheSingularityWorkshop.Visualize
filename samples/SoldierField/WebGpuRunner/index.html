@@ -68,7 +68,7 @@ async function initializeCutSheets(){
   partSelect.replaceChildren();
   for(const record of partBundle.records||[]){const option=document.createElement("option");option.value=record.partId;option.textContent=record.displayName+" ["+record.partId+"]";partSelect.append(option);}
   partSelect.value=partBundle.records?.[0]?.partId||"";renderPartCutSheet();
-  partStatus.textContent="Loaded "+(partBundle.records?.length||0)+" stable part records.";
+  partStatus.textContent="Loaded "+(partBundle.records?.length||0)+" stable part records.";if(demoCatalog)renderResearchState();
  }catch(error){partStatus.textContent="Part records unavailable: "+String(error);}
 }
 
@@ -77,18 +77,29 @@ const researchCredits=document.querySelector("#research-credits"),demoCost=docum
 const requestDemoButton=document.querySelector("#request-demo"),completeSetupButton=document.querySelector("#complete-setup"),fireDemoButton=document.querySelector("#fire-demo"),investCoolingButton=document.querySelector("#invest-cooling"),resetDemoButton=document.querySelector("#reset-demo");
 const specimen=document.querySelector("#specimen"),specimenContext=specimen.getContext("2d");
 let demoCatalog=null,researchState=createResearchState(),renderedLogCount=0;
-function drawSpecimen(result=null){
+function drawSpecimen(result=null,partRecord=null){
  const ctx=specimenContext,w=specimen.width,h=specimen.height;ctx.clearRect(0,0,w,h);
  const bg=ctx.createLinearGradient(0,0,w,h);bg.addColorStop(0,"#111d2a");bg.addColorStop(1,"#05080d");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
- ctx.strokeStyle="#32455a";ctx.lineWidth=2;ctx.strokeRect(18,18,w-36,h-36);ctx.fillStyle="#a7bad0";ctx.font="14px system-ui";ctx.fillText("SPECIMEN / STERNUM ASSEMBLY",34,43);
- const plate=ctx.createLinearGradient(150,60,480,290);plate.addColorStop(0,"#7f91a5");plate.addColorStop(.28,"#34465b");plate.addColorStop(.7,"#172536");plate.addColorStop(1,"#56687c");
- ctx.save();ctx.translate(w/2,h/2+10);ctx.transform(1,.08,-.18,1,0,0);ctx.fillStyle="#080d14";ctx.fillRect(-142,-91,284,182);ctx.fillStyle=plate;ctx.fillRect(-130,-80,260,160);ctx.strokeStyle="#9cb0c4";ctx.lineWidth=3;ctx.strokeRect(-130,-80,260,160);
- for(let i=0;i<4;i++){ctx.strokeStyle="rgba(150,190,220,.25)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-112,-54+i*36);ctx.lineTo(112,-54+i*36);ctx.stroke();}
- if(result?.impact){const heat=ctx.createRadialGradient(0,0,5,0,0,92);heat.addColorStop(0,"rgba(255,39,10,.98)");heat.addColorStop(.28,"rgba(255,91,20,.78)");heat.addColorStop(.62,"rgba(255,100,35,.25)");heat.addColorStop(1,"rgba(255,100,35,0)");ctx.fillStyle=heat;ctx.fillRect(-110,-90,220,180);ctx.fillStyle="#08080a";ctx.beginPath();ctx.arc(0,0,27,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#ff7b32";ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,0,34,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#ffb45d";ctx.lineWidth=2;for(let i=0;i<12;i++){const a=i*Math.PI/6;ctx.beginPath();ctx.moveTo(Math.cos(a)*38,Math.sin(a)*38);ctx.lineTo(Math.cos(a)*52,Math.sin(a)*52);ctx.stroke();}}
+ ctx.strokeStyle="#32455a";ctx.lineWidth=2;ctx.strokeRect(18,18,w-36,h-36);
+ ctx.fillStyle="#a7bad0";ctx.font="14px system-ui";ctx.fillText("PART SPECIMEN / "+(partRecord?.partId||"geometry pending"),34,43);
+ const dims=partRecord?.geometry?.nominal?.dimensions||[.38,.27,.045];
+ const largest=Math.max(Number(dims[0])||.38,Number(dims[1])||.27,.001);
+ const plateW=Math.max(66,Math.min(260,260*(Number(dims[0])||.38)/largest));
+ const plateH=Math.max(66,Math.min(190,190*(Number(dims[1])||.27)/largest));
+ const thickness=Math.max(7,Math.min(22,(Number(dims[2])||.045)*300));
+ const px=w/2,py=h/2+5,left=-plateW/2,top=-plateH/2;
+ const plate=ctx.createLinearGradient(left,top,left+plateW,top+plateH);plate.addColorStop(0,"#9aabbd");plate.addColorStop(.28,"#465a70");plate.addColorStop(.7,"#172536");plate.addColorStop(1,"#61748a");
+ ctx.save();ctx.translate(px,py);
+ ctx.fillStyle="#080d14";ctx.beginPath();ctx.moveTo(left-12,top-8);ctx.lineTo(left+plateW+thickness+8,top-8);ctx.lineTo(left+plateW+thickness+8,top+plateH+thickness);ctx.lineTo(left-12,top+plateH+thickness);ctx.closePath();ctx.fill();
+ ctx.fillStyle="#26384b";ctx.beginPath();ctx.moveTo(left,top);ctx.lineTo(left+plateW,top);ctx.lineTo(left+plateW+thickness,top-thickness*.55);ctx.lineTo(left+thickness,top-thickness*.55);ctx.closePath();ctx.fill();
+ ctx.fillStyle="#101a27";ctx.beginPath();ctx.moveTo(left+plateW,top);ctx.lineTo(left+plateW+thickness,top-thickness*.55);ctx.lineTo(left+plateW+thickness,top+plateH-thickness*.55);ctx.lineTo(left+plateW,top+plateH);ctx.closePath();ctx.fill();
+ ctx.fillStyle=plate;ctx.fillRect(left,top,plateW,plateH);ctx.strokeStyle="#a9bdcf";ctx.lineWidth=2;ctx.strokeRect(left,top,plateW,plateH);
+ const ribs=Math.max(2,Math.min(6,Math.round(plateH/32)));for(let i=1;i<ribs;i++){ctx.strokeStyle="rgba(150,190,220,.25)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left+8,top+plateH*i/ribs);ctx.lineTo(left+plateW-8,top+plateH*i/ribs);ctx.stroke();}
+ if(result?.impact){const radius=Math.min(68,Math.max(22,plateW*.14));const heat=ctx.createRadialGradient(0,0,5,0,0,radius*2.6);heat.addColorStop(0,"rgba(255,39,10,.98)");heat.addColorStop(.28,"rgba(255,91,20,.78)");heat.addColorStop(.62,"rgba(255,100,35,.25)");heat.addColorStop(1,"rgba(255,100,35,0)");ctx.fillStyle=heat;ctx.fillRect(-radius*2.6,-radius*2.6,radius*5.2,radius*5.2);ctx.fillStyle="#08080a";ctx.beginPath();ctx.arc(0,0,radius*.78,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#ff7b32";ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#ffb45d";ctx.lineWidth=2;for(let i=0;i<12;i++){const a=i*Math.PI/6;ctx.beginPath();ctx.moveTo(Math.cos(a)*radius*1.1,Math.sin(a)*radius*1.1);ctx.lineTo(Math.cos(a)*radius*1.5,Math.sin(a)*radius*1.5);ctx.stroke();}}
  ctx.restore();
  if(result?.barrelHeatC>0){ctx.save();ctx.translate(w-100,76);ctx.rotate(.2);ctx.fillStyle="#141d28";ctx.fillRect(-58,-12,116,24);ctx.fillStyle=result.barrelHeatC>500?"#f13c20":result.barrelHeatC>300?"#e88435":"#9b9d9a";ctx.fillRect(-54,-8,105,16);ctx.fillStyle="#ffb15b";ctx.fillRect(-56,-7,20,14);ctx.restore();ctx.fillStyle="#ffb0a0";ctx.fillText("BARREL HEAT",w-154,48);}
  if(result?.chassisHeatC>0){ctx.strokeStyle="rgba(255,106,47,.48)";ctx.lineWidth=5;for(let i=0;i<5;i++){const x=75+i*16;ctx.beginPath();ctx.moveTo(x,250);ctx.bezierCurveTo(x-15,225,x+15,205,x,180);ctx.stroke();}ctx.fillStyle="#ffc09b";ctx.fillText("THERMAL DISTORTION",34,h-32);}
- ctx.fillStyle="#9db2c9";ctx.font="12px system-ui";ctx.fillText(result?.impact?"IMPACT REGISTERED / CRATER + HOT EDGE":"BASELINE / AWAITING RANGE EVENT",34,h-49);
+ ctx.fillStyle="#9db2c9";ctx.font="12px system-ui";ctx.fillText(result?.impact?"IMPACT REGISTERED / CRATER + HOT EDGE":"NOMINAL BLOCKOUT / DATA-SCALED SPECIMEN",34,h-49);
 }
 function renderResearchState(){
  researchCredits.textContent=researchState.credits.toLocaleString()+" cr";coolingTierLabel.textContent=researchState.coolingTier===0?"Baseline":("Prototype "+String.fromCharCode(65+researchState.coolingTier));
@@ -103,7 +114,7 @@ function renderResearchState(){
  const result=researchState.lastResult?.ok?researchState.lastResult:null;
  document.querySelector("#barrel-temp").textContent=result?.barrelHeatC?result.barrelHeatC+" °C*":"—";document.querySelector("#chassis-temp").textContent=result?.chassisHeatC?result.chassisHeatC+" °C*":"—";document.querySelector("#heat-transfer").textContent=result?Math.round(result.heatTransfer*100)+"%*":"—";
  document.querySelector("#scientist-line").textContent=result?.impact?(researchState.coolingTier===0?"Head scientist: “As you can see, sire, we still struggle with dissipating the heat…”":"Head scientist: “The heat-routing prototype is promising. Now we must prove the chassis can carry the load.”"):result?.scientistDialogue?"Head scientist: “The instrumented route is live. We will compare the frame's hot zones against the baseline before calling this a success.”":"The scientist waits for your order.";
- document.querySelector("#specimen-title").textContent=result?.impact?"Impact specimen / post-shot":"Instrumented specimen / sternum plate";drawSpecimen(result);
+ document.querySelector("#specimen-title").textContent=result?.impact?"Impact specimen / post-shot":(demo?.title||"Instrumented specimen");const specimenRecord=findPartRecord(partBundle,demo?.partId||"torso.sternum-plate");drawSpecimen(result,specimenRecord);
 }
 async function initializeResearchCatalog(){try{const response=await fetch("./research-demonstrations.json");if(!response.ok)throw new Error("HTTP "+response.status);demoCatalog=await response.json();demoSelect.replaceChildren();for(const demo of demoCatalog.demonstrations){const option=document.createElement("option");option.value=demo.id;option.textContent=demo.title;demoSelect.append(option);}demoSelect.value=researchState.selectedDemonstrationId;renderResearchState();}catch(error){researchStatus.textContent="Research catalog unavailable: "+String(error);}}
 function requestRecoilHaptic(){try{const pads=typeof navigator.getGamepads==="function"?Array.from(navigator.getGamepads()):[];const pad=pads.find(item=>item&&item.connected);const actuator=pad?.vibrationActuator;if(actuator&&typeof actuator.playEffect==="function"){void actuator.playEffect("dual-rumble",{duration:140,strongMagnitude:.72,weakMagnitude:.38}).catch(()=>{});return true;}const legacy=pad?.hapticActuators?.[0];if(legacy&&typeof legacy.pulse==="function"){void legacy.pulse(.72,140).catch(()=>{});return true;}}catch{}return false;}
