@@ -66,6 +66,25 @@ jobs:
           echo "Verified package: $package"
           echo "Verified dependency package: $core_package"
 
+      - name: Generate GUI.SVG feature gallery
+        run: dotnet run --project GuiSource/samples/SvgGallery/SvgGallery.csproj --configuration Release -- ./artifacts/gui-svg-gallery.svg
+
+      - name: Verify and upload GUI.SVG feature gallery
+        shell: bash
+        run: |
+          set -euo pipefail
+          gallery="./artifacts/gui-svg-gallery.svg"
+          test -s "$gallery"
+          grep -q '<linearGradient' "$gallery"
+          grep -q '<clipPath' "$gallery"
+          grep -q '<animate' "$gallery"
+          grep -q 'aria-label="GUI.SVG manifestation gallery"' "$gallery"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: gui-svg-feature-gallery
+          path: ./artifacts/gui-svg-gallery.svg
+          if-no-files-found: error
+
       - name: Create a package-only consumer
         shell: bash
         run: |
