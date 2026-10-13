@@ -4,11 +4,11 @@
  * Vertex format: position.xyz + materialColour.rgb (six float32 values).
  */
 const MATERIALS = {
-  carbon:[0.035,0.055,0.075], chassis:[0.105,0.15,0.18],
-  armor:[0.23,0.31,0.36], edge:[0.42,0.53,0.57],
-  ceramic:[0.15,0.22,0.25], joint:[0.075,0.10,0.13],
-  light:[0.08,0.88,0.84], warning:[0.95,0.46,0.15],
-  visor:[0.025,0.19,0.22], weapon:[0.075,0.09,0.11]
+  carbon:[0.055,0.075,0.10], chassis:[0.14,0.20,0.24],
+  armor:[0.32,0.40,0.46], edge:[0.58,0.72,0.78],
+  ceramic:[0.22,0.29,0.34], joint:[0.09,0.13,0.17],
+  light:[0.12,1.0,0.90], warning:[1.0,0.35,0.08],
+  visor:[0.025,0.24,0.30], weapon:[0.08,0.11,0.14]
 };
 
 /** Stable semantic IDs allow later animation, damage, and detail tiers. */
@@ -54,15 +54,36 @@ export const SOLDIER_PARTS = [
 ];
 
 function appendBox(out,center,size,color){
- const [x,y,z]=center,[sx,sy,sz]=size,x0=x-sx/2,x1=x+sx/2,y0=y-sy/2,y1=y+sy/2,z0=z-sz/2,z1=z+sz/2;
- const faces=[
- [[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]],
- [[x1,y0,z0],[x0,y0,z0],[x0,y1,z0],[x1,y1,z0]],
- [[x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0]],
- [[x1,y0,z1],[x1,y0,z0],[x1,y1,z0],[x1,y1,z1]],
- [[x0,y1,z1],[x1,y1,z1],[x1,y1,z0],[x0,y1,z0]],
- [[x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1]]];
- for(const face of faces)for(const tri of [[0,1,2],[0,2,3]])for(const j of tri)out.push(...face[j],...color);
+ const [x,y,z]=center,[sx,sy,sz]=size;
+ const x0=x-sx/2,x1=x+sx/2,y0=y-sy/2,y1=y+sy/2,z0=z-sz/2,z1=z+sz/2;
+ const b=Math.min(sx,sy,sz)*0.14;
+ const tri=(a,c,d)=>{for(const p of [a,c,d])out.push(...p,...color);};
+ const quad=(a,c,d,e)=>{tri(a,c,d);tri(a,d,e);};
+ // Broad inset faces preserve the armor silhouette while bevel planes catch highlights.
+ quad([x0+b,y0+b,z1],[x1-b,y0+b,z1],[x1-b,y1-b,z1],[x0+b,y1-b,z1]);
+ quad([x1-b,y0+b,z0],[x0+b,y0+b,z0],[x0+b,y1-b,z0],[x1-b,y1-b,z0]);
+ quad([x0,y0+b,z0+b],[x0,y0+b,z1-b],[x0,y1-b,z1-b],[x0,y1-b,z0+b]);
+ quad([x1,y0+b,z1-b],[x1,y0+b,z0+b],[x1,y1-b,z0+b],[x1,y1-b,z1-b]);
+ quad([x0+b,y1,z1-b],[x1-b,y1,z1-b],[x1-b,y1,z0+b],[x0+b,y1,z0+b]);
+ quad([x0+b,y0,z0+b],[x1-b,y0,z0+b],[x1-b,y0,z1-b],[x0+b,y0,z1-b]);
+ // Twelve chamfer strips along the edges.
+ for(const xs of [-1,1])for(const ys of [-1,1]){
+  const xf=xs<0?x0:x1,xi=xs<0?x0+b:x1-b,yf=ys<0?y0:y1,yi=ys<0?y0+b:y1-b;
+  quad([xf,yi,z0+b],[xi,yf,z0+b],[xi,yf,z1-b],[xf,yi,z1-b]);
+ }
+ for(const xs of [-1,1])for(const zs of [-1,1]){
+  const xf=xs<0?x0:x1,xi=xs<0?x0+b:x1-b,zf=zs<0?z0:z1,zi=zs<0?z0+b:z1-b;
+  quad([xf,y0+b,zi],[xi,y0+b,zf],[xi,y1-b,zf],[xf,y1-b,zi]);
+ }
+ for(const ys of [-1,1])for(const zs of [-1,1]){
+  const yf=ys<0?y0:y1,yi=ys<0?y0+b:y1-b,zf=zs<0?z0:z1,zi=zs<0?z0+b:z1-b;
+  quad([x0+b,yf,zi],[x0+b,yi,zf],[x1-b,yi,zf],[x1-b,yf,zi]);
+ }
+ // Eight triangular corner facets close the bevels without changing part IDs or bounds.
+ for(const xs of [-1,1])for(const ys of [-1,1])for(const zs of [-1,1]){
+  const xf=xs<0?x0:x1,xi=xs<0?x0+b:x1-b,yf=ys<0?y0:y1,yi=ys<0?y0+b:y1-b,zf=zs<0?z0:z1,zi=zs<0?z0+b:z1-b;
+  tri([xf,yi,zi],[xi,yf,zi],[xi,yi,zf]);
+ }
 }
 function appendEllipsoid(out,center,radii,color,segments=10,rings=6){
  const [cx,cy,cz]=center,[rx,ry,rz]=radii;
