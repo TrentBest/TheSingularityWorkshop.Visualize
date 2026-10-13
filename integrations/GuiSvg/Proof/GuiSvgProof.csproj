@@ -7,6 +7,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="PerspectiveMeshProof.cs" />
     <ProjectReference Include="../TheSingularityWorkshop.Visualize.GUI.SVG.csproj" />
   </ItemGroup>
 </Project>
