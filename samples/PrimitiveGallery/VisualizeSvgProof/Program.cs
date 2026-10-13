@@ -19,7 +19,8 @@ var examples = new[]
 foreach (var example in examples)
 {
     var litStudy = example.Title.StartsWith("Lit hemisphere", StringComparison.Ordinal);
-    await using var visualizer = new Visualizer(new SvgProofBackend(example.Path, example.Title, litStudy, litStudy), example.Resources);
+    var animateConnectedPoints = example.Title.StartsWith("Four connected points", StringComparison.Ordinal);
+    await using var visualizer = new Visualizer(new SvgProofBackend(example.Path, example.Title, litStudy, litStudy, animateConnectedPoints), example.Resources);
     var result = await visualizer.RenderAsync(example.Frame);
     Console.WriteLine($"{example.Title}: Visualizer submitted {result.SubmittedDrawCount} draw command(s) -> {example.Path}");
 }
@@ -177,7 +178,7 @@ static VisualizerVertex Vertex3D(float x, float y, float z, float nx, float ny, 
 
 sealed record Example(string Path, string Title, VisualizerResourceCatalog Resources, VisualizerFrame Frame);
 
-sealed class SvgProofBackend(string path, string title, bool illuminate = false, bool showNormals = false) : IVisualizerBackend
+sealed class SvgProofBackend(string path, string title, bool illuminate = false, bool showNormals = false, bool animateConnectedPoints = false) : IVisualizerBackend
 {
     private static readonly Vector3 LightDirection = Vector3.Normalize(new Vector3(-0.45f, 0.55f, 0.70f));
     private long _frame;
@@ -245,6 +246,14 @@ sealed class SvgProofBackend(string path, string title, bool illuminate = false,
                         .Append("\" stroke=\"#7ee0bd\" stroke-width=\"1.2\" opacity=\".95\"/>");
                 }
             }
+        }
+        if (animateConnectedPoints)
+        {
+            // The moving marker is an SVG presentation effect layered over the actual
+            // connected-point geometry submitted through Visualizer.RenderAsync.
+            sb.Append("<path id=\"connected-route\" d=\"M64 154L256 154L256 26L64 26Z\" fill=\"none\" stroke=\"#7ee0bd\" stroke-width=\"1.5\" stroke-dasharray=\"5 7\" opacity=\".85\">")
+                .Append("<animate attributeName=\"stroke-dashoffset\" from=\"0\" to=\"-48\" dur=\"4s\" repeatCount=\"indefinite\"/></path>")
+                .Append("<circle r=\"4.5\" fill=\"#ffcf86\" stroke=\"#fff1ce\" stroke-width=\"1.5\"><animateMotion dur=\"4s\" repeatCount=\"indefinite\" path=\"M64 154L256 154L256 26L64 26Z\"/></circle>");
         }
         sb.Append("</svg>");
         File.WriteAllText(path, sb.ToString());
