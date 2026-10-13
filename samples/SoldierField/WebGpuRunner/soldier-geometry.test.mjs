@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
+  buildPartGeometry,
   buildSoldierGeometry,
   SOLDIER_GEOMETRY_LAYOUT,
   SOLDIER_PARTS
@@ -43,4 +44,35 @@ test("generated mesh is deterministic finite triangle-list vertex data", () => {
   }
 
   assert.equal(SOLDIER_GEOMETRY_LAYOUT.bytesPerVertex, stride * Float32Array.BYTES_PER_ELEMENT);
+});
+
+
+test("a selected component is rendered from its own local geometry", () => {
+  const first = buildPartGeometry("torso.sternum-plate");
+  const second = buildPartGeometry("torso.sternum-plate");
+  assert.ok(first instanceof Float32Array);
+  assert.ok(first.length > 0);
+  assert.equal(first.length % (SOLDIER_GEOMETRY_LAYOUT.floatsPerVertex * 3), 0);
+  assert.deepEqual(first, second);
+  assert.ok(first.every(Number.isFinite));
+  assert.throws(() => buildPartGeometry("part.does-not-exist"), /Unknown soldier part ID/);
+});
+
+test("impact events add stable visible geometry only to their own component", () => {
+  const base = buildPartGeometry("torso.sternum-plate");
+  const impact = {
+    eventId: "damage-0001-torso.sternum-plate",
+    partId: "torso.sternum-plate",
+    positionNormalized: [0.1, -0.1],
+    radiusFraction: 0.12,
+    hitNumber: 1
+  };
+  const damaged = buildPartGeometry("torso.sternum-plate", [impact]);
+  const otherPart = buildPartGeometry("pack.heat-exchangers.left", [impact]);
+
+  assert.ok(damaged.length > base.length, "impact overlay should add render triangles");
+  assert.equal(otherPart.length, buildPartGeometry("pack.heat-exchangers.left").length,
+    "an event for the plate must not alter the heat exchanger geometry");
+  assert.deepEqual(damaged, buildPartGeometry("torso.sternum-plate", [impact]));
+  assert.ok(damaged.every(Number.isFinite));
 });
