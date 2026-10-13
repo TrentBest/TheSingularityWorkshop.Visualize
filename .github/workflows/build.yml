@@ -188,6 +188,12 @@ jobs:
           --configuration Release
           -- ./samples/PrimitiveGallery/generated/08-gui-svg-perspective-mesh.svg
 
+      - name: Generate GUI.SVG feature gallery in the combined proof set
+        run: >
+          dotnet run --project integrations/GuiSvg/GuiSource/samples/SvgGallery/SvgGallery.csproj
+          --configuration Release
+          -- ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+
       - name: Verify generated Visualizer SVG proof outputs
         shell: bash
         run: |
@@ -200,13 +206,20 @@ jobs:
             05-many-lines-24.svg \
             06-lit-hemisphere-normals.svg \
             07-gui-svg-connected-points.svg \
-            08-gui-svg-perspective-mesh.svg; do
+            08-gui-svg-perspective-mesh.svg \
+            09-gui-svg-feature-gallery.svg; do
             file="./samples/PrimitiveGallery/generated/$sample"
             test -s "$file" || { echo "Missing or empty Visualizer output: $file"; exit 1; }
             grep -q '<path' "$file" || { echo "No rendered paths in: $file"; exit 1; }
           done
           grep -q 'stroke="#7ee0bd"' ./samples/PrimitiveGallery/generated/06-lit-hemisphere-normals.svg
           grep -q 'attributeName="r"' ./samples/PrimitiveGallery/generated/07-gui-svg-connected-points.svg
+          grep -q '<linearGradient' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<pattern' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<marker' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<filter' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<use' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<animate' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
 
       - name: Upload Visualizer SVG proof images
         uses: actions/upload-artifact@v7
