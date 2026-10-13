@@ -53,6 +53,7 @@ jobs:
           node --check samples/SoldierField/WebGpuRunner/soldier-geometry.js
           node --check samples/SoldierField/WebGpuRunner/soldier-cut-sheet.mjs
           node --check samples/SoldierField/WebGpuRunner/soldier-research-simulation.mjs
+          node --test samples/SoldierField/WebGpuRunner/soldier-geometry.test.mjs
           node --test samples/SoldierField/WebGpuRunner/soldier-cut-sheet.test.mjs
           node --test samples/SoldierField/WebGpuRunner/soldier-research-simulation.test.mjs
 
