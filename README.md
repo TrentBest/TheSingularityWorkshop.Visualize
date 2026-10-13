@@ -78,6 +78,7 @@ The tests verify the current contracts. To see an actual procedural sci-fi exosk
 - [Performance and benchmark rules](docs/PERFORMANCE.md) — understand how performance evidence must be collected and reported.
 - [Physics-based lighting, shadows, and extensible math](docs/LIGHTING_AND_SHADOWS.md) — understand physical light-source meaning, independent horizon work buckets, MicroBundle arbitration, cache invalidation, and the staged plan for optional math optimizations.
 - [Open questions](docs/OPEN_QUESTIONS.md) — review unresolved design decisions.
+- [Research notes](docs/RESEARCH_NOTES.md) — preserve exploratory concepts, including a rotating, segmented spacecraft-armor hypothesis, without treating them as validated engineering or current implementation.
 - [Decision records](docs/decisions/README.md) — follow architectural choices and their rationale.
 
 ## 🟢 Build and test
