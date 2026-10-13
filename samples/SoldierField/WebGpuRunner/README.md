@@ -33,7 +33,17 @@ The current records are BIM-inspired engineering data, not a claim of certified 
 
 The tablet offers a sternum-plate impact, thermal-dissipation prototype, and non-firing cutaway. Each entry has a stable ID, part reference, fictional research-credit price, setup-time estimate, event sequence, and research question. The player orders the test, advances the simulated setup clock, and runs the demonstration. The impact scene shows a crater and hot edge, a simulated hot barrel, a chassis thermal halo, and the head scientist's explanation. Funding cooling research changes the next simulated thermal result and unlocks a nearby trooper's dry joke about the rifle transferring heat into the exoskeleton.
 
-The research board retains each run so the baseline and funded cooling iteration can be compared. The sternum plate is tagged as the fictional most-hit candidate, but its hit share is null and explicitly unmeasured; campaign simulation should eventually produce the distribution. The costs, temperatures, hit-rate premise, cooling gains, and dialogue are gameplay parameters, not measured engineering data. The impact requests a short rumble through the browser gamepad vibration API when a connected controller exposes compatible support; otherwise recoil remains visual and logged. This best-effort path has not been validated against physical controller hardware. The visible plate is a specimen illustration driven by the research result, not yet an independently manipulable 3D subassembly.
+The research board retains each run so the baseline and funded cooling iteration can be compared. The sternum plate is tagged as the fictional most-hit candidate, but its hit share is null and explicitly unmeasured; campaign simulation should eventually produce the distribution. The costs, temperatures, hit-rate premise, cooling gains, and dialogue are gameplay parameters, not measured engineering data. The impact requests a short rumble through the browser gamepad vibration API when a connected controller exposes compatible support; otherwise recoil remains visual and logged. This best-effort path has not been validated against physical controller hardware. The specimen is now a data-scaled, perspective-projected solid that can be rotated by dragging; the helmet-tablet focus mode promotes it to the main view. The shot overlays a hot through-hole, incandescent edge, rear-spall cue, hot barrel, and continuously animated chassis shimmer. These are presentation effects driven by the simulation result, not a physically solved fracture mesh, ballistic solver, or thermal-flow solver.
+
+## Handling the prototype specimen
+
+1. Order **Sternum Plate — Single Impact** and review the cost and setup estimate.
+2. Advance the simulated setup clock, then enter the range.
+3. Use **Enter specimen focus** to make the research exhibit the main view.
+4. Drag the plate to inspect its thickness and face from different angles. After the simulated shot, inspect the hot bore, glowing rim, rear-spall cue, red-hot barrel, and animated thermal distortion.
+5. Fund cooling research, repeat the test, and compare retained trials on the research board. The model lowers the barrel-peak parameter while routing more heat into the chassis, and unlocks the nearby trooper's complaint/joke.
+
+The plate currently rotates as a projected solid in a 2D canvas; it is not yet a separately uploaded GPU submesh. The apparent hole and rear-spall are illustrative overlays rather than a true cut mesh. The focus mode is a prototype presentation affordance, not a completed VR runtime or helmet tracking system.
 
 ## What it does
 
