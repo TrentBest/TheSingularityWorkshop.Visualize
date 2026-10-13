@@ -43,6 +43,8 @@ foreach (var example in examples)
 
 [Open the exact C# source](samples/PrimitiveGallery/VisualizeSvgProof/Program.cs) · [Inspect the color-coded presentation](samples/PrimitiveGallery/api-consumption.html)
 
+The initial [`TheSingularityWorkshop.GUI.SVG` adapter](https://github.com/TrentBest/TheSingularityWorkshop.GUI/tree/development/src/SVG) is now being built in the GUI repository as a reusable .NET package. It manifests neutral GUI nodes and 2D coordinate scenes as SVG. This Visualize proof still uses its own small SVG backend; wiring the reusable adapter into Visualize is the next integration milestone. The package is not published, and no publishing or deployment was performed.
+
 The larger [living SVG illustration](docs/assets/living-showcase.svg) shows the direction for documentation visuals. The [interactive SVG Primitive Lab source](samples/PrimitiveGallery/index.html) is the browser-only sandbox for changing primitive type, count, positions, colour, and spread; it is intentionally a separate execution path. The [Primitive Gallery guide](samples/PrimitiveGallery/README.md) puts the contract-backed output, browser experiment, and their evidence boundaries side by side.
 
 Next, we will replace more illustrative motion with behavior and scene data controlled by the Workshop's own code, keeping the SVG surface subordinate to your state and composition rules. Consumer-specific scenes, such as raWWar's soldier and exoskeleton, belong in the consuming Experience and should exercise Visualize through its public contracts, not define Visualize's own sample identity.
