@@ -104,6 +104,44 @@ export function buildSoldierGeometry(){
  }
  return new Float32Array(out);
 }
+function appendDamageOverlay(out,part,event,isRecent){
+ if(part.shape!=="box")return;
+ const [sx,sy,sz]=part.size;
+ const x=event.positionNormalized[0]*sx,y=event.positionNormalized[1]*sy,z=sz/2+0.0015;
+ const radius=Math.min(sx,sy)*event.radiusFraction*2.4;
+ const dark=[0.012,0.016,0.022],ring=isRecent?[1.0,0.16,0.035]:[0.42,0.13,0.075];
+ const triangle=(a,b,c,color)=>{for(const p of [a,b,c])out.push(...p,...color);};
+ const segments=28;
+ for(let i=0;i<segments;i++){
+  const a=i/segments*Math.PI*2,b=(i+1)/segments*Math.PI*2;
+  const p0=[x+Math.cos(a)*radius,y+Math.sin(a)*radius,z];
+  const p1=[x+Math.cos(b)*radius,y+Math.sin(b)*radius,z];
+  triangle([x,y,z+0.0001],p0,p1,dark);
+  const outer0=[x+Math.cos(a)*radius*1.42,y+Math.sin(a)*radius*1.42,z+0.0004];
+  const outer1=[x+Math.cos(b)*radius*1.42,y+Math.sin(b)*radius*1.42,z+0.0004];
+  triangle(p0,outer0,outer1,ring);
+  triangle(p0,outer1,p1,ring);
+ }
+}
+
+/**
+ * Builds one semantic component in part-local coordinates, with optional
+ * persistent impact overlays projected onto the +Z face of box-shaped parts.
+ * Damage overlays are visible render geometry; they do not claim a true
+ * volumetric fracture or certified physical deformation model.
+ */
+export function buildPartGeometry(partId,damageEvents=[]){
+ const part=SOLDIER_PARTS.find(candidate=>candidate.id===partId);
+ if(!part)throw new RangeError("Unknown soldier part ID: "+partId);
+ const out=[],color=MATERIALS[part.material];
+ if(part.shape==="box")appendBox(out,[0,0,0],part.size,color);
+ else if(part.shape==="ellipsoid")appendEllipsoid(out,[0,0,0],part.radii,color,part.segments??10,part.rings??6);
+ else throw new Error("Unsupported geometry primitive: "+part.shape);
+ const matching=(damageEvents||[]).filter(event=>event?.partId===partId);
+ for(let index=0;index<matching.length;index++)appendDamageOverlay(out,part,matching[index],index===matching.length-1);
+ return new Float32Array(out);
+}
+
 export const SOLDIER_GEOMETRY_LAYOUT=Object.freeze({
  format:"float32-position3-colour3-nonindexed-triangles",floatsPerVertex:6,bytesPerVertex:24,
  coordinateSystem:"+Y up; +Z forward; +X soldier-right",units:"metres",nominalHeightMetres:1.9,
