@@ -91,6 +91,7 @@ export function fireDemonstration(state, catalog) {
     partId: demo.partId,
     impact: Boolean(demo.effects.impact),
     penetration: Boolean(demo.effects.penetration),
+    scientistDialogue: Boolean(demo.effects.scientistDialogue),
     barrelHeatC,
     chassisHeatC,
     heatTransfer,
