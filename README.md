@@ -16,6 +16,33 @@
 
 This is the first living visual in the documentation sequence whose **geometry is submitted through the actual C# Visualizer contracts and written by its SVG proof backend**. The connected points and segments are real backend output; the moving marker and dashed trace are SVG presentation effects layered over that output. The animation does not pretend to be an FSM update loop or a production GPU renderer.
 
+### Follow the actual API consumption
+
+The color-coded [API-to-SVG proof page](samples/PrimitiveGallery/api-consumption.html) pairs the live SVG with the C# call path. The code below is taken from the proof harness itself.
+
+- 🟦 **Scene and contract data** — build geometry, materials, instances, and a `VisualizerFrame`.
+- 🟩 **API consumption** — instantiate `Visualizer` with a backend/resource provider, then submit the frame through `RenderAsync`.
+- 🟨 **Presentation-specific effect** — the SVG backend adds the moving marker and dashed trace after consuming the submitted geometry.
+
+```csharp
+// 🟦 The example has already built its geometry and VisualizerFrame.
+foreach (var example in examples)
+{
+    var litStudy = example.Title.StartsWith("Lit hemisphere", StringComparison.Ordinal);
+    var animateConnectedPoints = example.Title.StartsWith("Four connected points", StringComparison.Ordinal);
+
+    // 🟨 Choose the proof backend and its SVG-only presentation effect.
+    // 🟩 This is the actual Visualizer API consumption.
+    await using var visualizer = new Visualizer(
+        new SvgProofBackend(example.Path, example.Title, litStudy, litStudy, animateConnectedPoints),
+        example.Resources);
+    var result = await visualizer.RenderAsync(example.Frame);
+    Console.WriteLine($"{example.Title}: Visualizer submitted {result.SubmittedDrawCount} draw command(s) -> {example.Path}");
+}
+```
+
+[Open the exact C# source](samples/PrimitiveGallery/VisualizeSvgProof/Program.cs) · [Inspect the color-coded presentation](samples/PrimitiveGallery/api-consumption.html)
+
 The larger [living SVG illustration](docs/assets/living-showcase.svg) shows the direction for documentation visuals. The [interactive SVG Primitive Lab source](samples/PrimitiveGallery/index.html) is the browser-only sandbox for changing primitive type, count, positions, colour, and spread; it is intentionally a separate execution path. The [Primitive Gallery guide](samples/PrimitiveGallery/README.md) puts the contract-backed output, browser experiment, and their evidence boundaries side by side.
 
 Next, we will replace more illustrative motion with behavior and scene data controlled by the Workshop's own code, keeping the SVG surface subordinate to your state and composition rules. Consumer-specific scenes, such as raWWar's soldier and exoskeleton, belong in the consuming Experience and should exercise Visualize through its public contracts, not define Visualize's own sample identity.
