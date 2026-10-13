@@ -15,6 +15,7 @@ export function createResearchState(credits = RESEARCH_CREDITS_START) {
     activeDemonstrationId: null,
     setupMinutesRemaining: 0,
     shotCount: 0,
+    trials: [],
     lastResult: null,
     log: ["Head scientist: “The range is yours, sire. Which question shall we put to the machine?”"]
   };
@@ -87,6 +88,7 @@ export function fireDemonstration(state, catalog) {
   const chassisHeatC = demo.effects.armorHeat ? Math.round(110 + heatTransfer * 120) : 0;
   const result = {
     ok: true,
+    trialNumber: state.trials.length + 1,
     demonstrationId: demo.id,
     partId: demo.partId,
     impact: Boolean(demo.effects.impact),
@@ -117,6 +119,7 @@ export function fireDemonstration(state, catalog) {
     ...state,
     phase: "result",
     shotCount,
+    trials: [...state.trials, result],
     lastResult: result,
     log
   };
