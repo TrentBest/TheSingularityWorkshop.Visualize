@@ -109,8 +109,16 @@ test("each trial is a versioned, traceable experiment record with a stable part 
   assert.equal(trial.damageEventId, trial.damageEvent.eventId);
   assert.equal(trial.damageEvent.partId, trial.partId);
   assert.equal(trial.partCondition.partId, trial.partId);
-  for (const field of trialSchema.$defs?.damageEvent?.required || []) {
+  const damageEventRequired = [
+    "schemaVersion", "eventId", "trialId", "partId", "hitNumber",
+    "positionNormalized", "radiusFraction", "integrityLossFraction",
+    "penetration", "impactHeatIndex", "valuesAreFictional"
+  ];
+  for (const field of damageEventRequired) {
     assert.ok(Object.hasOwn(trial.damageEvent, field), "missing damage event field: " + field);
+  }
+  for (const field of trialSchema.properties.partCondition.required) {
+    assert.ok(Object.hasOwn(trial.partCondition, field), "missing part condition field: " + field);
   }
 });
 
@@ -147,4 +155,18 @@ test("a thermal-routing trial changes its own component condition, not the armor
   assert.equal(state.lastResult.partId, "pack.heat-exchangers.left");
   assert.equal(state.partConditions["pack.heat-exchangers.left"].thermalCycleCount, 1);
   assert.equal(state.partConditions["pack.heat-exchangers.left"].hitCount, 0);
+});
+
+
+test("non-impact thermal trials record a component condition without inventing an impact event", () => {
+  let state = requestDemonstration(createResearchState(), catalog, "cooling-iteration");
+  state = completeSetup(state);
+  state = fireDemonstration(state, catalog);
+
+  assert.equal(state.lastResult.impact, false);
+  assert.equal(state.lastResult.damageEvent, null);
+  assert.equal(state.lastResult.damageEventId, null);
+  assert.equal(state.damageEvents.length, 0);
+  assert.equal(state.partConditions["pack.heat-exchangers.left"].hitCount, 0);
+  assert.equal(state.partConditions["pack.heat-exchangers.left"].thermalCycleCount, 1);
 });
