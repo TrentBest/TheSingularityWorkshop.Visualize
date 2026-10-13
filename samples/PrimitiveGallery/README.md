@@ -43,7 +43,7 @@ The next progression should be derived from the actual C# contract tests and the
 
 ## Replay an actual FSM_API run
 
-The [FSM Trace Replay](fsm-trace-replay.html) page loads JSON snapshots exported by the C# [SimpleDemos](https://github.com/TrentBest/SimpleDemos) console app. Run its `--export-trace` mode, then select the resulting JSON file in the replay page. The page maps recorded agent positions and labels to the recorded FSM states; it does not execute FSM_API or synthesize missing frames. This is the first file-based bridge from real FSM execution to a living documentation visual, while keeping the simulation and renderer responsibilities separate.
+Open `samples/PrimitiveGallery/fsm-trace-replay.html` locally from your Visualize checkout. It loads JSON snapshots exported by the C# [SimpleDemos](https://github.com/TrentBest/SimpleDemos) console app. Run its `--export-trace` mode, then select the resulting JSON file in the replay page. The page maps recorded agent positions and labels to the recorded FSM states; it does not execute FSM_API or synthesize missing frames. This is the first file-based bridge from real FSM execution to a living documentation visual, while keeping the simulation and renderer responsibilities separate.
 
 ## Next visual experiment
 
