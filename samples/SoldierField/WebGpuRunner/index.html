@@ -85,7 +85,7 @@ const demoSelect=document.querySelector("#demo-select"),researchStatus=document.
 const researchCredits=document.querySelector("#research-credits"),demoCost=document.querySelector("#demo-cost"),demoSetup=document.querySelector("#demo-setup"),coolingTierLabel=document.querySelector("#cooling-tier");
 const requestDemoButton=document.querySelector("#request-demo"),completeSetupButton=document.querySelector("#complete-setup"),fireDemoButton=document.querySelector("#fire-demo"),investCoolingButton=document.querySelector("#invest-cooling"),resetDemoButton=document.querySelector("#reset-demo");
 const specimen=document.querySelector("#specimen");let specimenContext=null,specimenDepthTexture=null,specimenMeshBuffer=null,specimenInstanceBuffer=null,specimenBindGroup=null,specimenVertexCount=0,specimenGeometryKey="";
-let demoCatalog=null,researchState=createResearchState(),renderedLogCount=0;
+let demoCatalog=null,researchState=createResearchState(),renderedLogCount=0,firingAudioContext=null;
 function encodeSpecimenPass(encoder){
  if(!specimenContext||!specimenBindGroup||!specimenMeshBuffer||!specimenDepthTexture||!specimenVertexCount)return;
  const pass=encoder.beginRenderPass({colorAttachments:[{view:specimenContext.getCurrentTexture().createView(),clearValue:{r:.018,g:.026,b:.045,a:1},loadOp:"clear",storeOp:"store"}],depthStencilAttachment:{view:specimenDepthTexture.createView(),depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"}});
@@ -131,8 +131,33 @@ function renderResearchState(){
  const specimenRecord=findPartRecord(partBundle,demo?.partId||"torso.sternum-plate");const specimenEvents=researchState.damageEvents.filter(event=>event.partId===specimenRecord?.partId);const specimenCondition=researchState.partConditions[specimenRecord?.partId]||null;const specimenResult=result?.partId===specimenRecord?.partId?result:null;document.querySelector("#specimen-title").textContent=specimenEvents.length>0?"Post-trial specimen / "+specimenEvents.length+" recorded impact(s)":(demo?.title||"Instrumented specimen");document.querySelector("#specimen-hit-count").textContent=String(specimenCondition?.hitCount||0);document.querySelector("#specimen-integrity").textContent=Math.round((specimenCondition?.integrityRemaining??1)*100)+"%*";document.querySelector("#specimen-damage-depth").textContent=Math.round((specimenCondition?.accumulatedDamageDepthFraction||0)*100)+"%*";drawSpecimen(specimenResult,specimenRecord,specimenEvents,specimenCondition);
 }
 async function initializeResearchCatalog(){try{const response=await fetch("./research-demonstrations.json");if(!response.ok)throw new Error("HTTP "+response.status);demoCatalog=await response.json();demoSelect.replaceChildren();for(const demo of demoCatalog.demonstrations){const option=document.createElement("option");option.value=demo.id;option.textContent=demo.title;demoSelect.append(option);}demoSelect.value=researchState.selectedDemonstrationId;renderResearchState();}catch(error){researchStatus.textContent="Research catalog unavailable: "+String(error);}}
+function playFiringAudioCue(seedValue=1){
+ try{
+  const AudioContextType=window.AudioContext||window.webkitAudioContext;if(!AudioContextType)return false;
+  firingAudioContext ||= new AudioContextType();const audio=firingAudioContext;if(audio.state==="suspended")void audio.resume().catch(()=>{});
+  const now=audio.currentTime,master=audio.createGain();master.gain.setValueAtTime(.28,now);master.gain.setValueAtTime(.28,now+.35);master.gain.exponentialRampToValueAtTime(.0001,now+.68);master.connect(audio.destination);
+  function noise(duration,filterType,frequency,start,peak,attackFraction=.06){
+   const length=Math.max(1,Math.floor(audio.sampleRate*duration)),buffer=audio.createBuffer(1,length,audio.sampleRate),data=buffer.getChannelData(0);let seed=(seedValue>>>0)||1;
+   for(let i=0;i<length;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;data[i]=((seed/4294967296)*2-1)*Math.exp(-i/length*2.8);}
+   const source=audio.createBufferSource(),filter=audio.createBiquadFilter(),gain=audio.createGain();source.buffer=buffer;filter.type=filterType;filter.frequency.setValueAtTime(frequency,start);filter.Q.value=filterType==="bandpass"?.85:.7;
+   gain.gain.setValueAtTime(.0001,start);gain.gain.linearRampToValueAtTime(peak,start+duration*attackFraction);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+   source.connect(filter);filter.connect(gain);gain.connect(master);source.start(start);source.stop(start+duration+.01);
+  }
+  function tone(type,start,duration,fromHz,toHz,peak,filterHz){
+   const oscillator=audio.createOscillator(),filter=audio.createBiquadFilter(),gain=audio.createGain();oscillator.type=type;oscillator.frequency.setValueAtTime(fromHz,start);oscillator.frequency.exponentialRampToValueAtTime(toHz,start+duration);filter.type="lowpass";filter.frequency.setValueAtTime(filterHz,start);
+   gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(peak,start+.008);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+   oscillator.connect(filter);filter.connect(gain);gain.connect(master);oscillator.start(start);oscillator.stop(start+duration+.01);
+  }
+  noise(.12,"bandpass",1250,now,.55,.035);
+  tone("sine",now+.006,.15,96,42,.38,180);
+  noise(.22,"lowpass",620,now+.012,.20,.04);
+  noise(.25,"bandpass",820,now+.13,.11,.56);
+  tone("triangle",now+.29,.18,102,70,.075,360);
+  return true;
+ }catch{return false;}
+}
 function requestRecoilHaptic(){try{const pads=typeof navigator.getGamepads==="function"?Array.from(navigator.getGamepads()):[];const pad=pads.find(item=>item&&item.connected);const actuator=pad?.vibrationActuator;if(actuator&&typeof actuator.playEffect==="function"){void actuator.playEffect("dual-rumble",{duration:140,strongMagnitude:.72,weakMagnitude:.38}).catch(()=>{});return true;}const legacy=pad?.hapticActuators?.[0];if(legacy&&typeof legacy.pulse==="function"){void legacy.pulse(.72,140).catch(()=>{});return true;}}catch{}return false;}
-demoSelect.addEventListener("change",renderResearchState);requestDemoButton.addEventListener("click",()=>{researchState=requestDemonstration(researchState,demoCatalog,demoSelect.value);renderResearchState();});completeSetupButton.addEventListener("click",()=>{researchState=completeSetup(researchState);renderResearchState();});fireDemoButton.addEventListener("click",()=>{researchState=fireDemonstration(researchState,demoCatalog);if(researchState.lastResult?.impact){const rumble=requestRecoilHaptic();researchState.log=[...researchState.log,rumble?"Controller recoil pulse requested through the browser gamepad API.":"No compatible controller haptics exposed; impact remains visual and logged."];}renderResearchState();});investCoolingButton.addEventListener("click",()=>{researchState=investInCooling(researchState);renderResearchState();});resetDemoButton.addEventListener("click",()=>{researchState=resetDemonstration(researchState);renderResearchState();});initializeResearchCatalog();drawSpecimen();
+demoSelect.addEventListener("change",renderResearchState);requestDemoButton.addEventListener("click",()=>{researchState=requestDemonstration(researchState,demoCatalog,demoSelect.value);renderResearchState();});completeSetupButton.addEventListener("click",()=>{researchState=completeSetup(researchState);renderResearchState();});fireDemoButton.addEventListener("click",()=>{researchState=fireDemonstration(researchState,demoCatalog);if(researchState.lastResult?.impact){const rumble=requestRecoilHaptic();const audio=playFiringAudioCue(researchState.shotCount);researchState.log=[...researchState.log,rumble?"Controller recoil pulse requested through the browser gamepad API.":"No compatible controller haptics exposed; impact remains visual and logged.",audio?"Procedural discharge, impact thump, breath intake and exertion grunt cue played.":"Web Audio unavailable; sound cue skipped."]; }renderResearchState();});investCoolingButton.addEventListener("click",()=>{researchState=investInCooling(researchState);renderResearchState();});resetDemoButton.addEventListener("click",()=>{researchState=resetDemonstration(researchState);renderResearchState();});initializeResearchCatalog();drawSpecimen();
 
 partSelect.addEventListener("change",renderPartCutSheet);
 downloadCutSheet.addEventListener("click",()=>{
