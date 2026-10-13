@@ -95,9 +95,9 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
                     var projection = _projectWithCamera
                         ? transform * frame.View.View * frame.View.Projection
                         : transform;
-                    var a = Project(geometry.Vertices[(int)geometry.Indices[index + command.BaseVertex]].Position, projection);
-                    var b = Project(geometry.Vertices[(int)geometry.Indices[index + 1 + command.BaseVertex]].Position, projection);
-                    var c = Project(geometry.Vertices[(int)geometry.Indices[index + 2 + command.BaseVertex]].Position, projection);
+                    var a = Project(geometry.Vertices[(int)geometry.Indices[index + command.BaseVertex]].Position, projection, _projectWithCamera);
+                    var b = Project(geometry.Vertices[(int)geometry.Indices[index + 1 + command.BaseVertex]].Position, projection, _projectWithCamera);
+                    var c = Project(geometry.Vertices[(int)geometry.Indices[index + 2 + command.BaseVertex]].Position, projection, _projectWithCamera);
                     if (a is null || b is null || c is null)
                         continue;
                     var path = FormattableString.Invariant(
@@ -159,7 +159,7 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
                 .Property("repeatCount", "indefinite")));
     }
 
-    private static Vector2? Project(Vector3 position, Matrix4x4 transform)
+    private static Vector2? Project(Vector3 position, Matrix4x4 transform, bool cameraProjected)
     {
         var clip = Vector4.Transform(new Vector4(position, 1), transform);
         if (!float.IsFinite(clip.W) || MathF.Abs(clip.W) < 1e-6f)
@@ -170,9 +170,6 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
         if (!float.IsFinite(x) || !float.IsFinite(y))
             return null;
 
-        // Camera-projected coordinates are normalized device coordinates; the first proof
-        // retains the legacy centered XY scale so its historical snapshot remains stable.
-        var cameraProjected = MathF.Abs(transform.M34) > 1e-6f || MathF.Abs(transform.M44 - 1f) > 1e-6f;
         return cameraProjected
             ? new Vector2((float)(50 + x * 50), (float)(28.125 - y * 28.125))
             : new Vector2((float)X(x), (float)Y(y));
