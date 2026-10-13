@@ -14,14 +14,28 @@ namespace TheSingularityWorkshop.Visualize.GuiSvg;
 /// This is a CPU-side SVG proof/integration backend, not a GPU renderer. SVG animation nodes
 /// are presentation instructions; they do not execute FSM_API or advance authoritative state.
 /// </remarks>
-public sealed class GuiSvgVisualizerBackend(string outputPath, bool animateConnectedPoints = false) : IVisualizerBackend
+public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
 {
+    private readonly string _outputPath;
+    private readonly bool _animateConnectedPoints;
     private readonly SvgGuiRenderer _renderer = new();
     private long _frame;
 
+    /// <summary>Creates an SVG backend that writes each submitted frame to a file.</summary>
+    /// <param name="outputPath">Destination path for the emitted SVG document.</param>
+    /// <param name="animateConnectedPoints">Whether to add the optional SVG-only route animation.</param>
+    public GuiSvgVisualizerBackend(string outputPath, bool animateConnectedPoints = false)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
+        _outputPath = outputPath;
+        _animateConnectedPoints = animateConnectedPoints;
+    }
+
+    /// <summary>Describes the SVG proof backend's presentation capabilities.</summary>
     public VisualizerCapabilities Capabilities { get; } =
         new("GUI.SVG Visualizer backend", "SVG", false, true, false, false);
 
+    /// <summary>Manifests a Visualizer frame through the GUI.SVG adapter.</summary>
     public ValueTask<VisualizerFrameResult> RenderAsync(
         VisualizerFrame frame,
         IVisualizerResourceProvider resources,
@@ -73,7 +87,7 @@ public sealed class GuiSvgVisualizerBackend(string outputPath, bool animateConne
             }
         }
 
-        if (animateConnectedPoints)
+        if (_animateConnectedPoints)
         {
             const string route = "M20 48.125L80 48.125L80 8.125L20 8.125Z";
             scene.Child("svg-path", "connected-route", path => path
@@ -102,8 +116,8 @@ public sealed class GuiSvgVisualizerBackend(string outputPath, bool animateConne
         }
 
         var svg = _renderer.Render(scene, width: 320, height: 180);
-        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outputPath))!);
-        File.WriteAllText(outputPath, svg);
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(_outputPath))!);
+        File.WriteAllText(_outputPath, svg);
         stopwatch.Stop();
 
         return ValueTask.FromResult(
