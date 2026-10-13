@@ -25,7 +25,7 @@
 <div class="tablet-actions"><button id="invest-cooling" type="button">Fund cooling research — 300 credits</button><button id="reset-demo" type="button" disabled>Return to catalog</button></div>
 <p id="research-status" class="tablet-status" role="status">Research catalog initializing…</p>
 </div><div><strong id="specimen-title">Instrumented specimen</strong>
-<canvas id="specimen" width="640" height="360" aria-label="Simulation view of an exoskeleton armor plate and thermal state"></canvas>
+<canvas id="specimen" width="640" height="360" aria-label="Three-dimensional WebGPU specimen geometry with persistent simulated impact overlays"></canvas><p id="specimen-render-status" class="muted">Waiting for the WebGPU part-render pipeline…</p>
 <dl><dt>Recorded impacts</dt><dd id="specimen-hit-count">0</dd><dt>Integrity remaining (simulated)</dt><dd id="specimen-integrity">100%</dd><dt>Accumulated damage depth index*</dt><dd id="specimen-damage-depth">0%</dd><dt>Barrel peak (simulated)</dt><dd id="barrel-temp">—</dd><dt>Chassis hot zone (simulated)</dt><dd id="chassis-temp">—</dd><dt>Heat routed to chassis</dt><dd id="heat-transfer">—</dd></dl>
 <p id="scientist-line" class="muted">The scientist waits for your order.</p></div></div>
 <strong>Research board / trial history</strong><table><thead><tr><th>Trial ID</th><th>Part</th><th>Damage event</th><th>Cooling</th><th>Barrel peak*</th><th>Chassis hot zone*</th><th>Heat routed*</th></tr></thead><tbody id="trial-history"></tbody></table><p class="muted">The board preserves each simulated run so the scientist can compare the baseline with funded iterations. Asterisks mark fictional model outputs, not measurements.</p><strong>Range and research log</strong><ul id="research-log" class="tablet-log" aria-live="polite"></ul>
@@ -33,7 +33,7 @@
 </section>
 </main>
 <script type="module">
-import { buildSoldierGeometry, SOLDIER_PARTS, SOLDIER_GEOMETRY_LAYOUT } from './soldier-geometry.js';
+import { buildPartGeometry, buildSoldierGeometry, SOLDIER_PARTS, SOLDIER_GEOMETRY_LAYOUT } from './soldier-geometry.js';
 import { deriveCutSheet, findPartRecord } from './soldier-cut-sheet.mjs';
 import { createResearchState, requestDemonstration, completeSetup, investInCooling, fireDemonstration, resetDemonstration } from './soldier-research-simulation.mjs';
 const canvas=document.querySelector("#view"),status=document.querySelector("#status"),tbody=document.querySelector("#horizons");
@@ -77,44 +77,34 @@ async function initializeCutSheets(){
 const demoSelect=document.querySelector("#demo-select"),researchStatus=document.querySelector("#research-status"),researchLog=document.querySelector("#research-log");
 const researchCredits=document.querySelector("#research-credits"),demoCost=document.querySelector("#demo-cost"),demoSetup=document.querySelector("#demo-setup"),coolingTierLabel=document.querySelector("#cooling-tier");
 const requestDemoButton=document.querySelector("#request-demo"),completeSetupButton=document.querySelector("#complete-setup"),fireDemoButton=document.querySelector("#fire-demo"),investCoolingButton=document.querySelector("#invest-cooling"),resetDemoButton=document.querySelector("#reset-demo");
-const specimen=document.querySelector("#specimen"),specimenContext=specimen.getContext("2d");
+const specimen=document.querySelector("#specimen");let specimenContext=null,specimenDepthTexture=null,specimenMeshBuffer=null,specimenInstanceBuffer=null,specimenBindGroup=null,specimenVertexCount=0,specimenGeometryKey="";
 let demoCatalog=null,researchState=createResearchState(),renderedLogCount=0;
 function drawSpecimen(result=null,partRecord=null,damageEvents=[],partCondition=null){
- const ctx=specimenContext,w=specimen.width,h=specimen.height;ctx.clearRect(0,0,w,h);
- const bg=ctx.createLinearGradient(0,0,w,h);bg.addColorStop(0,"#111d2a");bg.addColorStop(1,"#05080d");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
- ctx.strokeStyle="#32455a";ctx.lineWidth=2;ctx.strokeRect(18,18,w-36,h-36);
- ctx.fillStyle="#a7bad0";ctx.font="14px system-ui";ctx.fillText("PART SPECIMEN / "+(partRecord?.partId||"geometry pending"),34,43);
- const dims=partRecord?.geometry?.nominal?.dimensions||[.38,.27,.045];
- const largest=Math.max(Number(dims[0])||.38,Number(dims[1])||.27,.001);
- const plateW=Math.max(66,Math.min(260,260*(Number(dims[0])||.38)/largest));
- const plateH=Math.max(66,Math.min(190,190*(Number(dims[1])||.27)/largest));
- const thickness=Math.max(7,Math.min(22,(Number(dims[2])||.045)*300));
- const px=w/2,py=h/2+5,left=-plateW/2,top=-plateH/2;
- const integrity=partCondition?.integrityRemaining??1;
- const plate=ctx.createLinearGradient(left,top,left+plateW,top+plateH);
- plate.addColorStop(0,integrity<.65?"#a77a65":"#9aabbd");plate.addColorStop(.28,"#465a70");plate.addColorStop(.7,"#172536");plate.addColorStop(1,integrity<.4?"#7b4c3d":"#61748a");
- ctx.save();ctx.translate(px,py);
- ctx.fillStyle="#080d14";ctx.beginPath();ctx.moveTo(left-12,top-8);ctx.lineTo(left+plateW+thickness+8,top-8);ctx.lineTo(left+plateW+thickness+8,top+plateH+thickness);ctx.lineTo(left-12,top+plateH+thickness);ctx.closePath();ctx.fill();
- ctx.fillStyle="#26384b";ctx.beginPath();ctx.moveTo(left,top);ctx.lineTo(left+plateW,top);ctx.lineTo(left+plateW+thickness,top-thickness*.55);ctx.lineTo(left+thickness,top-thickness*.55);ctx.closePath();ctx.fill();
- ctx.fillStyle="#101a27";ctx.beginPath();ctx.moveTo(left+plateW,top);ctx.lineTo(left+plateW+thickness,top-thickness*.55);ctx.lineTo(left+plateW+thickness,top+plateH-thickness*.55);ctx.lineTo(left+plateW,top+plateH);ctx.closePath();ctx.fill();
- ctx.fillStyle=plate;ctx.fillRect(left,top,plateW,plateH);ctx.strokeStyle="#a9bdcf";ctx.lineWidth=2;ctx.strokeRect(left,top,plateW,plateH);
- const ribs=Math.max(2,Math.min(6,Math.round(plateH/32)));for(let i=1;i<ribs;i++){ctx.strokeStyle="rgba(150,190,220,.25)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left+8,top+plateH*i/ribs);ctx.lineTo(left+plateW-8,top+plateH*i/ribs);ctx.stroke();}
- for(let index=0;index<damageEvents.length;index++){
-  const event=damageEvents[index],ix=event.positionNormalized[0]*plateW,iy=event.positionNormalized[1]*plateH;
-  const radius=Math.min(38,Math.max(9,Math.min(plateW,plateH)*event.radiusFraction*2.1));
-  const recent=index===damageEvents.length-1,glow=ctx.createRadialGradient(ix,iy,2,ix,iy,radius*2.8);
-  glow.addColorStop(0,recent?"rgba(255,39,10,.92)":"rgba(255,65,24,.52)");glow.addColorStop(.3,recent?"rgba(255,91,20,.68)":"rgba(205,67,35,.34)");glow.addColorStop(.7,"rgba(255,100,35,.12)");glow.addColorStop(1,"rgba(255,100,35,0)");
-  ctx.fillStyle=glow;ctx.fillRect(ix-radius*2.8,iy-radius*2.8,radius*5.6,radius*5.6);
-  ctx.fillStyle="#08080a";ctx.beginPath();ctx.ellipse(ix,iy,radius*.76,radius*.68,-.15,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle=recent?"#ff7b32":"#9d583b";ctx.lineWidth=recent?4:2;ctx.beginPath();ctx.ellipse(ix,iy,radius,radius*.86,-.15,0,Math.PI*2);ctx.stroke();
-  ctx.strokeStyle=recent?"#ffb45d":"#b87b51";ctx.lineWidth=1.5;
-  for(let ray=0;ray<8;ray++){const angle=ray*Math.PI/4;ctx.beginPath();ctx.moveTo(ix+Math.cos(angle)*radius*1.05,iy+Math.sin(angle)*radius*.9);ctx.lineTo(ix+Math.cos(angle)*radius*(recent?1.42:1.2),iy+Math.sin(angle)*radius*(recent?1.25:1.05));ctx.stroke();}
-  ctx.fillStyle="#f1c6a7";ctx.font="10px system-ui";ctx.fillText("HIT "+event.hitNumber,ix+radius+3,iy-radius);
+ const partId=partRecord?.partId||"torso.sternum-plate";
+ const matchingEvents=damageEvents.filter(event=>event.partId===partId);
+ if(!device||!pipeline||!specimenContext||!specimenBindGroup){
+  document.querySelector("#specimen-render-status").textContent="Waiting for the WebGPU part-render pipeline…";
+  return;
  }
- ctx.restore();
- if(result?.barrelHeatC>0){ctx.save();ctx.translate(w-100,76);ctx.rotate(.2);ctx.fillStyle="#141d28";ctx.fillRect(-58,-12,116,24);ctx.fillStyle=result.barrelHeatC>500?"#f13c20":result.barrelHeatC>300?"#e88435":"#9b9d9a";ctx.fillRect(-54,-8,105,16);ctx.fillStyle="#ffb15b";ctx.fillRect(-56,-7,20,14);ctx.restore();ctx.fillStyle="#ffb0a0";ctx.fillText("BARREL HEAT",w-154,48);}
- if(result?.chassisHeatC>0){ctx.strokeStyle="rgba(255,106,47,.48)";ctx.lineWidth=5;for(let i=0;i<5;i++){const x=75+i*16;ctx.beginPath();ctx.moveTo(x,250);ctx.bezierCurveTo(x-15,225,x+15,205,x,180);ctx.stroke();}ctx.fillStyle="#ffc09b";ctx.fillText("THERMAL DISTORTION",34,h-32);}
- ctx.fillStyle="#9db2c9";ctx.font="12px system-ui";ctx.fillText(damageEvents.length>0?"DAMAGE PERSISTED / "+damageEvents.length+" EVENT(S)":"NOMINAL BLOCKOUT / DATA-SCALED SPECIMEN",34,h-49);
+ const geometryKey=partId+"|"+matchingEvents.map(event=>event.eventId).join("|");
+ if(geometryKey!==specimenGeometryKey){
+  const partVertices=buildPartGeometry(partId,matchingEvents);
+  if(specimenMeshBuffer)specimenMeshBuffer.destroy();
+  specimenMeshBuffer=device.createBuffer({size:Math.max(4,partVertices.byteLength),usage:GPUBufferUsage.VERTEX,mappedAtCreation:true});
+  new Float32Array(specimenMeshBuffer.getMappedRange()).set(partVertices);specimenMeshBuffer.unmap();
+  specimenVertexCount=partVertices.length/SOLDIER_GEOMETRY_LAYOUT.floatsPerVertex;
+  specimenGeometryKey=geometryKey;
+ }
+ const thermalC=Math.max(result?.chassisHeatC||0,partCondition?.residualTemperatureC||20);
+ const heat=Math.max(0,Math.min(1,(thermalC-40)/260));
+ const instanceData=new Float32Array([0,.95,0,5.0,1,1-heat*.44,1-heat*.62,1]);
+ device.queue.writeBuffer(specimenInstanceBuffer,0,instanceData);
+ if(specimenDepthTexture)specimenDepthTexture.destroy();
+ specimenDepthTexture=device.createTexture({size:[specimen.width,specimen.height,1],format:"depth24plus",usage:GPUTextureUsage.RENDER_ATTACHMENT});
+ const encoder=device.createCommandEncoder();
+ const pass=encoder.beginRenderPass({colorAttachments:[{view:specimenContext.getCurrentTexture().createView(),clearValue:{r:.018,g:.026,b:.045,a:1},loadOp:"clear",storeOp:"store"}],depthStencilAttachment:{view:specimenDepthTexture.createView(),depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"}});
+ pass.setPipeline(pipeline);pass.setVertexBuffer(0,specimenMeshBuffer);pass.setBindGroup(0,specimenBindGroup);pass.draw(specimenVertexCount,1,0,0);pass.end();device.queue.submit([encoder.finish()]);
+ document.querySelector("#specimen-render-status").textContent=partId+" · "+specimenVertexCount.toLocaleString()+" vertices · "+matchingEvents.length+" persistent impact overlay(s) · "+Math.round((partCondition?.integrityRemaining??1)*100)+"% simulated integrity"+(heat>0?" · thermal tint active":"");
 }
 function renderResearchState(){
  researchCredits.textContent=researchState.credits.toLocaleString()+" cr";coolingTierLabel.textContent=researchState.coolingTier===0?"Baseline":("Prototype "+String.fromCharCode(65+researchState.coolingTier));
@@ -150,7 +140,7 @@ function makeData(ix,count){const h=hs[ix],a=new Float32Array(count*8),side=Math
 function table(){tbody.innerHTML=groups.map((g,i)=>'<tr><td>'+g.h.n+'</td><td>'+fmt(population)+'</td><td>'+g.h.rate+' f</td><td id="u'+i+'">—</td><td id="b'+i+'">0</td><td id="r'+i+'">0</td></tr>').join("");}
 function rebuild(){for(const g of groups)g.buffer.destroy();groups=[];for(let i=0;i<hs.length;i++){const data=makeData(i,population),buffer=device.createBuffer({size:Math.max(4,data.byteLength),usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST});device.queue.writeBuffer(buffer,0,data);const bind=device.createBindGroup({layout:pipeline.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer}}]});const baseX=new Float32Array(population);for(let n=0;n<population;n++)baseX[n]=data[n*8];groups.push({h:hs[i],data,baseX,buffer,bind,bytes:0,reuses:0,samples:[],phase:i*.61});}document.querySelector("#total").textContent=fmt(population*hs.length);document.querySelector("#population").value=String(population);table();}
 function setPop(v){population=Math.max(1,Math.min(100000,Math.floor(Number(v)||1)));rebuild();}
-async function start(){try{if(!navigator.gpu)throw Error("WebGPU is unavailable. Use a current browser on localhost with WebGPU enabled.");const adapter=await navigator.gpu.requestAdapter();if(!adapter)throw Error("No compatible WebGPU adapter.");device=await adapter.requestDevice();document.querySelector("#adapter").textContent=adapter.info?.description||adapter.info?.device||"WebGPU";context=canvas.getContext("webgpu");const format=navigator.gpu.getPreferredCanvasFormat();context.configure({device,format,alphaMode:"opaque"});meshBuffer=device.createBuffer({size:vertices.byteLength,usage:GPUBufferUsage.VERTEX,mappedAtCreation:true});new Float32Array(meshBuffer.getMappedRange()).set(vertices);meshBuffer.unmap();const mod=device.createShaderModule({code:wgsl});pipeline=device.createRenderPipeline({layout:"auto",vertex:{module:mod,entryPoint:"vs",buffers:[{arrayStride:24,attributes:[{shaderLocation:0,offset:0,format:"float32x3"},{shaderLocation:1,offset:12,format:"float32x3"}]}]},fragment:{module:mod,entryPoint:"fs",targets:[{format}]},primitive:{topology:"triangle-list",cullMode:"none"},depthStencil:{format:"depth24plus",depthWriteEnabled:true,depthCompare:"less"}});setPop(1);status.textContent="Procedural exoskeleton mesh ready: "+SOLDIER_GEOMETRY_LAYOUT.partCount+" semantic parts, "+SOLDIER_GEOMETRY_LAYOUT.shuntEndpointIds.length+" shunt endpoints. Cadence remains demonstration policy, not live Renderer bucket decisions.";
+async function start(){try{if(!navigator.gpu)throw Error("WebGPU is unavailable. Use a current browser on localhost with WebGPU enabled.");const adapter=await navigator.gpu.requestAdapter();if(!adapter)throw Error("No compatible WebGPU adapter.");device=await adapter.requestDevice();document.querySelector("#adapter").textContent=adapter.info?.description||adapter.info?.device||"WebGPU";context=canvas.getContext("webgpu");const format=navigator.gpu.getPreferredCanvasFormat();context.configure({device,format,alphaMode:"opaque"});meshBuffer=device.createBuffer({size:vertices.byteLength,usage:GPUBufferUsage.VERTEX,mappedAtCreation:true});new Float32Array(meshBuffer.getMappedRange()).set(vertices);meshBuffer.unmap();const mod=device.createShaderModule({code:wgsl});pipeline=device.createRenderPipeline({layout:"auto",vertex:{module:mod,entryPoint:"vs",buffers:[{arrayStride:24,attributes:[{shaderLocation:0,offset:0,format:"float32x3"},{shaderLocation:1,offset:12,format:"float32x3"}]}]},fragment:{module:mod,entryPoint:"fs",targets:[{format}]},primitive:{topology:"triangle-list",cullMode:"none"},depthStencil:{format:"depth24plus",depthWriteEnabled:true,depthCompare:"less"}});specimenContext=specimen.getContext("webgpu");if(!specimenContext)throw Error("WebGPU is unavailable for the selected-part specimen view.");specimenContext.configure({device,format,alphaMode:"opaque"});specimenInstanceBuffer=device.createBuffer({size:32,usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST});specimenBindGroup=device.createBindGroup({layout:pipeline.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:specimenInstanceBuffer}}]});drawSpecimen();setPop(1);status.textContent="Procedural exoskeleton mesh ready: "+SOLDIER_GEOMETRY_LAYOUT.partCount+" semantic parts, "+SOLDIER_GEOMETRY_LAYOUT.shuntEndpointIds.length+" shunt endpoints. Cadence remains demonstration policy, not live Renderer bucket decisions.";
 function draw(now){if(lastFrame)sample(frameSamples,now-lastFrame);lastFrame=now;frameNumber++;let bytes=0;const t=performance.now();for(const g of groups){const gt=performance.now();if(frameNumber%g.h.rate===0){const a=g.data,shift=Math.sin(frameNumber*.018+g.phase)*.06;for(let n=0;n<population;n++){const o=n*8;a[o]=g.baseX[n]+shift;a[o+4]=g.h.c[0]*(.96+.04*Math.sin(frameNumber*.01+g.phase));}device.queue.writeBuffer(g.buffer,0,a);g.bytes+=a.byteLength;bytes+=a.byteLength;sample(g.samples,performance.now()-gt);}else g.reuses++;}sample(updateSamples,performance.now()-t);
 const st=performance.now();if(depthTexture)depthTexture.destroy();depthTexture=device.createTexture({size:[canvas.width,canvas.height,1],format:"depth24plus",usage:GPUTextureUsage.RENDER_ATTACHMENT});const enc=device.createCommandEncoder(),pass=enc.beginRenderPass({colorAttachments:[{view:context.getCurrentTexture().createView(),clearValue:{r:.018,g:.026,b:.045,a:1},loadOp:"clear",storeOp:"store"}],depthStencilAttachment:{view:depthTexture.createView(),depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"}});pass.setPipeline(pipeline);pass.setVertexBuffer(0,meshBuffer);for(const g of groups){pass.setBindGroup(0,g.bind);pass.draw(vertices.length/6,population,0,0);}pass.end();device.queue.submit([enc.finish()]);submissions++;sample(submitSamples,performance.now()-st);
 if(frameNumber%15===0){document.querySelector("#submissions").textContent=fmt(submissions);document.querySelector("#frame").textContent=pct(frameSamples,.5).toFixed(1)+" / "+pct(frameSamples,.95).toFixed(1)+" ms";document.querySelector("#submit").textContent=pct(submitSamples,.5).toFixed(2)+" / "+pct(submitSamples,.95).toFixed(2)+" ms";document.querySelector("#update").textContent=pct(updateSamples,.95).toFixed(2)+" ms";document.querySelector("#bytes").textContent=fmt(bytes);groups.forEach((g,i)=>{const u=document.querySelector("#u"+i),b=document.querySelector("#b"+i),r=document.querySelector("#r"+i);if(u)u.textContent=pct(g.samples,.95).toFixed(2)+" ms";if(b)b.textContent=fmt(g.bytes);if(r)r.textContent=fmt(g.reuses);});}frameHandle=requestAnimationFrame(draw);}frameHandle=requestAnimationFrame(draw);
