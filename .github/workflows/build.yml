@@ -51,6 +51,8 @@ jobs:
           PY
           node --check /tmp/soldier-field-check.mjs
           node --check samples/SoldierField/WebGpuRunner/soldier-geometry.js
+          node --check samples/SoldierField/WebGpuRunner/soldier-cut-sheet.mjs
+          node --test samples/SoldierField/WebGpuRunner/soldier-cut-sheet.test.mjs
 
       - name: Restore
         run: dotnet restore TheSingularityWorkshop.Visualize.slnx
