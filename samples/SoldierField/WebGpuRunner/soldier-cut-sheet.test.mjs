@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { deriveCutSheet, findPartRecord } from "./soldier-cut-sheet.mjs";
 
 const sample = {
@@ -45,4 +46,20 @@ test("finds a record by stable part ID without inventing a fallback", () => {
   const bundle = { records: [sample] };
   assert.equal(findPartRecord(bundle, sample.partId), sample);
   assert.equal(findPartRecord(bundle, "missing.part"), null);
+});
+
+test("all semantic part records have unique identities and derive cut sheets", async () => {
+  const source = await readFile(new URL("./soldier-part-records.json", import.meta.url), "utf8");
+  const bundle = JSON.parse(source);
+  assert.equal(bundle.recordCount, 38);
+  assert.equal(bundle.records.length, 38);
+  const identities = new Set();
+  for (const record of bundle.records) {
+    assert.ok(!identities.has(record.partId), "duplicate part ID: " + record.partId);
+    identities.add(record.partId);
+    const sheet = deriveCutSheet(record);
+    assert.equal(sheet.partId, record.partId);
+    assert.equal(sheet.geometry.units, "metres");
+    assert.ok(sheet.traceability.openIssues.length > 0);
+  }
 });
