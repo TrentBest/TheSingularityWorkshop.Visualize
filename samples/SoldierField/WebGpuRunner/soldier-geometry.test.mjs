@@ -88,4 +88,7 @@ test("soldier shader contract localizes heat effects to simulated muzzle and cha
   assert.match(html, /thermal\.barrel/);
   assert.match(html, /getCompilationInfo/);
   assert.match(html, /render-pipeline validation failed/);
+  assert.match(html, /function playFiringAudioCue/);
+  assert.match(html, /breath intake and exertion grunt cue played/);
+  assert.match(html, /Web Audio unavailable; sound cue skipped/);
 });
