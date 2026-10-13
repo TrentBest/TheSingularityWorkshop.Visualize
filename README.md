@@ -71,7 +71,7 @@ The tests verify the current contracts. To see an actual procedural sci-fi exosk
 ![](docs/assets/dividers/purple.svg)
 
 - [Architecture](docs/ARCHITECTURE.md) — follow data from authoritative state to the host surface and understand which layer owns each decision.
-- [Visual primitives](docs/PRIMITIVES.md) — start from semantic parts, see the current box/ellipsoid mesh generators, and distinguish the WebGPU path from future SVG representations.
+- [Visual primitives](docs/PRIMITIVES.md) — start with the [interactive SVG Primitive Gallery](samples/PrimitiveGallery/index.html), then compare point/line experiments with the Soldier Field box/ellipsoid mesh generators and distinguish each sample path from the current C# contracts.
 - [Gestures and procedural motion](docs/GESTURES_AND_POSE_PIPELINE.md) — see how physical procedures become evaluated pose data without making Visualize the owner of motion semantics.
 - [GPU backend strategy](docs/GPU_BACKEND_STRATEGY.md) — compare backend responsibilities and the intended native/browser directions, with array-first execution as a constraint.
 - [Soldier Field scaling lab](samples/SoldierField/WebGpuRunner/README.md) — run the procedural exoskeleton scene and compare independent Event Horizon workload counters.
