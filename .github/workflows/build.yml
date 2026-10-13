@@ -54,9 +54,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          package="./artifacts/gui-svg/TheSingularityWorkshop.GUI.SVG.0.1.0-alpha.1.nupkg"
-          test -s "$package" || { echo "Expected GUI.SVG package was not produced: $package"; exit 1; }
-          unzip -l "$package" | grep -q 'lib/net8.0/TheSingularityWorkshop.GUI.SVG.dll'
+          package="$(find ./artifacts/gui-svg -maxdepth 1 -type f -name 'TheSingularityWorkshop.GUI.SVG.*.nupkg' -print -quit)"
+          test -n "$package" && test -s "$package" || { echo "GUI.SVG package was not produced."; exit 1; }
+          unzip -l "$package" > ./artifacts/gui-svg/package-contents.txt
+          grep -q 'lib/net8.0/TheSingularityWorkshop.GUI.SVG.dll' ./artifacts/gui-svg/package-contents.txt
+          echo "Verified package: $package"
           echo "GUI.SVG package built and inspected; publishing remains disabled."
 
       - name: Upload GUI.SVG package artifact
