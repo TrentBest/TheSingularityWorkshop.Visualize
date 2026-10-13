@@ -3,7 +3,7 @@
 <title>Soldier Field — Event Horizon Scaling Lab</title>
 <style>
 :root{color-scheme:dark;font:15px/1.5 system-ui,sans-serif;background:#0a0d13;color:#e8eef8}body{max-width:1440px;margin:auto;padding:1rem}h1{margin:.2rem 0;font-size:1.7rem}.muted{color:#9cabc0}main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:1rem}canvas{display:block;width:100%;aspect-ratio:16/10;background:#05080e;border:1px solid #35445b;border-radius:8px}aside,.panel{background:#131a25;border:1px solid #2d3b50;border-radius:8px;padding:1rem}label{display:block;margin:.7rem 0 .2rem}input,button,select{font:inherit;color:inherit;background:#0b111a;border:1px solid #40516b;border-radius:5px;padding:.55rem;box-sizing:border-box}input,select{width:100%}button{cursor:pointer}.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}dl{display:grid;grid-template-columns:1fr auto;gap:.35rem;margin:1rem 0;font-variant-numeric:tabular-nums}dt{color:#9cabc0}dd{margin:0;text-align:right}table{width:100%;border-collapse:collapse;font-size:.82rem}th,td{text-align:right;padding:.4rem .3rem;border-bottom:1px solid #29364a;font-variant-numeric:tabular-nums}th:first-child,td:first-child{text-align:left}.status{white-space:pre-wrap;overflow-wrap:anywhere;color:#b9d8ff;font-size:.9rem}.legend{display:flex;gap:.8rem;flex-wrap:wrap;font-size:.82rem;color:#b9c6d9;margin:.5rem 0}.swatch{display:inline-block;width:.65rem;height:.65rem;border-radius:2px;margin-right:.35rem}@media(max-width:900px){main{grid-template-columns:1fr}}
-.tablet{grid-column:1/-1;margin-top:1rem;border:1px solid #56708b;border-radius:10px;padding:1rem;background:linear-gradient(145deg,#172332,#0b1019)}.tablet h2{margin:.1rem 0 .4rem}.tablet-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,.8fr);gap:1rem}.tablet canvas{aspect-ratio:16/9;width:100%;height:auto}.tablet-actions{display:flex;gap:.45rem;flex-wrap:wrap;margin:.65rem 0}.tablet-actions button{flex:1 1 120px}.tablet-log{max-height:180px;overflow:auto;padding-left:1.2rem;color:#c2d6ed}.tablet-status{color:#9ee6e2;font-size:.9rem;white-space:pre-wrap}.warning{font-size:.78rem;color:#e3c99b}@media(max-width:650px){.tablet-grid{grid-template-columns:1fr}}</style></head><body>
+.tablet{grid-column:1/-1;margin-top:1rem;border:1px solid #56708b;border-radius:10px;padding:1rem;background:linear-gradient(145deg,#172332,#0b1019)}.tablet h2{margin:.1rem 0 .4rem}.tablet-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,.8fr);gap:1rem}.tablet canvas{aspect-ratio:16/9;width:100%;height:auto;cursor:grab;touch-action:none}.tablet canvas:active{cursor:grabbing}.tablet-actions{display:flex;gap:.45rem;flex-wrap:wrap;margin:.65rem 0}.tablet-actions button{flex:1 1 120px}.tablet-log{max-height:180px;overflow:auto;padding-left:1.2rem;color:#c2d6ed}.tablet-status{color:#9ee6e2;font-size:.9rem;white-space:pre-wrap}.warning{font-size:.78rem;color:#e3c99b}@media(max-width:650px){.tablet-grid{grid-template-columns:1fr}}</style></head><body>
 <header><h1>Soldier Field — Event Horizon Scaling Lab</h1>
 <p class="muted">A procedural science-fiction exoskeleton trooper rendered as real 3D geometry and instanced across eight independently updated Event Horizon workloads. This lab deliberately repeats the selected population in every horizon to compare computational cost even where that many full-size soldiers could not physically fit. It is a stress model, not a claim that Renderer policy is already wired in.</p></header>
 <main><section><canvas id="view" width="1280" height="800" aria-label="Procedural science-fiction exoskeleton soldiers in perspective"></canvas>
@@ -25,7 +25,7 @@
 <div class="tablet-actions"><button id="invest-cooling" type="button">Fund cooling research — 300 credits</button><button id="reset-demo" type="button" disabled>Return to catalog</button></div>
 <p id="research-status" class="tablet-status" role="status">Research catalog initializing…</p>
 </div><div><strong id="specimen-title">Instrumented specimen</strong>
-<canvas id="specimen" width="640" height="360" aria-label="Simulation view of an exoskeleton armor plate and thermal state"></canvas>
+<canvas id="specimen" width="640" height="360" aria-label="Interactive three-dimensional armor specimen. Drag to rotate the plate; impact results reveal a hot through-hole and thermal distortion."></canvas><p class="muted">Prototype handling: drag to rotate the specimen. The impact event reveals a simulated through-hole, hot edge, and rear spall; heat shimmer moves around the chassis. This is a gameplay visualization, not a physical thermal solver.</p>
 <dl><dt>Barrel peak (simulated)</dt><dd id="barrel-temp">—</dd><dt>Chassis hot zone (simulated)</dt><dd id="chassis-temp">—</dd><dt>Heat routed to chassis</dt><dd id="heat-transfer">—</dd></dl>
 <p id="scientist-line" class="muted">The scientist waits for your order.</p></div></div>
 <strong>Research board / trial history</strong><table><thead><tr><th>Trial</th><th>Part</th><th>Cooling</th><th>Barrel peak*</th><th>Chassis hot zone*</th><th>Heat routed*</th></tr></thead><tbody id="trial-history"></tbody></table><p class="muted">The board preserves each simulated run so the scientist can compare the baseline with funded iterations. Asterisks mark fictional model outputs, not measurements.</p><strong>Range and research log</strong><ul id="research-log" class="tablet-log" aria-live="polite"></ul>
@@ -79,30 +79,70 @@ const researchCredits=document.querySelector("#research-credits"),demoCost=docum
 const requestDemoButton=document.querySelector("#request-demo"),completeSetupButton=document.querySelector("#complete-setup"),fireDemoButton=document.querySelector("#fire-demo"),investCoolingButton=document.querySelector("#invest-cooling"),resetDemoButton=document.querySelector("#reset-demo");
 const specimen=document.querySelector("#specimen"),specimenContext=specimen.getContext("2d");
 let demoCatalog=null,researchState=createResearchState(),renderedLogCount=0;
+let specimenYaw=-0.28,specimenPitch=-0.12,specimenDragging=false,specimenPointer=null,specimenAnimation=0;
+function projectSpecimen(x,y,z,w,h,scale){
+ const cy=Math.cos(specimenYaw),sy=Math.sin(specimenYaw),cp=Math.cos(specimenPitch),sp=Math.sin(specimenPitch);
+ const rx=x*cy-z*sy,rz=x*sy+z*cy,ry=y*cp-rz*sp,depth=y*sp+rz*cp;
+ const perspective=3.8/(3.8-depth*.24);
+ return {x:w*.5+rx*scale*perspective,y:h*.52-ry*scale*perspective,z:depth};
+}
+function specimenPolygon(ctx,points,fill,stroke=null,width=1){
+ ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();
+ ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke();}
+}
 function drawSpecimen(result=null,partRecord=null){
- const ctx=specimenContext,w=specimen.width,h=specimen.height;ctx.clearRect(0,0,w,h);
+ const ctx=specimenContext,w=specimen.width,h=specimen.height,t=performance.now()*.001;
+ ctx.clearRect(0,0,w,h);
  const bg=ctx.createLinearGradient(0,0,w,h);bg.addColorStop(0,"#111d2a");bg.addColorStop(1,"#05080d");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
  ctx.strokeStyle="#32455a";ctx.lineWidth=2;ctx.strokeRect(18,18,w-36,h-36);
- ctx.fillStyle="#a7bad0";ctx.font="14px system-ui";ctx.fillText("PART SPECIMEN / "+(partRecord?.partId||"geometry pending"),34,43);
+ ctx.fillStyle="#a7bad0";ctx.font="14px system-ui";ctx.fillText("SPECIMEN / "+(partRecord?.partId||"geometry pending"),34,43);
  const dims=partRecord?.geometry?.nominal?.dimensions||[.38,.27,.045];
- const largest=Math.max(Number(dims[0])||.38,Number(dims[1])||.27,.001);
- const plateW=Math.max(66,Math.min(260,260*(Number(dims[0])||.38)/largest));
- const plateH=Math.max(66,Math.min(190,190*(Number(dims[1])||.27)/largest));
- const thickness=Math.max(7,Math.min(22,(Number(dims[2])||.045)*300));
- const px=w/2,py=h/2+5,left=-plateW/2,top=-plateH/2;
- const plate=ctx.createLinearGradient(left,top,left+plateW,top+plateH);plate.addColorStop(0,"#9aabbd");plate.addColorStop(.28,"#465a70");plate.addColorStop(.7,"#172536");plate.addColorStop(1,"#61748a");
- ctx.save();ctx.translate(px,py);
- ctx.fillStyle="#080d14";ctx.beginPath();ctx.moveTo(left-12,top-8);ctx.lineTo(left+plateW+thickness+8,top-8);ctx.lineTo(left+plateW+thickness+8,top+plateH+thickness);ctx.lineTo(left-12,top+plateH+thickness);ctx.closePath();ctx.fill();
- ctx.fillStyle="#26384b";ctx.beginPath();ctx.moveTo(left,top);ctx.lineTo(left+plateW,top);ctx.lineTo(left+plateW+thickness,top-thickness*.55);ctx.lineTo(left+thickness,top-thickness*.55);ctx.closePath();ctx.fill();
- ctx.fillStyle="#101a27";ctx.beginPath();ctx.moveTo(left+plateW,top);ctx.lineTo(left+plateW+thickness,top-thickness*.55);ctx.lineTo(left+plateW+thickness,top+plateH-thickness*.55);ctx.lineTo(left+plateW,top+plateH);ctx.closePath();ctx.fill();
- ctx.fillStyle=plate;ctx.fillRect(left,top,plateW,plateH);ctx.strokeStyle="#a9bdcf";ctx.lineWidth=2;ctx.strokeRect(left,top,plateW,plateH);
- const ribs=Math.max(2,Math.min(6,Math.round(plateH/32)));for(let i=1;i<ribs;i++){ctx.strokeStyle="rgba(150,190,220,.25)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left+8,top+plateH*i/ribs);ctx.lineTo(left+plateW-8,top+plateH*i/ribs);ctx.stroke();}
- if(result?.impact){const radius=Math.min(68,Math.max(22,plateW*.14));const heat=ctx.createRadialGradient(0,0,5,0,0,radius*2.6);heat.addColorStop(0,"rgba(255,39,10,.98)");heat.addColorStop(.28,"rgba(255,91,20,.78)");heat.addColorStop(.62,"rgba(255,100,35,.25)");heat.addColorStop(1,"rgba(255,100,35,0)");ctx.fillStyle=heat;ctx.fillRect(-radius*2.6,-radius*2.6,radius*5.2,radius*5.2);ctx.fillStyle="#08080a";ctx.beginPath();ctx.arc(0,0,radius*.78,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#ff7b32";ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#ffb45d";ctx.lineWidth=2;for(let i=0;i<12;i++){const a=i*Math.PI/6;ctx.beginPath();ctx.moveTo(Math.cos(a)*radius*1.1,Math.sin(a)*radius*1.1);ctx.lineTo(Math.cos(a)*radius*1.5,Math.sin(a)*radius*1.5);ctx.stroke();}}
- ctx.restore();
- if(result?.barrelHeatC>0){ctx.save();ctx.translate(w-100,76);ctx.rotate(.2);ctx.fillStyle="#141d28";ctx.fillRect(-58,-12,116,24);ctx.fillStyle=result.barrelHeatC>500?"#f13c20":result.barrelHeatC>300?"#e88435":"#9b9d9a";ctx.fillRect(-54,-8,105,16);ctx.fillStyle="#ffb15b";ctx.fillRect(-56,-7,20,14);ctx.restore();ctx.fillStyle="#ffb0a0";ctx.fillText("BARREL HEAT",w-154,48);}
- if(result?.chassisHeatC>0){ctx.strokeStyle="rgba(255,106,47,.48)";ctx.lineWidth=5;for(let i=0;i<5;i++){const x=75+i*16;ctx.beginPath();ctx.moveTo(x,250);ctx.bezierCurveTo(x-15,225,x+15,205,x,180);ctx.stroke();}ctx.fillStyle="#ffc09b";ctx.fillText("THERMAL DISTORTION",34,h-32);}
- ctx.fillStyle="#9db2c9";ctx.font="12px system-ui";ctx.fillText(result?.impact?"IMPACT REGISTERED / CRATER + HOT EDGE":"NOMINAL BLOCKOUT / DATA-SCALED SPECIMEN",34,h-49);
+ const rawW=Math.max(.04,Number(dims[0])||.38),rawH=Math.max(.04,Number(dims[1])||.27),rawT=Math.max(.008,Number(dims[2])||.045);
+ const scale=205/Math.max(rawW,rawH,.1),pw=rawW*.5,ph=rawH*.5,pt=Math.max(.018,rawT*.65);
+ const v=(x,y,z)=>projectSpecimen(x,y,z,w,h,scale);
+ const front=[v(-pw,-ph,pt),v(pw,-ph,pt),v(pw,ph,pt),v(-pw,ph,pt)];
+ const back=[v(-pw,-ph,-pt),v(pw,-ph,-pt),v(pw,ph,-pt),v(-pw,ph,-pt)];
+ // The prototype is a six-sided plate solid; face, edge and rear face are separately projected.
+ specimenPolygon(ctx,[back[0],back[1],front[1],front[0]],"#26384b","#61788e");
+ specimenPolygon(ctx,[back[1],back[2],front[2],front[1]],"#101a27","#61788e");
+ specimenPolygon(ctx,[back[2],back[3],front[3],front[2]],"#1a2a3b","#61788e");
+ specimenPolygon(ctx,[back[3],back[0],front[0],front[3]],"#34485c","#61788e");
+ const face=ctx.createLinearGradient(front[0].x,front[0].y,front[2].x,front[2].y);face.addColorStop(0,"#9aabbd");face.addColorStop(.28,"#465a70");face.addColorStop(.7,"#172536");face.addColorStop(1,"#61748a");
+ specimenPolygon(ctx,front,face,"#a9bdcf",2);
+ // Machined ribs follow the rotating plate plane.
+ for(let i=1;i<5;i++){const a=v(-pw*.86,-ph+rawH*i/5,pt+.002),b=v(pw*.86,-ph+rawH*i/5,pt+.002);ctx.strokeStyle="rgba(150,190,220,.27)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
+ if(result?.impact){
+  const center=v(0,0,pt+.006),edge=Math.max(10,Math.min(48,Math.min(rawW,rawH)*scale*.15));
+  const glow=ctx.createRadialGradient(center.x,center.y,2,center.x,center.y,edge*2.7);glow.addColorStop(0,"rgba(255,35,8,.96)");glow.addColorStop(.35,"rgba(255,77,18,.7)");glow.addColorStop(1,"rgba(255,100,35,0)");
+  ctx.fillStyle=glow;ctx.beginPath();ctx.ellipse(center.x,center.y,edge*2.7,edge*2.7,0,0,Math.PI*2);ctx.fill();
+  // Dark bore plus a visibly torn, incandescent rim. This is an illustrative impact decal.
+  ctx.fillStyle="#08080a";ctx.beginPath();ctx.ellipse(center.x,center.y,edge*.78,edge*.64,-.12,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="#ff632b";ctx.lineWidth=6;ctx.beginPath();ctx.ellipse(center.x,center.y,edge,edge*.84,-.12,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle="#ffc06b";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(center.x,center.y,edge*.86,edge*.72,-.12,0,Math.PI*2);ctx.stroke();
+  // Rear spall is shown offset from the face, like a real cutaway exhibit, not a ballistic solver.
+  const rear=v(0,0,-pt-.018);ctx.fillStyle="rgba(255,91,35,.62)";ctx.beginPath();ctx.moveTo(rear.x,rear.y);ctx.lineTo(rear.x-edge*1.8,rear.y+edge*1.25);ctx.lineTo(rear.x+edge*1.65,rear.y+edge*1.35);ctx.closePath();ctx.fill();
+  for(let i=0;i<9;i++){const a=t*1.8+i*Math.PI*2/9,rx=center.x+Math.cos(a)*(edge*1.3+Math.sin(t*4+i)*3),ry=center.y+Math.sin(a)*(edge*1.1+Math.cos(t*3+i)*3);ctx.fillStyle=i%2?"#ffb85c":"#ff512d";ctx.fillRect(rx,ry,2.5,2.5);}
+ }
+ if(result?.chassisHeatC>0){
+  const amplitude=5+Math.sin(t*5)*2;
+  ctx.save();ctx.globalAlpha=.34+.12*Math.sin(t*4);
+  for(let band=0;band<7;band++){ctx.beginPath();for(let step=0;step<=24;step++){const x=48+step*(w-96)/24,y=90+band*22+Math.sin(step*.9+t*3+band)*amplitude;if(step===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle=band%2?"#ff673b":"#ffd18a";ctx.lineWidth=band%3===0?2:1;ctx.stroke();}
+  ctx.restore();ctx.fillStyle="#ffc09b";ctx.fillText("LIVE THERMAL SHIMMER",34,h-32);
+ }
+ if(result?.barrelHeatC>0){
+  const x=w-150,y=72;ctx.save();ctx.translate(x,y);ctx.rotate(.2);
+  ctx.fillStyle="#141d28";ctx.fillRect(-56,-13,124,26);
+  const barrel=ctx.createLinearGradient(-55,0,65,0);barrel.addColorStop(0,"#ffb36a");barrel.addColorStop(.18,result.barrelHeatC>500?"#ff2d14":"#e88435");barrel.addColorStop(.6,result.barrelHeatC>500?"#a91e18":"#6c554b");barrel.addColorStop(1,"#202b37");ctx.fillStyle=barrel;ctx.fillRect(-54,-9,116,18);
+  ctx.fillStyle="#ffcf86";ctx.fillRect(-57,-7,13,14);ctx.restore();ctx.fillStyle="#ffb0a0";ctx.fillText("RED-HOT BARREL",w-185,45);
+  ctx.strokeStyle="rgba(255,104,53,.28)";ctx.lineWidth=2;for(let i=0;i<3;i++){const x0=w-125+i*17;ctx.beginPath();ctx.moveTo(x0,98);ctx.bezierCurveTo(x0-12,78+Math.sin(t*4+i)*5,x0+12,63,x0,47);ctx.stroke();}
+ }
+ ctx.fillStyle="#9db2c9";ctx.font="12px system-ui";ctx.fillText(result?.impact?"IMPACT REGISTERED / HOT THROUGH-HOLE + REAR SPALL":"NOMINAL SOLID / DRAG TO ROTATE",34,h-49);
 }
+function animateSpecimen(){const demo=demoCatalog?.demonstrations.find(item=>item.id===demoSelect.value);const result=researchState.lastResult?.ok?researchState.lastResult:null;const record=findPartRecord(partBundle,demo?.partId||"torso.sternum-plate");drawSpecimen(result,record);specimenAnimation=requestAnimationFrame(animateSpecimen);}
+specimen.addEventListener("pointerdown",event=>{specimenDragging=true;specimenPointer={x:event.clientX,y:event.clientY};specimen.setPointerCapture(event.pointerId);});
+specimen.addEventListener("pointermove",event=>{if(!specimenDragging||!specimenPointer)return;const dx=event.clientX-specimenPointer.x,dy=event.clientY-specimenPointer.y;specimenPointer={x:event.clientX,y:event.clientY};specimenYaw+=dx*.012;specimenPitch=Math.max(-.9,Math.min(.9,specimenPitch+dy*.009));});
+specimen.addEventListener("pointerup",()=>{specimenDragging=false;specimenPointer=null;});
+specimen.addEventListener("pointercancel",()=>{specimenDragging=false;specimenPointer=null;});
 function renderResearchState(){
  researchCredits.textContent=researchState.credits.toLocaleString()+" cr";coolingTierLabel.textContent=researchState.coolingTier===0?"Baseline":("Prototype "+String.fromCharCode(65+researchState.coolingTier));
  const demo=demoCatalog?.demonstrations.find(item=>item.id===demoSelect.value);demoCost.textContent=demo?demo.cost.toLocaleString()+" cr":"—";demoSetup.textContent=demo?demo.setupMinutes+" min":"—";
@@ -117,11 +157,11 @@ function renderResearchState(){
  const result=researchState.lastResult?.ok?researchState.lastResult:null;
  document.querySelector("#barrel-temp").textContent=result?.barrelHeatC?result.barrelHeatC+" °C*":"—";document.querySelector("#chassis-temp").textContent=result?.chassisHeatC?result.chassisHeatC+" °C*":"—";document.querySelector("#heat-transfer").textContent=result?Math.round(result.heatTransfer*100)+"%*":"—";
  document.querySelector("#scientist-line").textContent=result?.impact?(researchState.coolingTier===0?"Head scientist: “As you can see, sire, we still struggle with dissipating the heat…”":"Head scientist: “The heat-routing prototype is promising. Now we must prove the chassis can carry the load.”"):result?.scientistDialogue?"Head scientist: “The instrumented route is live. We will compare the frame's hot zones against the baseline before calling this a success.”":"The scientist waits for your order.";
- document.querySelector("#specimen-title").textContent=result?.impact?"Impact specimen / post-shot":(demo?.title||"Instrumented specimen");const specimenRecord=findPartRecord(partBundle,demo?.partId||"torso.sternum-plate");drawSpecimen(result,specimenRecord);
+ document.querySelector("#specimen-title").textContent=result?.impact?"Impact specimen / post-shot":(demo?.title||"Instrumented specimen");
 }
 async function initializeResearchCatalog(){try{const response=await fetch("./research-demonstrations.json");if(!response.ok)throw new Error("HTTP "+response.status);demoCatalog=await response.json();demoSelect.replaceChildren();for(const demo of demoCatalog.demonstrations){const option=document.createElement("option");option.value=demo.id;option.textContent=demo.title;demoSelect.append(option);}demoSelect.value=researchState.selectedDemonstrationId;renderResearchState();}catch(error){researchStatus.textContent="Research catalog unavailable: "+String(error);}}
 function requestRecoilHaptic(){try{const pads=typeof navigator.getGamepads==="function"?Array.from(navigator.getGamepads()):[];const pad=pads.find(item=>item&&item.connected);const actuator=pad?.vibrationActuator;if(actuator&&typeof actuator.playEffect==="function"){void actuator.playEffect("dual-rumble",{duration:140,strongMagnitude:.72,weakMagnitude:.38}).catch(()=>{});return true;}const legacy=pad?.hapticActuators?.[0];if(legacy&&typeof legacy.pulse==="function"){void legacy.pulse(.72,140).catch(()=>{});return true;}}catch{}return false;}
-demoSelect.addEventListener("change",renderResearchState);requestDemoButton.addEventListener("click",()=>{researchState=requestDemonstration(researchState,demoCatalog,demoSelect.value);renderResearchState();});completeSetupButton.addEventListener("click",()=>{researchState=completeSetup(researchState);renderResearchState();});fireDemoButton.addEventListener("click",()=>{researchState=fireDemonstration(researchState,demoCatalog);if(researchState.lastResult?.impact){const rumble=requestRecoilHaptic();researchState.log=[...researchState.log,rumble?"Controller recoil pulse requested through the browser gamepad API.":"No compatible controller haptics exposed; impact remains visual and logged."];}renderResearchState();});investCoolingButton.addEventListener("click",()=>{researchState=investInCooling(researchState);renderResearchState();});resetDemoButton.addEventListener("click",()=>{researchState=resetDemonstration(researchState);renderResearchState();});initializeResearchCatalog();drawSpecimen();
+demoSelect.addEventListener("change",renderResearchState);requestDemoButton.addEventListener("click",()=>{researchState=requestDemonstration(researchState,demoCatalog,demoSelect.value);renderResearchState();});completeSetupButton.addEventListener("click",()=>{researchState=completeSetup(researchState);renderResearchState();});fireDemoButton.addEventListener("click",()=>{researchState=fireDemonstration(researchState,demoCatalog);if(researchState.lastResult?.impact){const rumble=requestRecoilHaptic();researchState.log=[...researchState.log,rumble?"Controller recoil pulse requested through the browser gamepad API.":"No compatible controller haptics exposed; impact remains visual and logged."];}renderResearchState();});investCoolingButton.addEventListener("click",()=>{researchState=investInCooling(researchState);renderResearchState();});resetDemoButton.addEventListener("click",()=>{researchState=resetDemonstration(researchState);renderResearchState();});initializeResearchCatalog();animateSpecimen();
 
 partSelect.addEventListener("change",renderPartCutSheet);
 downloadCutSheet.addEventListener("click",()=>{
