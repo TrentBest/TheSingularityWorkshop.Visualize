@@ -1,6 +1,6 @@
 /**
  * Procedural exoskeleton geometry, silhouette pass 01.
- * +Y up, +Z forward, +X soldier-left. Local coordinates are metres.
+ * +Y up, +Z forward, +X soldier-right. Local coordinates are metres.
  * Vertex format: position.xyz + materialColour.rgb (six float32 values).
  */
 const MATERIALS = {
@@ -85,7 +85,7 @@ export function buildSoldierGeometry(){
 }
 export const SOLDIER_GEOMETRY_LAYOUT=Object.freeze({
  format:"float32-position3-colour3-nonindexed-triangles",floatsPerVertex:6,bytesPerVertex:24,
- coordinateSystem:"+Y up; +Z forward; +X soldier-left",units:"metres",nominalHeightMetres:1.9,
+ coordinateSystem:"+Y up; +Z forward; +X soldier-right",units:"metres",nominalHeightMetres:1.9,
  partCount:SOLDIER_PARTS.length,
  shuntEndpointIds:["shunt.ocular.left","shunt.ocular.right","shunt.auditory.left","shunt.auditory.right","shunt.olfactory","shunt.cortical-stem"]
 });
