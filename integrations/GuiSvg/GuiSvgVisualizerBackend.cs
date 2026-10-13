@@ -124,6 +124,9 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
             new VisualizerFrameResult(++_frame, frame.Commands.Count, stopwatch.Elapsed, wasPresented: false));
     }
 
+    /// <summary>Releases backend resources. The SVG proof backend owns no persistent native resources.</summary>
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
     private static double X(float x) => 50 + x * 100;
     private static double Y(float y) => 28.125 - y * 100;
 
