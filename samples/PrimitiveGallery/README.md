@@ -12,7 +12,7 @@ From the repository root, run:
 dotnet run --project samples/PrimitiveGallery/VisualizeSvgProof/VisualizeSvgProof.csproj
 ```
 
-The harness writes the SVG files into `samples/PrimitiveGallery/generated/`. Open this README in a Markdown preview after generation to see the output inline; the same files can be checked in alongside the README so GitHub renders the evidence without launching another browser.
+The harness writes the SVG files into `samples/PrimitiveGallery/generated/`. The checked-in SVG snapshots below are compacted from successful harness output so GitHub can render the evidence directly in this README—no second browser or JavaScript demo is needed to see the results. Re-run the harness after changing the backend and review the refreshed files before updating the snapshots.
 
 ## Progression and expected observations
 
