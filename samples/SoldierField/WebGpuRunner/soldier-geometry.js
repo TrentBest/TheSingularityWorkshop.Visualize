@@ -4,11 +4,11 @@
  * Vertex format: position.xyz + materialColour.rgb (six float32 values).
  */
 const MATERIALS = {
-  carbon:[0.035,0.055,0.075], chassis:[0.105,0.15,0.18],
-  armor:[0.23,0.31,0.36], edge:[0.42,0.53,0.57],
-  ceramic:[0.15,0.22,0.25], joint:[0.075,0.10,0.13],
-  light:[0.08,0.88,0.84], warning:[0.95,0.46,0.15],
-  visor:[0.025,0.19,0.22], weapon:[0.075,0.09,0.11]
+  carbon:[0.055,0.075,0.10], chassis:[0.14,0.20,0.24],
+  armor:[0.32,0.40,0.46], edge:[0.58,0.72,0.78],
+  ceramic:[0.22,0.29,0.34], joint:[0.09,0.13,0.17],
+  light:[0.12,1.0,0.90], warning:[1.0,0.35,0.08],
+  visor:[0.025,0.24,0.30], weapon:[0.08,0.11,0.14]
 };
 
 /** Stable semantic IDs allow later animation, damage, and detail tiers. */
