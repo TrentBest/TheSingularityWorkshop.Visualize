@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WorkshopGuiSvgProjectPath Condition="'$(WorkshopGuiSvgProjectPath)' == '' and Exists('../../../TheSingularityWorkshop.GUI/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj')">../../../TheSingularityWorkshop.GUI/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj</WorkshopGuiSvgProjectPath>
+    <WorkshopGuiSvgProjectPath Condition="'$(WorkshopGuiSvgProjectPath)' == '' and Exists('../../TheSingularityWorkshop.GUI/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj')">../../TheSingularityWorkshop.GUI/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj</WorkshopGuiSvgProjectPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../TheSingularityWorkshop.Visualize.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(WorkshopGuiSvgProjectPath)' != ''">
+    <ProjectReference Include="$(WorkshopGuiSvgProjectPath)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(WorkshopGuiSvgProjectPath)' == ''">
+    <PackageReference Include="TheSingularityWorkshop.GUI.SVG" Version="0.1.0-alpha.1" />
+  </ItemGroup>
+</Project>
