@@ -72,5 +72,12 @@
       "researchQuestion": "Which layer stack, interfaces, and acceptance criteria should be researched first?"
     }
   ],
-  "simulationDisclaimer": "Costs, setup estimates, hit frequency, impact response, temperatures, and cooling improvements are fictional gameplay parameters. They are not empirical test results or certified engineering specifications."
+  "simulationDisclaimer": "Costs, setup estimates, hit frequency, impact response, temperatures, and cooling improvements are fictional gameplay parameters. They are not empirical test results or certified engineering specifications.",
+  "simulationAssumptions": {
+    "mostFrequentlyHitArmorPartId": "torso.sternum-plate",
+    "hitFrequencyBasis": "fictional-combat-telemetry",
+    "hitFrequencyStatus": "gameplay-premise-not-measured",
+    "hitShare": null,
+    "note": "The sternum plate is the current most-hit candidate for demonstration selection. No empirical hit percentage is asserted; a later campaign simulation can produce and version the distribution."
+  }
 }
