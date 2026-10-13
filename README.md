@@ -43,7 +43,12 @@ File.WriteAllText(_outputPath, svg);
 
 [Open the scene builder](integrations/GuiSvg/Proof/Program.cs) · [Open the GUI.SVG Visualizer backend](integrations/GuiSvg/GuiSvgVisualizerBackend.cs) · [Open the reusable SVG renderer](https://github.com/TrentBest/TheSingularityWorkshop.GUI/blob/development/src/SVG/SvgGuiRenderer.cs) · [Inspect the color-coded presentation](samples/PrimitiveGallery/api-consumption.html)
 
-This is the intended two-dimensional manifestation path alongside Visualize's other rendering backends. GUI.SVG does not replace the 3D renderer: this proof backend uses a deliberately simple XY projection and is an inspectable integration surface, not perspective-correct, depth-tested production rendering.
+This is the **first integration proof**, not yet the visual evidence for the full rendering ambition. GUI.SVG is the 2D manifestation path alongside Visualize's future 3D presentation backend. This proof uses a deliberately simple XY projection; it is not perspective-correct, depth-tested production rendering, and it should not be presented as such.
+
+### The next proof must be visibly 3D—and trace back to the code
+
+The next showcase milestone is a real 3D mesh submitted through Visualizer's C# geometry/material/frame contracts, with camera/view/projection transforms and the Renderer-to-Visualize adapter path made inspectable. The image must be generated from that path, not redrawn in browser JavaScript. The code beneath it will identify the exact handoff points with the same color-coded convention used above. Until that milestone passes its build and output checks, the current SVG is evidence of **API interoperability**, not evidence of a finished 3D renderer. That distinction protects the credibility we are trying to earn.
+
 
 Development CI checks out the GUI repository's `development` branch and tests this integration against the actual GUI.SVG project. The package project declares `TheSingularityWorkshop.GUI.SVG` version `0.1.0-alpha.1` and is packed by the GUI workflow; NuGet Trusted Publishing remains hard-gated off. The package is **not published**, and nothing has been deployed.
 
