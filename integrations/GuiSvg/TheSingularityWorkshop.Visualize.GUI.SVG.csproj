@@ -9,6 +9,7 @@
     <WorkshopGuiSvgProjectPath Condition="'$(WorkshopGuiSvgProjectPath)' == '' and Exists('../../TheSingularityWorkshop.GUI/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj')">../../TheSingularityWorkshop.GUI/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj</WorkshopGuiSvgProjectPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="GuiSource/**/*.cs" />
     <ProjectReference Include="../../TheSingularityWorkshop.Visualize.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(WorkshopGuiSvgProjectPath)' != ''">
