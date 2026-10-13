@@ -2,27 +2,29 @@
 
 This is a browser-run visual experiment for the first drawing primitives. It uses inline SVG and JavaScript, with no external assets, build step, graphics library, or server API.
 
-## Run it
+## Generate the visible proof with Visualize
 
-From the Visualize repository root:
+These pictures must be emitted by the C# `Visualizer` path—not hand-authored SVG lookalikes. The proof harness registers actual `VisualizerGeometry`, `VisualizerMaterial`, and `VisualizerInstanceBuffer` resources, constructs `VisualizerFrame` draw commands, and submits them through `Visualizer.RenderAsync` to a small SVG output backend. That backend translates the submitted indexed triangles into SVG paths.
+
+From the repository root, run:
 
 ```powershell
-py -m http.server 8080
+dotnet run --project samples/PrimitiveGallery/VisualizeSvgProof/VisualizeSvgProof.csproj
 ```
 
-Open [http://localhost:8080/samples/PrimitiveGallery/](http://localhost:8080/samples/PrimitiveGallery/) in a browser. You can also open `index.html` directly; the page has no module imports.
+The harness writes the SVG files into `samples/PrimitiveGallery/generated/`. Open this README in a Markdown preview after generation to see the output inline; the same files can be checked in alongside the README so GitHub renders the evidence without launching another browser.
 
 ## Progression and expected observations
 
-| Step | Action | Expected visible result |
+| Step | Generated output | What the image demonstrates |
 | --- | --- | --- |
-| 01 · One point | Keep the default mode | One coloured point appears at the center |
-| 02 · Point cloud | Select Point cloud; try 1, 100, 1,000, and 10,000 | The selected number of independently positioned points appears |
-| 03 · Four connected points | Select Four connected points | Four point markers and a closed, four-segment outline appear |
-| 04 · One line | Select One line | A line connects two endpoints |
-| 05 · Many lines | Select Many lines; vary the count | The selected number of line segments appears |
-| Randomize | Press Randomize positions + colours | The current arrangement changes without changing its selected mode/count |
-| Presentation | Change point size, line width, colour style, or spread | Mark appearance or distribution changes |
+| 01 · One point | ![One point generated through Visualizer](generated/01-one-point.svg) | A small diamond marker made from indexed triangles is submitted through a Visualizer frame. This is a mesh-backed point marker, not a native point-list primitive. |
+| 02 · Point cloud | ![100 point instances generated through Visualizer](generated/02-point-cloud-100.svg) | One marker mesh is submitted with 100 transforms/tints in a contiguous instance buffer. |
+| 03 · Four connected points | ![Four connected points generated through Visualizer](generated/03-four-connected-points.svg) | Four marker draws and four segment-mesh draws form a closed outline. |
+| 04 · One line | ![One line generated through Visualizer](generated/04-one-line.svg) | A thin rectangle made from two triangles is transformed and submitted as a line-like segment. |
+| 05 · Many lines | ![24 line instances generated through Visualizer](generated/05-many-lines-24.svg) | One segment mesh is submitted across 24 instance transforms. |
+
+The proof backend is intentionally small and is not a production GPU backend. It does, however, consume the same Visualizer frame/resource contracts and draw commands that the current C# implementation validates. Its SVG output is an inspectable backend result, not an independently drawn HTML demo. The current Visualizer contract has indexed triangle draws, not native point or line-list topology, so points and lines here are represented by tiny triangle meshes.
 
 ## What the counters measure
 
