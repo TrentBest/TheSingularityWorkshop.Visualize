@@ -10,11 +10,15 @@
 
 > **Make the living world visible. Keep the world independent of its display.**
 
-## Current visual showcase
+## Living visual showcase
 
-[![Lit hemisphere with projected surface normals](docs/assets/hemisphere-normals-preview.svg)](samples/PrimitiveGallery/README.md)
+[![Animated SVG: data becomes connected, moving geometry](docs/assets/living-showcase.svg)](samples/PrimitiveGallery/README.md)
 
-This is a neutral rendering example: indexed surface geometry, a simple Lambert response, and projected vertex normals. The preview is visible directly in the README—no build, console, or launch step is needed. The [Primitive Gallery guide](samples/PrimitiveGallery/README.md) shows the C# Visualizer-backed SVG proof and links to the exact generated CI artifact. Consumer-specific scenes—such as raWWar's soldier and exoskeleton—belong in the consuming Experience and should exercise Visualize through its public contracts, not define Visualize's own sample identity.
+The geometry above is alive **inside this documentation image**: a moving marker follows a connected path while the relationship nodes pulse. This is the first layer of the living-documentation experience—readers can see motion without building the repository or launching a separate app.
+
+**[Explore the interactive SVG Primitive Lab](samples/PrimitiveGallery/index.html)** from a local checkout to change the primitive type, count, positions, colour, and spread. The page redraws the scene from its own data and reports its own SVG/DOM work. Then use the [Primitive Gallery guide](samples/PrimitiveGallery/README.md) to inspect a separate, C#-generated SVG proof produced through the actual Visualizer resource/frame contracts. Those are three intentionally distinct evidence levels: animated documentation artwork, browser-interactive exploration, and C# contract-backed output.
+
+The next engineering goal is to bring more of the visible experience under the Workshop's real state and composition controls—not to disguise a browser-only experiment as execution of FSM_API or the unfinished GPU backend. Consumer-specific scenes, such as raWWar's soldier and exoskeleton, belong in the consuming Experience and should exercise Visualize through its public contracts, not define Visualize's own sample identity.
 
 TheSingularityWorkshop.Visualize is the GPU-facing presentation project for The Singularity Workshop. It turns observer-aware presentation data from [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into pixels without making a particular windowing toolkit or graphics API the definition of the world.
 
