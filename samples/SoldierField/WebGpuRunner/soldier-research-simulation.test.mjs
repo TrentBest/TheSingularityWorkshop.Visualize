@@ -76,6 +76,10 @@ test("funding cooling research changes the next simulated thermal result and unl
   state = fireDemonstration(state, catalog);
   assert.ok(state.lastResult.barrelHeatC < baselineBarrel);
   assert.ok(state.lastResult.chassisHeatC > 0);
+  assert.equal(state.trials.length, 2);
+  assert.equal(state.trials[0].coolingTier, 0);
+  assert.equal(state.trials[1].coolingTier, 1);
+  assert.ok(state.trials[1].barrelHeatC < state.trials[0].barrelHeatC);
   assert.ok(state.log.some(line => line.includes("Nearby trooper")));
 });
 
