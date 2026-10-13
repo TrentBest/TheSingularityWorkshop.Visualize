@@ -57,10 +57,10 @@ async function initializeCutSheets(){
 partSelect.addEventListener("change",renderPartCutSheet);
 downloadCutSheet.addEventListener("click",()=>{
  if(!selectedCutSheet)return;
- const blob=new Blob([JSON.stringify(selectedCutSheet,null,2)+"\\n"],{type:"application/json"});
+ const blob=new Blob([JSON.stringify(selectedCutSheet,null,2)+"\n"],{type:"application/json"});
  const url=URL.createObjectURL(blob),link=document.createElement("a");
  link.href=url;link.download=selectedCutSheet.partId.replace(/[^a-z0-9.-]/gi,"-")+"-cut-sheet.json";
- link.click();URL.revokeObjectURL(url);
+ link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
 
 const wgsl="struct I { posScale: vec4f, tint: vec4f };\n"+
