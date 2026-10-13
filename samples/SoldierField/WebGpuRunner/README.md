@@ -19,6 +19,7 @@ Open http://localhost:8080/samples/SoldierField/WebGpuRunner/ in a browser with 
 - `soldier-cut-sheet.mjs` derives a stable machine-readable cut sheet from a part record. The lab lets you select any part and download its derived JSON cut sheet.
 - `SOLDIER_DOSSIER.md` is the in-universe field dossier for neural shunts, the quiet seam, fabrication, failure signatures, and ambient soldier culture.
 - `research-demonstrations.json` is the priced, setup-timed catalog offered through the head scientist's helmet tablet.
+- `research-demonstrations.schema.json` defines the versioned catalog contract, including explicit unmeasured status for the fictional most-hit plate premise.
 - `soldier-research-simulation.mjs` models ordering, setup advancement, a plate-impact event, thermal response, and funding a cooling iteration.
 - `soldier-research-simulation.test.mjs` verifies the state transitions, cost accounting, and the follow-on trooper's heat complaint after research investment.
 - Each part has a stable ID, primitive, local-space position/dimensions, and material key. The generated vertex stream is contiguous float32 position + colour data for triangle-list rendering.
