@@ -142,6 +142,25 @@ export function fireDemonstration(state, catalog) {
       ? Math.round(priorCondition.residualTemperatureC * 0.45 + chassisHeatC * 0.55)
       : priorCondition.residualTemperatureC
   };
+  const nextPartConditions = { ...state.partConditions, [demo.partId]: condition };
+  if (demo.effects.barrelHeat) {
+    const priorBarrelCondition = state.partConditions["weapon.muzzle"] || {
+      partId: "weapon.muzzle",
+      hitCount: 0,
+      integrityRemaining: 1,
+      accumulatedDamageDepthFraction: 0,
+      latestDamageEventId: null,
+      thermalCycleCount: 0,
+      peakTemperatureC: 20,
+      residualTemperatureC: 20
+    };
+    nextPartConditions["weapon.muzzle"] = {
+      ...priorBarrelCondition,
+      thermalCycleCount: priorBarrelCondition.thermalCycleCount + 1,
+      peakTemperatureC: Math.max(priorBarrelCondition.peakTemperatureC, barrelHeatC),
+      residualTemperatureC: Math.round(priorBarrelCondition.residualTemperatureC * 0.45 + barrelHeatC * 0.55)
+    };
+  }
   const experiment = {
     schemaVersion: "1.0.0",
     trialId,
@@ -186,7 +205,7 @@ export function fireDemonstration(state, catalog) {
     shotCount,
     trials: [...state.trials, experiment],
     damageEvents: damageEvent ? [...state.damageEvents, damageEvent] : state.damageEvents,
-    partConditions: { ...state.partConditions, [demo.partId]: condition },
+    partConditions: nextPartConditions,
     lastResult: result,
     log
   };
