@@ -50,6 +50,7 @@ jobs:
           Path("/tmp/soldier-field-check.mjs").write_text(match.group(1), encoding="utf-8")
           PY
           node --check /tmp/soldier-field-check.mjs
+          node --check samples/SoldierField/WebGpuRunner/soldier-geometry.js
 
       - name: Restore
         run: dotnet restore TheSingularityWorkshop.Visualize.slnx
