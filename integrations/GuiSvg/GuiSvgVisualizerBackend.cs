@@ -104,7 +104,7 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
 
         if (_animateConnectedPoints)
         {
-            const string route = "M18 46.125L78 50.125L82 16.125L32 4.125L18 46.125";
+            const string route = "M18 46.125L78 50.125L86 16.125L32 4.125L18 46.125";
             scene.Child("svg-path", "connected-route", path => path
                 .Property("d", route)
                 .Property("fill", "none")
