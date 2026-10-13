@@ -139,7 +139,7 @@ function playFiringAudioCue(seedValue=1){
   function noise(duration,filterType,frequency,start,peak,attackFraction=.06){
    const length=Math.max(1,Math.floor(audio.sampleRate*duration)),buffer=audio.createBuffer(1,length,audio.sampleRate),data=buffer.getChannelData(0);let seed=(seedValue>>>0)||1;
    for(let i=0;i<length;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;data[i]=((seed/4294967296)*2-1)*Math.exp(-i/length*2.8);}
-   const source=audio.createBufferSource(),filter=audio.createBiquadFilter(),gain=audio.createGain();source.buffer=buffer;filter.type=filterType;filter.frequency.setValueAtTime(frequency,start);filter.Q.value=filterType==="bandpass"?.85:.7;
+   const source=audio.createBufferSource(),filter=audio.createBiquadFilter(),gain=audio.createGain();source.buffer=buffer;filter.type=filterType;filter.frequency.setValueAtTime(frequency,start);filter.Q.value=filterType==="bandpass" ? 0.85 : 0.7;
    gain.gain.setValueAtTime(.0001,start);gain.gain.linearRampToValueAtTime(peak,start+duration*attackFraction);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
    source.connect(filter);filter.connect(gain);gain.connect(master);source.start(start);source.stop(start+duration+.01);
   }
