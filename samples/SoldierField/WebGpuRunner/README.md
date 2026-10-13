@@ -18,12 +18,21 @@ Open http://localhost:8080/samples/SoldierField/WebGpuRunner/ in a browser with 
 - `soldier-part-records.json` carries records for all 38 current semantic parts. Unknown tolerances, physical material properties, mating interfaces, and acceptance criteria remain explicitly unresolved rather than invented.
 - `soldier-cut-sheet.mjs` derives a stable machine-readable cut sheet from a part record. The lab lets you select any part and download its derived JSON cut sheet.
 - `SOLDIER_DOSSIER.md` is the in-universe field dossier for neural shunts, the quiet seam, fabrication, failure signatures, and ambient soldier culture.
+- `research-demonstrations.json` is the priced, setup-timed catalog offered through the head scientist's helmet tablet.
+- `soldier-research-simulation.mjs` models ordering, setup advancement, a plate-impact event, thermal response, and funding a cooling iteration.
+- `soldier-research-simulation.test.mjs` verifies the state transitions, cost accounting, and the follow-on trooper's heat complaint after research investment.
 - Each part has a stable ID, primitive, local-space position/dimensions, and material key. The generated vertex stream is contiguous float32 position + colour data for triangle-list rendering.
 - The lore currently enumerates six endpoints (paired ocular and auditory plus olfactory and cortical-stem). The possible five-assembly grouping is explicitly unresolved rather than silently choosing a canon.
 
 ## Engineering data and cut sheets
 
 The current records are BIM-inspired engineering data, not a claim of certified or fabrication-ready BIM. Geometry values are nominal render-blockout values in metres. Each part carries a stable ID, revision/maturity, geometry, material status, interfaces, manufacturing status, inspection checks, research questions, and traceability/open issues. Cut sheets are derived from these records so the laboratory view, later drawings, and research-board comparisons can share one source of truth.
+
+## Research-lab demonstration loop
+
+The tablet offers a sternum-plate impact, thermal-dissipation prototype, and non-firing cutaway. Each entry has a stable ID, part reference, fictional research-credit price, setup-time estimate, event sequence, and research question. The player orders the test, advances the simulated setup clock, and runs the demonstration. The impact scene shows a crater and hot edge, a simulated hot barrel, a chassis thermal halo, and the head scientist's explanation. Funding cooling research changes the next simulated thermal result and unlocks a nearby trooper's dry joke about the rifle transferring heat into the exoskeleton.
+
+The costs, temperatures, hit-rate premise, cooling gains, and dialogue are gameplay parameters, not measured engineering data. Browser haptics are not connected to a physical controller; recoil is currently represented by the event and state transition. The visible plate is a specimen illustration driven by the research result, not yet an independently manipulable 3D subassembly.
 
 ## What it does
 
