@@ -33,6 +33,13 @@ jobs:
           ref: development
           path: integrations/RendererAdapter/RendererSource
 
+      - name: Checkout GUI source for the GUI.SVG adapter integration
+        uses: actions/checkout@v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.GUI
+          ref: development
+          path: TheSingularityWorkshop.GUI
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
@@ -80,6 +87,13 @@ jobs:
           --collect:"XPlat Code Coverage;Format=cobertura"
           --results-directory ./TestResults
           --logger "trx;LogFileName=testresults.trx"
+
+      - name: Test GUI.SVG Visualizer backend integration
+        run: >
+          dotnet test tests/GuiSvgIntegration.Tests/GuiSvgIntegration.Tests.csproj
+          --configuration Release
+          -p:WorkshopGuiSvgProjectPath=../../TheSingularityWorkshop.GUI/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+          --verbosity normal
 
       - name: Prepare coverage report
         shell: bash
