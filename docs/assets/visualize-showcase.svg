@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+<title id="title">Visualize current showcase: procedural exoskeleton and presentation pipeline</title>
+<desc id="desc">A technical illustration of an armored exoskeleton silhouette in the center, surrounded by concentric observer-detail rings and a pipeline from semantic parts through mesh generation and WebGPU presentation. It illustrates the current Soldier Field browser lab, not a screenshot or the .NET backend.</desc>
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0b1421"/><stop offset="1" stop-color="#142a40"/></linearGradient>
+ <linearGradient id="armor" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b8d6e8"/><stop offset=".45" stop-color="#547d9b"/><stop offset="1" stop-color="#263d55"/></linearGradient>
+ <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7ee0bd"/><stop offset="1" stop-color="#8fcaff"/></linearGradient>
+ <filter id="blur"><feGaussianBlur stdDeviation="9"/></filter>
+ </defs>
+<rect width="1200" height="640" rx="22" fill="url(#bg)"/>
+<g opacity=".18" stroke="#8fcaff" stroke-width="1"><path d="M40 80H1160M40 140H1160M40 200H1160M40 260H1160M40 320H1160M40 380H1160M40 440H1160M40 500H1160M40 560H1160"/><path d="M80 40V600M140 40V600M200 40V600M260 40V600M320 40V600M380 40V600M440 40V600M500 40V600M560 40V600M620 40V600M680 40V600M740 40V600M800 40V600M860 40V600M920 40V600M980 40V600M1040 40V600M1100 40V600"/></g>
+<text x="54" y="54" fill="#7ee0bd" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="800" letter-spacing="3">THE SINGULARITY WORKSHOP · VISUALIZE</text>
+<text x="54" y="91" fill="#edf5fc" font-family="Segoe UI,Arial,sans-serif" font-size="30" font-weight="750">From semantic parts to a visible world</text>
+<text x="54" y="118" fill="#a8bbcf" font-family="Segoe UI,Arial,sans-serif" font-size="15">Current showcase: procedural Soldier Field geometry rendered in a separate browser/WebGPU lab</text>
+<!-- horizon rings -->
+<g fill="none" stroke-width="2">
+ <ellipse cx="600" cy="370" rx="230" ry="188" stroke="#7ee0bd" opacity=".42"/>
+ <ellipse cx="600" cy="370" rx="185" ry="151" stroke="#8fcaff" opacity=".55" stroke-dasharray="8 7"/>
+ <ellipse cx="600" cy="370" rx="139" ry="115" stroke="#ffcf86" opacity=".65" stroke-dasharray="3 8"/>
+</g>
+<ellipse cx="600" cy="370" rx="120" ry="105" fill="#7ee0bd" opacity=".08" filter="url(#blur)"/>
+<!-- silhouette: backpack -->
+<g stroke="#a6c7db" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M545 235 L520 244 L514 315 L535 338 L548 300Z" fill="#314c65"/>
+ <path d="M655 235 L680 244 L686 315 L665 338 L652 300Z" fill="#314c65"/>
+ <path d="M535 250 L515 260 L520 292 L538 289Z" fill="#7a9fb7"/>
+ <path d="M665 250 L685 260 L680 292 L662 289Z" fill="#7a9fb7"/>
+ <!-- legs -->
+ <path d="M558 402 L602 406 L594 476 L578 523 L548 523 L553 473Z" fill="url(#armor)"/>
+ <path d="M602 406 L642 402 L647 473 L660 523 L630 523 L608 476Z" fill="url(#armor)"/>
+ <path d="M548 516 L578 516 L588 535 L582 547 L535 547 L529 538Z" fill="#24394d"/>
+ <path d="M630 516 L660 516 L679 538 L672 547 L625 547 L620 535Z" fill="#24394d"/>
+ <path d="M559 427 L595 432 M556 453 L592 458 M613 432 L643 427 M616 458 L645 453" fill="none" stroke="#7ee0bd"/>
+ <!-- torso -->
+ <path d="M555 245 L577 230 L623 230 L645 245 L661 315 L642 368 L628 411 L572 411 L558 368 L539 315Z" fill="url(#armor)"/>
+ <path d="M577 239 L600 252 L623 239 L636 300 L621 341 L579 341 L564 300Z" fill="#22394e"/>
+ <path d="M582 260 L600 270 L618 260 L621 307 L600 324 L579 307Z" fill="#7ee0bd" opacity=".8"/>
+ <path d="M566 320 L587 341 L581 380 L559 363Z" fill="#9abbd0"/>
+ <path d="M634 320 L613 341 L619 380 L641 363Z" fill="#9abbd0"/>
+ <path d="M581 378 L619 378 L628 406 L572 406Z" fill="#24394d"/>
+ <!-- arms -->
+ <path d="M545 250 L520 258 L491 305 L502 326 L526 313 L550 281Z" fill="url(#armor)"/>
+ <path d="M655 250 L680 258 L709 305 L698 326 L674 313 L650 281Z" fill="url(#armor)"/>
+ <path d="M492 302 L477 328 L488 350 L507 337 L502 319Z" fill="#385a73"/>
+ <path d="M708 302 L723 328 L712 350 L693 337 L698 319Z" fill="#385a73"/>
+ <path d="M484 348 L505 339 L511 359 L497 375 L482 366Z" fill="#9abbd0"/>
+ <path d="M716 348 L695 339 L689 359 L703 375 L718 366Z" fill="#9abbd0"/>
+ <!-- neck and helmet -->
+ <path d="M584 222 L584 238 L616 238 L616 222Z" fill="#405f78"/>
+ <path d="M565 175 Q565 147 600 143 Q635 147 635 175 L629 211 L614 229 L586 229 L571 211Z" fill="url(#armor)"/>
+ <path d="M573 174 Q600 156 627 174 L622 195 L600 204 L578 195Z" fill="#10283a" stroke="#7ee0bd"/>
+ <path d="M579 180 Q600 169 621 180" fill="none" stroke="#8fcaff" stroke-width="4"/>
+ <path d="M569 205 L583 218 L617 218 L631 205" fill="none" stroke="#24394d" stroke-width="5"/>
+</g>
+<!-- annotations -->
+<g font-family="Segoe UI,Arial,sans-serif">
+ <path d="M390 220 L470 220 L526 268" fill="none" stroke="#7ee0bd" stroke-width="1.5"/>
+ <circle cx="526" cy="268" r="4" fill="#7ee0bd"/>
+ <text x="72" y="207" fill="#7ee0bd" font-size="14" font-weight="800" letter-spacing="1.5">SEMANTIC PARTS</text>
+ <text x="72" y="230" fill="#d6e7f5" font-size="15">Stable IDs survive</text><text x="72" y="250" fill="#d6e7f5" font-size="15">geometry refinement</text>
+ <path d="M810 245 L730 245 L670 290" fill="none" stroke="#8fcaff" stroke-width="1.5"/>
+ <circle cx="670" cy="290" r="4" fill="#8fcaff"/>
+ <text x="825" y="226" fill="#8fcaff" font-size="14" font-weight="800" letter-spacing="1.5">MESH GENERATION</text>
+ <text x="825" y="249" fill="#d6e7f5" font-size="15">Box + ellipsoid</text><text x="825" y="269" fill="#d6e7f5" font-size="15">triangle geometry</text>
+ <path d="M800 430 L756 430 L729 465" fill="none" stroke="#ffcf86" stroke-width="1.5"/>
+ <circle cx="729" cy="465" r="4" fill="#ffcf86"/>
+ <text x="815" y="413" fill="#ffcf86" font-size="14" font-weight="800" letter-spacing="1.5">OBSERVER DETAIL</text>
+ <text x="815" y="436" fill="#d6e7f5" font-size="15">Horizon rings shown</text><text x="815" y="456" fill="#d6e7f5" font-size="15">as a design concept</text>
+ <text x="54" y="594" fill="#a8bbcf" font-size="13">Illustrative architecture artwork — not a captured WebGPU frame, not an integrated .NET Visualize render.</text>
+ <text x="1145" y="594" text-anchor="end" fill="#7ee0bd" font-size="13" font-weight="700">CURRENTLY DEMONSTRABLE ≠ FULL PIPELINE COMPLETE</text>
+</g>
+</svg>
