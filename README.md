@@ -12,13 +12,13 @@
 
 ## Current visual showcase
 
-[![Visualize showcase: procedural exoskeleton, semantic parts, mesh generation, and observer-detail concept](docs/assets/visualize-showcase.svg)](samples/SoldierField/WebGpuRunner/README.md)
+[![Lit hemisphere with projected surface normals](docs/assets/hemisphere-normals-preview.svg)](samples/PrimitiveGallery/README.md)
 
-This illustration is visible directly in the README—no build, console, or launch step is needed to see the current direction. It points to our most developed visual sample: **Soldier Field**, a procedural exoskeleton scene rendered by a separate browser/WebGPU lab. The illustration is an architecture visual, not a captured frame. The live lab, its geometry generators, and its engineering records are documented in the [Soldier Field guide](samples/SoldierField/WebGpuRunner/README.md); the C# Visualize contracts are not yet connected to that browser renderer.
+This is a neutral rendering example: indexed surface geometry, a simple Lambert response, and projected vertex normals. The preview is visible directly in the README—no build, console, or launch step is needed. The [Primitive Gallery guide](samples/PrimitiveGallery/README.md) shows the C# Visualizer-backed SVG proof and links to the exact generated CI artifact. Consumer-specific scenes—such as raWWar's soldier and exoskeleton—belong in the consuming Experience and should exercise Visualize through its public contracts, not define Visualize's own sample identity.
 
 TheSingularityWorkshop.Visualize is the GPU-facing presentation project for The Singularity Workshop. It turns observer-aware presentation data from [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into pixels without making a particular windowing toolkit or graphics API the definition of the world.
 
-The first desktop host is **AnyApp on WPF**. An exploratory browser/WebGPU Soldier Field proves a separate path can consume a deterministic geometry asset and render an instanced soldier workload; it is a lab, not a selected production backend or a claim that the .NET Visualize contracts are already wired end-to-end. **No production graphics API has been selected.** The next milestone is to connect the Workshop's array-first data model to a backend without binding world meaning to one display technology.
+The first desktop host is **AnyApp on WPF**. **No production graphics API has been selected.** The next milestone is to connect the Workshop's array-first data model to a backend without binding world meaning to one display technology. A real Experience such as raWWar should provide the domain-specific scene and demonstrate consumption of Visualize; this repository's examples should stay small, neutral, and contract-focused.
 
 ## 🟦 01 What
 
@@ -56,7 +56,7 @@ The responsibility flow is deliberate:
 
 This repository has backend-neutral frame contracts, revisioned geometry/material resources, and an immutable instance-buffer contract for indexed instancing. Draw commands can address an explicit range in a contiguous instance array, and Visualizer validates resource/range correctness before backend submission. A narrow adapter maps Renderer output into VisualizerFrame; the contract is deliberately independent of the Renderer package version. These are data/API contracts—not yet a concrete GPU upload or draw implementation.
 
-An isolated WPF/Direct3D 12 clear-and-present experiment exists under `samples/WpfD3D12Proof`. It compiles in Windows CI, but a real hardware/runtime capture has not yet been recorded. It draws no geometry, uses correctness-first per-frame synchronization, and is **not a selected backend**. The separate Soldier Field browser lab provides an initial actual-geometry target for measuring crowd scaling; it is exploratory and not a selected production backend.
+An isolated WPF/Direct3D 12 clear-and-present experiment exists under `samples/WpfD3D12Proof`. It compiles in Windows CI, but a real hardware/runtime capture has not yet been recorded. It draws no geometry, uses correctness-first per-frame synchronization, and is **not a selected backend**.
 
 ## 🟢 04 See the work and explore it
 
@@ -64,7 +64,6 @@ An isolated WPF/Direct3D 12 clear-and-present experiment exists under `samples/W
 
 The illustration above is the no-launch overview. For deeper inspection, the documentation links below take you directly to the implementation and the current visual experiments. GitHub displays this README and its SVG artwork in place; the browser labs are separate HTML/WebGPU or SVG experiments, not embedded executions of the C# assembly.
 
-- **[Soldier Field guide](samples/SoldierField/WebGpuRunner/README.md)** — the most developed procedural 3D sample, its controls, data, and measurement boundaries.
 - **[Primitive Gallery source and guide](samples/PrimitiveGallery/README.md)** — the interactive point/line progression and what each step demonstrates.
 - **[Primitive Gallery page](samples/PrimitiveGallery/index.html)** — inspect the experiment's actual HTML, SVG, and JavaScript.
 - **[Surface Normals & Light lab](samples/NormalLightingLab/index.html)** — change light direction, ambient contribution, diffuse strength, sample density, and normal overlays in a live SVG study.
@@ -77,18 +76,16 @@ dotnet build TheSingularityWorkshop.Visualize.slnx --configuration Release
 dotnet test TheSingularityWorkshop.Visualize.slnx --configuration Release
 ```
 
-The tests verify the current contracts. To explore the first visible SVG sequence, run `py -m http.server 8080` from the repository root and open [Primitive Gallery](http://localhost:8080/samples/PrimitiveGallery/); it steps from one point through 10,000 points and connected/independent lines. The gallery's [README](samples/PrimitiveGallery/README.md) lists expected observations and explains the timing counter. To see an actual procedural sci-fi exoskeleton soldier rendered by WebGPU, open [Soldier Field](http://localhost:8080/samples/SoldierField/WebGpuRunner/) in a browser with WebGPU enabled. Its ×10/×100 controls scale a deliberately repeated population across eight independently refreshed horizon workloads. Read the [lab guide](samples/SoldierField/WebGpuRunner/README.md) before interpreting the timing: Renderer bucket decisions and GPU timestamp measurements are not yet integrated. The lab also carries versioned engineering records for all 38 semantic parts and derives downloadable preliminary cut sheets from those records; these are structured design data, not certified or fabrication-ready BIM.
+The tests verify the current contracts. To explore the first visible SVG sequence, run `py -m http.server 8080` from the repository root and open [Primitive Gallery](http://localhost:8080/samples/PrimitiveGallery/); it steps from one point through 10,000 points and connected/independent lines. The gallery's [README](samples/PrimitiveGallery/README.md) lists expected observations and explains the timing counter. The showcase remains deliberately neutral. Domain-specific scene and workload demonstrations should live with their consuming Experience—for example, raWWar—and call Visualize through its supported contracts.
 
 ## 🟪 05 Available documentation and theory
 
 ![](docs/assets/dividers/purple.svg)
 
 - [Architecture](docs/ARCHITECTURE.md) — follow data from authoritative state to the host surface and understand which layer owns each decision.
-- [Visual primitives](docs/PRIMITIVES.md) — start with the [interactive SVG Primitive Gallery](samples/PrimitiveGallery/index.html), then explore [surface normals and live diffuse lighting](samples/NormalLightingLab/index.html), compare point/line experiments with Soldier Field's box/ellipsoid mesh generators, and distinguish each sample path from the current C# contracts.
+- [Visual primitives](docs/PRIMITIVES.md) — start with the [interactive SVG Primitive Gallery](samples/PrimitiveGallery/index.html), then explore [surface normals and live diffuse lighting](samples/NormalLightingLab/index.html), and distinguish each browser experiment from the current C# contracts.
 - [Gestures and procedural motion](docs/GESTURES_AND_POSE_PIPELINE.md) — see how physical procedures become evaluated pose data without making Visualize the owner of motion semantics.
 - [GPU backend strategy](docs/GPU_BACKEND_STRATEGY.md) — compare backend responsibilities and the intended native/browser directions, with array-first execution as a constraint.
-- [Soldier Field scaling lab](samples/SoldierField/WebGpuRunner/README.md) — run the procedural exoskeleton scene and compare independent Event Horizon workload counters.
-- [Soldier geometry manifest](samples/SoldierField/WebGpuRunner/soldier-geometry.json) and [wetware field dossier](samples/SoldierField/WebGpuRunner/SOLDIER_DOSSIER.md) — inspect the component contract and in-universe neural-shunt system.
 - [Isolated WPF/Direct3D 12 experiment](samples/WpfD3D12Proof/README.md) — inspect the exploratory native-surface proof and its limitations.
 - [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md) — see the engineering milestones and their current boundaries.
 - [Performance and benchmark rules](docs/PERFORMANCE.md) — understand how performance evidence must be collected and reported.
