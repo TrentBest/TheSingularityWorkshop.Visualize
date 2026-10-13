@@ -1,126 +1,75 @@
 # Visual Primitives — From Meaning to Pixels
 
-**Status:** Living guide. The Soldier Field browser lab currently demonstrates 3D mesh generation; the Primitive Gallery is an interactive SVG experiment that makes the early drawing progression visible. These are separate proof paths, not an integrated .NET rendering backend.
+**Status:** Living guide. Visualize's examples should remain small, reusable, and neutral: they demonstrate presentation contracts without making a consuming Experience's domain objects part of this library.
 
-![Visualize showcase illustration: semantic soldier parts, mesh generation, and observer-detail concept](assets/visualize-showcase.svg)
+![Lit hemisphere and projected surface normals](assets/hemisphere-normals-preview.svg)
 
-This artwork is part of the documentation, so readers can see the current visual direction without building or launching anything. It is an explanatory illustration—not a screenshot or proof of a connected production pipeline. The [Soldier Field guide](../samples/SoldierField/WebGpuRunner/README.md) describes the actual browser/WebGPU scene; the [Primitive Gallery](../samples/PrimitiveGallery/README.md) documents the interactive 2D experiment and its boundaries.
+The preview is visible without building or launching anything. The [Primitive Gallery](../samples/PrimitiveGallery/README.md) distinguishes the browser-side SVG experiment from the C# proof harness, which submits indexed geometry, material resources, instance data, and frame commands through Visualizer contracts to an SVG proof backend. The exact output of the latest successful CI run is available in the [CI artifact](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/38453100266/artifacts/11841960173).
 
 ## 0. See the primitives, not just read about them
 
-Open the [interactive SVG Primitive Gallery](../samples/PrimitiveGallery/index.html). It begins with one point, then lets you explore point clouds (including 10,000 marks), four connected points, one line, and many lines. Change the count, point size, line width, position spread, and colour style; randomize the point data and watch the element counts and local build-time observation update.
+Open the [interactive SVG Primitive Gallery](../samples/PrimitiveGallery/index.html). It begins with one point, then lets you explore point clouds, connected points, one line, and many lines. Change the count, point size, line width, position spread, and colour style; randomize the point data and watch the element counts and local build-time observation update.
 
-This is a **visual test sequence**, not yet an automated test of `TheSingularityWorkshop.Visualize`'s C# backend. It proves that the chosen SVG description is emitted and displayed by the browser. The current C# tests verify resource, frame, draw-range, and lifecycle contracts; they do not currently render these SVG examples. The page's build-time counter is a local DOM-generation observation, not a GPU benchmark or a cross-device performance claim.
+The interactive page is a browser-side SVG experiment. It does not execute the C# Visualize assembly. The separate C# proof harness creates actual Visualizer resources and frame commands, submits them to a small SVG backend, and writes inspectable SVG output. Neither path is a production GPU backend.
 
-## 1. One word, three different ideas
+## 1. Three meanings of “primitive”
 
-A *primitive* can mean different things at different layers. Keeping those meanings separate prevents a demo from accidentally defining the architecture.
+A *primitive* can mean different things at different layers. Keeping those meanings separate prevents an example from accidentally defining the architecture.
 
 | Layer | What a primitive means here | Example |
 | --- | --- | --- |
-| Domain / semantic part | A meaningful, stable piece of the object | `helmet.visor`, `torso.sternum-plate` |
-| Geometry generator | A rule that produces triangles from a compact description | `box`, `ellipsoid` |
-| Presentation backend | A way to turn prepared geometry into pixels | The current browser lab uses WebGPU |
+| Domain / semantic description | A meaningful, stable piece of an object's description | A named component in a consuming Experience |
+| Geometry generator | A rule that produces vertices and indices from a compact description | Box, ellipsoid, hemisphere |
+| Presentation backend | A way to turn prepared geometry into pixels | SVG proof backend, future GPU backend |
 
-A semantic part is not the same thing as a shape. The sternum plate is meaningful because of its role in the soldier; a box is only the current geometric approximation used to draw it. A later plate mesh, SVG outline, cutaway, or detailed model should be able to retain the same semantic identity.
+A semantic component is not the same thing as a shape. A box is a geometric approximation; the component's identity and role belong to the consuming Experience. The same semantic description might later be represented by a mesh, an outline, a cutaway, or a detailed model without transferring domain ownership into Visualize.
 
-## 2. Current geometry contract
+## 2. Current C# geometry contract
 
-The Soldier Field lab builds a deterministic vertex stream from a stable inventory of semantic parts:
+The current proof harness submits VisualizerGeometry with vertices and indexed triangles, VisualizerMaterial resources, optional VisualizerInstanceBuffer data, and VisualizerFrame draw commands. The Visualizer validates the frame/resource relationships and passes the work to the selected backend.
 
-- Coordinates are local to the soldier: **+Y is up, +Z is forward, +X is soldier-right**.
-- Position values are expressed in nominal metres.
-- Each vertex currently contains six `float32` values: position `(x, y, z)` and colour `(r, g, b)`.
-- Vertices are emitted as a non-indexed triangle list.
-- The generated array is a presentation asset, not authoritative world state.
-- The manifest's stable part IDs are intended to survive geometry refinement, animation, damage, research, and alternate representations.
+The proof backend translates indexed triangles into SVG paths. For the lit hemisphere example it additionally computes a simple Lambert response from vertex normals and draws projected normal vectors. This lighting calculation belongs to the proof backend; it is not a production shader or a promise that the current material contract implements GPU lighting.
 
-Implementation: [`soldier-geometry.js`](../samples/SoldierField/WebGpuRunner/soldier-geometry.js)  
-Part inventory: [`soldier-geometry.json`](../samples/SoldierField/WebGpuRunner/soldier-geometry.json)  
-Part engineering records: [`soldier-part-records.json`](../samples/SoldierField/WebGpuRunner/soldier-part-records.json)
+The current contract draws indexed triangles. Point-like marks and line-like segments in the gallery are therefore represented by small triangle meshes, not native point-list or line-list topology.
 
-## 3. Implemented mesh primitives
+## 3. The proof sequence
 
-### Box
+| Step | What it demonstrates |
+| --- | --- |
+| One point | A mesh-backed marker submitted in a Visualizer frame |
+| Point cloud | A marker mesh reused across a contiguous instance buffer |
+| Four connected points | Marker and segment-mesh draws composed into a simple outline |
+| One line | A segment represented by indexed triangles |
+| Many lines | One segment mesh reused across multiple instance transforms |
+| Lit hemisphere + normals | Indexed surface geometry, a simple Lambert response, and projected vertex normals |
 
-**Input:** center, dimensions, and colour.
+The checked-in SVG snapshots are useful for review and visual regression. CI also generates the complete set of SVGs from the C# harness and uploads them as an artifact. The [Primitive Gallery guide](../samples/PrimitiveGallery/README.md) records the run command and the boundaries of each proof.
 
-The box generator creates six broad faces with chamfered edge strips and corner facets. This gives the current armor blockout visible planes for highlights while retaining a predictable, compact part description.
+## 4. SVG is a representation target, not the architecture
 
-Used for such parts as boots, armor plates, the life-support pack, helmet visor, and weapon components.
+SVG describes visible geometry through retained elements such as paths, rectangles, ellipses, and groups. A GPU backend typically consumes prepared vertex/index buffers and draw commands. These approaches can share source descriptions or semantic identity, but they are not interchangeable backends by default.
 
-**What this does not mean:** the resulting shape is not a manufacturing model, a certified engineering drawing, or a final bevelled CAD solid. Dimensions are nominal render-blockout values.
+The [Primitive Gallery](../samples/PrimitiveGallery/index.html) and [Surface Normals & Light](../samples/NormalLightingLab/index.html) are browser SVG experiments. The C# SVG proof backend is a separate implementation that consumes Visualizer contracts. Keeping the paths distinct is important: a compelling browser drawing is not evidence that the C# path rendered it.
 
-### Ellipsoid
+## 5. How a consumer should extend the examples
 
-**Input:** center, three radii, colour, and optional segment/ring counts.
+A consuming Experience should own its domain-specific scene and feed presentation data through Visualize's public contracts. For example, raWWar should own soldier and exoskeleton meaning, geometry descriptions, simulation state, and workload choices; its integration should demonstrate that Visualize can present that data without taking ownership of the game domain.
 
-The ellipsoid generator tessellates a parametric surface into triangles. Its segment and ring counts trade silhouette smoothness for vertex count. The helmet shell uses a deliberately higher tessellation than the default; shoulder hardpoints and joints use the same primitive with simpler defaults.
-
-**Current limitation:** the implementation is a simple triangle surface generator. It is not a general-purpose mesh importer or a complete surface/material system.
-
-## 4. How a part becomes visible
-
-```text
-Stable semantic part ID
-          |
-          v
-Part description
-(shape + transform + dimensions + material key)
-          |
-          v
-Primitive generator
-(box or ellipsoid)
-          |
-          v
-Contiguous Float32Array
-(position + colour per vertex)
-          |
-          v
-WebGPU vertex buffer and draw
-          |
-          v
-Browser canvas pixels
-```
-
-This describes the current Soldier Field sample path. It is **not** yet the end-to-end .NET Visualize contract: the C# resource/frame contracts and the browser JavaScript/WebGPU lab remain separate implementations. The browser lab currently uses a WebGPU canvas, not SVG, and does not execute the C# assembly inside the browser.
-
-See [Visualizer Architecture](ARCHITECTURE.md) for the intended boundary between Renderer decisions, Visualize execution, and the host surface.
-
-## 5. SVG is a different representation target
-
-SVG represents visible geometry through a retained, document-shaped set of elements such as paths, rectangles, ellipses, and groups. The current WebGPU sample instead produces triangles in a GPU vertex buffer. These approaches can share semantic identity and source descriptions, but they are not interchangeable rendering backends by default.
-
-The [Primitive Gallery](../samples/PrimitiveGallery/index.html) is the first visible SVG progression: point, point cloud, connected points, line, and line bundle. It demonstrates basic SVG construction and exposes DOM-generation observations. It does **not** yet project a Soldier Field semantic part into SVG, consume a Visualize C# frame, or establish a shared production rendering backend. See its [manual visual checks and run instructions](../samples/PrimitiveGallery/README.md).
-
-The next live study is [Surface Normals & Light](../samples/NormalLightingLab/index.html). It lets a reader move a light direction, change ambient and diffuse contributions, alter surface sampling density, and reveal the projected surface-normal directions. Its [guide](../samples/NormalLightingLab/README.md) documents the simple Lambert model and the limits of the 2D projection. Like the Primitive Gallery, it is a browser SVG experiment, not yet a consumer of the C# Visualize frame contracts.
-
-A useful next experiment is to preserve one semantic part description and compare representations without changing the meaning of the part:
-
-1. Keep the same stable part ID and source dimensions.
-2. Produce the current 3D mesh representation.
-3. Produce an SVG representation suitable for a chosen view, diagram, cut sheet, or schematic.
-4. Compare what information each representation preserves and what must be discarded or derived.
-5. Record the conversion rules and tests so an SVG is not mistaken for a full 3D object.
-
-That experiment can help establish where Workshop C# libraries can author, transform, validate, or export SVG-related data, and where browser-specific JavaScript or a native host is still required. It should not claim that arbitrary C# executes inside an SVG document: that depends on the host/runtime and on the actual integration being built.
-
-## 6. Primitive progression
-
-Add primitives only when a real visualization needs them. For each addition, keep the following together:
+When adding a neutral Visualize example, keep these together:
 
 - a small, inspectable input description;
-- a deterministic generator or explicit conversion rule;
+- deterministic geometry or an explicit conversion rule;
 - a visible demonstration;
-- automated tests for dimensions, topology or output shape, and invalid inputs;
-- an explanation of the representation's limits;
-- a note describing whether the primitive is semantic, geometric, or backend-specific.
+- automated tests for dimensions, topology, resource ranges, and invalid inputs;
+- a clear statement of which execution path produced the image;
+- an explanation of the representation's limits.
 
-Candidate investigations—not implemented primitives—include cylinders/capsules for actuators, indexed meshes for reusable geometry, and 2D SVG projections for diagrams and engineering cut sheets. Promote a candidate to “implemented” only when code and tests support the claim.
+Candidate investigations—not implemented primitives—include cylinders/capsules, reusable indexed meshes, and 2D SVG projections for diagrams. Promote a candidate to “implemented” only when code and tests support the claim.
 
-## 7. Related reading
+## 6. Related reading
 
-- [Soldier Field scaling lab](../samples/SoldierField/WebGpuRunner/README.md) — run the current procedural 3D scene and read its measurement limits.
 - [Architecture](ARCHITECTURE.md) — layer ownership and data flow.
 - [GPU backend strategy](GPU_BACKEND_STRATEGY.md) — backend responsibilities and the exploratory browser/native directions.
 - [Lighting and shadows](LIGHTING_AND_SHADOWS.md) — how visual work can be separated and scheduled.
+- [Primitive Gallery guide](../samples/PrimitiveGallery/README.md) — generated SVG proof and browser experiment boundaries.
+- [Surface Normals & Light](../samples/NormalLightingLab/README.md) — interactive SVG lighting study and its limitations.
