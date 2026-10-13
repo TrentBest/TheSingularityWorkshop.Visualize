@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FSM Trace Replay · The Singularity Workshop</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1421;--panel:#142438;--line:#34516a;--ink:#edf5fc;--muted:#a9bfd2;--mint:#7ee0bd;--fox:#f18a43;--dog:#e9e3d7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1050px;margin:auto;padding:26px 18px 48px}h1{font-size:clamp(1.8rem,4vw,2.7rem);line-height:1.1;margin:.25rem 0 .75rem}p{color:var(--muted)}a{color:#a6d9ff}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:.75rem;font-weight:800;color:var(--mint)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:16px}.stage{padding:0;overflow:hidden}svg{width:100%;height:auto;display:block;background:#102034}.controls{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px 16px;border-top:1px solid var(--line)}button,label.upload{font:inherit;font-weight:750;color:var(--ink);background:#24445c;border:1px solid #52718a;border-radius:9px;padding:9px 13px;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}input[type=range]{width:100%;accent-color:var(--mint)}input[type=file]{max-width:100%;color:var(--muted)}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.metric{padding:12px;border:1px solid var(--line);border-radius:10px}.metric small{display:block;color:var(--muted)}.metric strong{font-size:1.12rem}.note{font-size:.9rem}.warning{border-left:3px solid #ffbd73;padding-left:12px}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}@media(max-width:650px){.controls{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<div class="eyebrow">Visualize · data-driven documentation experiment</div>
+<h1>Replay a real FSM trace</h1>
+<p>Load the JSON exported by the SimpleDemos C# console app. The replay draws the recorded positions and labels the recorded states; it does not run or simulate FSM_API in the browser.</p>
+<section class="panel">
+<label for="traceFile">Choose <code>fox-fsm-trace.json</code> exported by SimpleDemos</label>
+<p><input id="traceFile" type="file" accept=".json,application/json"></p>
+<p id="loadStatus" class="note" role="status">No trace loaded yet. Export one from SimpleDemos first.</p>
+</section>
+<section class="panel stage" aria-label="FSM trace visualization">
+<svg id="scene" viewBox="0 0 1000 370" role="img" aria-labelledby="sceneTitle sceneDesc">
+<title id="sceneTitle">Fox and sleeping dog trace replay</title>
+<desc id="sceneDesc">A number line showing positions taken from an imported C sharp FSM trace.</desc>
+<defs><linearGradient id="sky" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#14283e"/><stop offset="1" stop-color="#20374a"/></linearGradient></defs>
+<rect width="1000" height="370" fill="url(#sky)"/>
+<text x="28" y="34" fill="#edf5fc" font-size="17" font-weight="800">RECORDED C# FSM SNAPSHOT</text>
+<text id="frameLabel" x="972" y="34" fill="#7ee0bd" text-anchor="end" font-size="15">Frame — / —</text>
+<path d="M80 225H920" stroke="#91a9bf" stroke-width="4" stroke-linecap="round"/>
+<g id="ticks" fill="#b9ccdc" stroke="#91a9bf" font-size="14" text-anchor="middle"></g>
+<g id="dog" transform="translate(332 180)">
+ <ellipse cy="48" rx="34" ry="7" fill="#07111d" opacity=".45"/>
+ <path d="M-34 10Q-43-6-24-17Q-9-31 2-18Q20-28 31-10Q43 7 28 27L-27 27Z" fill="#e9e3d7" stroke="#aeb8c0" stroke-width="2"/>
+ <ellipse cx="0" cy="5" rx="24" ry="20" fill="#f6f0e5"/>
+ <path d="M-19-3Q-26-15-16-18L-9-4M13-4Q22-19 29-8L20 3" fill="#b5b3ac"/>
+ <path d="M-11 6Q0 14 11 6" fill="none" stroke="#4b5c6a" stroke-width="2" stroke-linecap="round"/>
+ <circle cx="-8" cy="1" r="2.4" fill="#273949"/><circle cx="8" cy="1" r="2.4" fill="#273949"/>
+</g>
+<g id="fox" transform="translate(80 180)">
+ <ellipse cy="48" rx="27" ry="6" fill="#07111d" opacity=".45"/>
+ <path d="M-17 14Q-37 2-30-10L-9-3L7-13L26-4L18 16Z" fill="#f18a43" stroke="#b9542b" stroke-width="2"/>
+ <path d="M7-13L12-32L23-15L33-24L35-3L19 5Z" fill="#f18a43" stroke="#b9542b" stroke-width="2"/>
+ <path d="M22-4L34-6L27 2L18 1Z" fill="#fff0dc"/><circle cx="24" cy="-12" r="2.3" fill="#17283b"/>
+ <path d="M-27 1Q-48-9-42-24Q-22-20-13-3Z" fill="#f7c28b" stroke="#b9542b" stroke-width="2"/>
+</g>
+<text id="dogLabel" x="332" y="275" fill="#e9e3d7" text-anchor="middle" font-size="14" font-weight="800">DOG · —</text>
+<text id="foxLabel" x="80" y="275" fill="#ffbd83" text-anchor="middle" font-size="14" font-weight="800">FOX · —</text>
+<text x="80" y="315" fill="#a9bfd2" font-size="12">Position is mapped from trace data, not recalculated here.</text>
+<text id="stateLine" x="80" y="344" fill="#edf5fc" font-size="14">Load a trace to inspect its first frame.</text>
+</svg>
+<div class="controls">
+<button id="play" disabled>▶ Play</button>
+<div><label class="sr" for="frameRange">Trace frame</label><input id="frameRange" type="range" min="0" max="0" value="0" disabled></div>
+<strong id="frameNumber">0 / 0</strong>
+</div>
+</section>
+<section class="panel">
+<div class="metrics">
+<div class="metric"><small>Fox state</small><strong id="foxState">—</strong></div>
+<div class="metric"><small>Fox position · speed</small><strong id="foxPosition">—</strong></div>
+<div class="metric"><small>Dog state · position</small><strong id="dogState">—</strong></div>
+</div>
+<p class="note warning">Evidence boundary: the C# application produced the snapshots. This page only replays their recorded values; it does not prove GPU rendering, run FSM_API, or infer unrecorded decisions.</p>
+</section>
+<p class="note"><a href="../README.md">Back to the Primitive Gallery guide</a> · <a href="https://github.com/TrentBest/SimpleDemos">SimpleDemos source</a></p>
+</main>
+<script>
+(() => {
+ const fileInput=document.getElementById('traceFile'),status=document.getElementById('loadStatus');
+ const range=document.getElementById('frameRange'),play=document.getElementById('play');
+ const ticks=document.getElementById('ticks');let frames=[],index=0,playing=false,timer=null;
+ for(let i=0;i<=10;i++){const x=80+i*84;const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',x);line.setAttribute('x2',x);line.setAttribute('y1','215');line.setAttribute('y2','235');line.setAttribute('stroke','#91a9bf');ticks.appendChild(line);const label=document.createElementNS('http://www.w3.org/2000/svg','text');label.setAttribute('x',x);label.setAttribute('y','254');label.textContent=i;ticks.appendChild(label);}
+ const value=(obj,upper,lower)=>obj?.[upper]??obj?.[lower];
+ const agent=(frame,name)=>frame?.Agents?.find(a=>String(value(a,'Name','name')).toLowerCase().includes(name))??frame?.agents?.find(a=>String(value(a,'Name','name')).toLowerCase().includes(name));
+ function draw(){
+  if(!frames.length)return;const f=frames[index],fox=agent(f,'fox'),dog=agent(f,'dog');
+  const pos=a=>Number(value(a,'Position','position')??0),state=a=>String(value(a,'State','state')??'unknown'),speed=a=>value(a,'Speed','speed')??'—';
+  const fx=80+Math.max(0,Math.min(10,pos(fox)))*84,dx=80+Math.max(0,Math.min(10,pos(dog)))*84;
+  document.getElementById('fox').setAttribute('transform',`translate(${fx} 180)`);document.getElementById('dog').setAttribute('transform',`translate(${dx} 180)`);
+  document.getElementById('foxLabel').setAttribute('x',fx);document.getElementById('dogLabel').setAttribute('x',dx);
+  document.getElementById('foxLabel').textContent='FOX · '+pos(fox);document.getElementById('dogLabel').textContent='DOG · '+pos(dog);
+  const n=value(f,'Frame','frame')??index;document.getElementById('frameLabel').textContent=`Frame ${n} / ${frames.length-1}`;
+  document.getElementById('frameNumber').textContent=`${index+1} / ${frames.length}`;
+  document.getElementById('foxState').textContent=state(fox);document.getElementById('foxPosition').textContent=`${pos(fox)} · ${speed(fox)}`;
+  document.getElementById('dogState').textContent=`${state(dog)} · ${pos(dog)}`;
+  document.getElementById('stateLine').textContent=`Fox: ${state(fox)} at ${pos(fox)} · Dog: ${state(dog)} at ${pos(dog)}`;
+  range.value=index;
+ }
+ function stop(){playing=false;if(timer!==null)clearInterval(timer);timer=null;play.textContent='▶ Play';}
+ play.addEventListener('click',()=>{if(playing){stop();return;}if(!frames.length)return;if(index>=frames.length-1)index=0;playing=true;play.textContent='Ⅱ Pause';timer=setInterval(()=>{if(index>=frames.length-1){stop();return;}index++;range.value=index;draw();},500);});
+ range.addEventListener('input',()=>{stop();index=Number(range.value);draw();});
+ fileInput.addEventListener('change',async()=>{stop();const file=fileInput.files?.[0];if(!file)return;try{const data=JSON.parse(await file.text());frames=Array.isArray(data)?data:(data.frames??[]);if(!frames.length)throw new Error('No frames array found.');index=0;range.min='0';range.max=String(frames.length-1);range.value='0';range.disabled=false;play.disabled=false;draw();status.textContent=`Loaded ${frames.length} recorded frame(s) from ${file.name}. Source: ${data.source??'not specified'}.`;}catch(e){frames=[];range.disabled=true;play.disabled=true;status.textContent='Could not load trace: '+e.message;}});
+})();
+</script>
+</body>
+</html>
