@@ -38,7 +38,7 @@ jobs:
         with:
           repository: TrentBest/TheSingularityWorkshop.GUI
           ref: development
-          path: TheSingularityWorkshop.GUI
+          path: integrations/GuiSvg/GuiSource
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
@@ -92,7 +92,7 @@ jobs:
         run: >
           dotnet test tests/GuiSvgIntegration.Tests/GuiSvgIntegration.Tests.csproj
           --configuration Release
-          -p:WorkshopGuiSvgProjectPath=../../TheSingularityWorkshop.GUI/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+          -p:WorkshopGuiSvgProjectPath=GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
           --verbosity normal
 
       - name: Prepare coverage report
