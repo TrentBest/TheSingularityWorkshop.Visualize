@@ -12,12 +12,14 @@ var examples = new[]
     BuildPointExample(Path.Combine(output, "02-point-cloud-100.svg"), 100, true),
     BuildConnectedExample(Path.Combine(output, "03-four-connected-points.svg")),
     BuildLineExample(Path.Combine(output, "04-one-line.svg"), 1),
-    BuildLineExample(Path.Combine(output, "05-many-lines-24.svg"), 24)
+    BuildLineExample(Path.Combine(output, "05-many-lines-24.svg"), 24),
+    BuildLitHemisphereExample(Path.Combine(output, "06-lit-hemisphere-normals.svg"))
 };
 
 foreach (var example in examples)
 {
-    await using var visualizer = new Visualizer(new SvgProofBackend(example.Path, example.Title), example.Resources);
+    var litStudy = example.Title.StartsWith("Lit hemisphere", StringComparison.Ordinal);
+    await using var visualizer = new Visualizer(new SvgProofBackend(example.Path, example.Title, litStudy, litStudy), example.Resources);
     var result = await visualizer.RenderAsync(example.Frame);
     Console.WriteLine($"{example.Title}: Visualizer submitted {result.SubmittedDrawCount} draw command(s) -> {example.Path}");
 }
@@ -107,6 +109,52 @@ static Example BuildLineExample(string path, int count)
         catalog, new VisualizerFrame(DefaultView(), [command]));
 }
 
+
+static Example BuildLitHemisphereExample(string path)
+{
+    var catalog = NewCatalog();
+    var geometryId = new VisualizerResourceId(1);
+    var materialId = new VisualizerResourceId(2);
+    const int rings = 12;
+    const int segments = 48;
+    const float radius = 0.48f;
+    var vertices = new List<VisualizerVertex> { Vertex(0, 0, radius, 0, 0, 1) };
+    for (var ring = 1; ring <= rings; ring++)
+    {
+        var theta = (MathF.PI / 2) * ring / rings;
+        for (var segment = 0; segment < segments; segment++)
+        {
+            var phi = 2 * MathF.PI * segment / segments;
+            var nx = MathF.Sin(theta) * MathF.Cos(phi);
+            var ny = MathF.Sin(theta) * MathF.Sin(phi);
+            var nz = MathF.Cos(theta);
+            vertices.Add(Vertex(radius * nx, radius * ny, radius * nz, nx, ny, nz));
+        }
+    }
+    var indices = new List<int>();
+    for (var segment = 0; segment < segments; segment++)
+    {
+        indices.Add(0);
+        indices.Add(1 + segment);
+        indices.Add(1 + (segment + 1) % segments);
+    }
+    for (var ring = 1; ring < rings; ring++)
+    {
+        var inner = 1 + (ring - 1) * segments;
+        var outer = 1 + ring * segments;
+        for (var segment = 0; segment < segments; segment++)
+        {
+            var next = (segment + 1) % segments;
+            indices.Add(inner + segment); indices.Add(outer + segment); indices.Add(outer + next);
+            indices.Add(inner + segment); indices.Add(outer + next); indices.Add(inner + next);
+        }
+    }
+    catalog.SetGeometry(geometryId, new VisualizerGeometry(1, vertices, indices));
+    catalog.SetMaterial(materialId, new VisualizerMaterial(1, new Vector4(0.34f, 0.68f, 0.92f, 1)));
+    var command = new VisualizerDrawCommand(geometryId, materialId, Matrix4x4.Identity, indices.Count, 0, 0, VisualizerRepresentation.Near);
+    return new Example(path, "Lit hemisphere · surface normals", catalog, new VisualizerFrame(DefaultView(), [command]));
+}
+
 static VisualizerResourceCatalog NewCatalog() => new();
 static VisualizerView DefaultView() => new(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity);
 
@@ -124,10 +172,14 @@ static VisualizerGeometry LineMesh() => new(1,
 static VisualizerVertex Vertex(float x, float y) =>
     new(new Vector3(x, y, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One);
 
+static VisualizerVertex Vertex(float x, float y, float z, float nx, float ny, float nz) =>
+    new(new Vector3(x, y, z), Vector3.Normalize(new Vector3(nx, ny, nz)), Vector2.Zero, Vector4.One);
+
 sealed record Example(string Path, string Title, VisualizerResourceCatalog Resources, VisualizerFrame Frame);
 
-sealed class SvgProofBackend(string path, string title) : IVisualizerBackend
+sealed class SvgProofBackend(string path, string title, bool illuminate = false, bool showNormals = false) : IVisualizerBackend
 {
+    private static readonly Vector3 LightDirection = Vector3.Normalize(new Vector3(-0.45f, 0.55f, 0.70f));
     private long _frame;
     public VisualizerCapabilities Capabilities { get; } = new("SVG proof backend", "SVG", false, true, false, false);
 
@@ -164,9 +216,33 @@ sealed class SvgProofBackend(string path, string title) : IVisualizerBackend
                     var a = Vector3.Transform(geometry!.Vertices[(int)geometry.Indices[index + command.BaseVertex]].Position, transform);
                     var b = Vector3.Transform(geometry.Vertices[(int)geometry.Indices[index + 1 + command.BaseVertex]].Position, transform);
                     var c = Vector3.Transform(geometry.Vertices[(int)geometry.Indices[index + 2 + command.BaseVertex]].Position, transform);
+                    var faceTint = tint;
+                    if (illuminate)
+                    {
+                        var na = Vector3.TransformNormal(geometry.Vertices[(int)geometry.Indices[index]].Normal, transform);
+                        var nb = Vector3.TransformNormal(geometry.Vertices[(int)geometry.Indices[index + 1]].Normal, transform);
+                        var nc = Vector3.TransformNormal(geometry.Vertices[(int)geometry.Indices[index + 2]].Normal, transform);
+                        var normal = Vector3.Normalize(na + nb + nc);
+                        var diffuse = MathF.Max(0, Vector3.Dot(normal, LightDirection));
+                        var intensity = 0.12f + 0.88f * diffuse;
+                        faceTint = new Vector4(tint.X * intensity, tint.Y * intensity, tint.Z * intensity, tint.W);
+                    }
                     sb.Append("<path d=\"M").Append(Px(a.X)).Append(' ').Append(Py(a.Y)).Append("L")
                         .Append(Px(b.X)).Append(' ').Append(Py(b.Y)).Append('L').Append(Px(c.X)).Append(' ')
-                        .Append(Py(c.Y)).Append("Z\" fill=\"").Append(Color(tint)).Append("\"/>");
+                        .Append(Py(c.Y)).Append("Z\" fill=\"").Append(Color(faceTint)).Append("\"/>");
+                }
+            }
+            if (showNormals)
+            {
+                for (var vertexIndex = 0; vertexIndex < geometry!.Vertices.Count; vertexIndex += 12)
+                {
+                    var vertex = geometry.Vertices[vertexIndex];
+                    var point = Vector3.Transform(vertex.Position, command.WorldTransform);
+                    var normal = Vector3.TransformNormal(vertex.Normal, command.WorldTransform);
+                    var end = point + normal * 0.075f;
+                    sb.Append("<path d=\"M").Append(Px(point.X)).Append(' ').Append(Py(point.Y)).Append('L')
+                        .Append(Px(end.X)).Append(' ').Append(Py(end.Y))
+                        .Append("\" stroke=\"#7ee0bd\" stroke-width=\"1.2\" opacity=\".95\"/>");
                 }
             }
         }
