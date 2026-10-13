@@ -18,13 +18,14 @@ public sealed class GuiSvgVisualizerBackendTests
             var materialId = new VisualizerResourceId(2);
             catalog.SetGeometry(geometryId, new VisualizerGeometry(1,
             [
-                new VisualizerVertex(new Vector3(-0.25f, -0.2f, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One),
-                new VisualizerVertex(new Vector3(0.25f, -0.2f, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One),
-                new VisualizerVertex(new Vector3(0, 0.25f, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One)
-            ], [0, 1, 2]));
+                new VisualizerVertex(new Vector3(-0.32f, -0.18f, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One),
+                new VisualizerVertex(new Vector3(0.28f, -0.22f, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One),
+                new VisualizerVertex(new Vector3(0.36f, 0.12f, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One),
+                new VisualizerVertex(new Vector3(-0.18f, 0.24f, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One)
+            ], [0, 1, 2, 0, 2, 3]));
             catalog.SetMaterial(materialId, new VisualizerMaterial(1, new Vector4(0.25f, 0.75f, 0.9f, 1)));
             var command = new VisualizerDrawCommand(
-                geometryId, materialId, Matrix4x4.Identity, 3, 0, 0, VisualizerRepresentation.Near);
+                geometryId, materialId, Matrix4x4.Identity, 6, 0, 0, VisualizerRepresentation.Near);
             var frame = new VisualizerFrame(
                 new VisualizerView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity),
                 [command]);
