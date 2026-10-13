@@ -4,7 +4,7 @@ using System.Numerics;
 using System.Text;
 using TheSingularityWorkshop.Visualize;
 
-var output = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.GetFullPath("generated");
+var output = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../generated"));
 Directory.CreateDirectory(output);
 var examples = new[]
 {
