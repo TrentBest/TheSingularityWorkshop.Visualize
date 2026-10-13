@@ -67,7 +67,7 @@ export function investInCooling(state) {
     credits: state.credits - COOLING_RESEARCH_COST,
     coolingTier,
     phase: "catalog",
-    lastResult: { ok: true, coolingTier },
+    lastResult: null,
     activeDemonstrationId: null,
     log: [...state.log, `Cooling research funded: Prototype ${String.fromCharCode(65 + coolingTier)}. New heat-routing hypothesis recorded for the next range trial.`]
   };
