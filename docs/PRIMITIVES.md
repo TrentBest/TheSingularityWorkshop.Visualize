@@ -1,6 +1,12 @@
 # Visual Primitives — From Meaning to Pixels
 
-**Status:** Initial reference for the primitives currently implemented by the Soldier Field browser lab. This is a living document: each new primitive should be demonstrated, tested, and documented alongside its implementation.
+**Status:** Living guide. The Soldier Field browser lab currently demonstrates 3D mesh generation; the new Primitive Gallery is an interactive SVG experiment that makes the early drawing progression visible. These are separate proof paths, not an integrated .NET rendering backend.
+
+## 0. See the primitives, not just read about them
+
+Open the [interactive SVG Primitive Gallery](../samples/PrimitiveGallery/index.html). It begins with one point, then lets you explore point clouds (including 10,000 marks), four connected points, one line, and many lines. Change the count, point size, line width, position spread, and colour style; randomize the point data and watch the element counts and local build-time observation update.
+
+This is a **visual test sequence**, not yet an automated test of `TheSingularityWorkshop.Visualize`'s C# backend. It proves that the chosen SVG description is emitted and displayed by the browser. The current C# tests verify resource, frame, draw-range, and lifecycle contracts; they do not currently render these SVG examples. The page's build-time counter is a local DOM-generation observation, not a GPU benchmark or a cross-device performance claim.
 
 ## 1. One word, three different ideas
 
