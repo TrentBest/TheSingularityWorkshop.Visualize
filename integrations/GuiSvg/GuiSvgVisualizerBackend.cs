@@ -18,17 +18,19 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
 {
     private readonly string _outputPath;
     private readonly bool _animateConnectedPoints;
+    private readonly bool _projectWithCamera;
     private readonly SvgGuiRenderer _renderer = new();
     private long _frame;
 
     /// <summary>Creates an SVG backend that writes each submitted frame to a file.</summary>
     /// <param name="outputPath">Destination path for the emitted SVG document.</param>
     /// <param name="animateConnectedPoints">Whether to add the optional SVG-only route animation.</param>
-    public GuiSvgVisualizerBackend(string outputPath, bool animateConnectedPoints = false)
+    public GuiSvgVisualizerBackend(string outputPath, bool animateConnectedPoints = false, bool projectWithCamera = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
         _outputPath = outputPath;
         _animateConnectedPoints = animateConnectedPoints;
+        _projectWithCamera = projectWithCamera;
     }
 
     /// <summary>Describes the SVG proof backend's presentation capabilities.</summary>
@@ -90,11 +92,16 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
 
                 for (var index = command.FirstIndex; index < command.FirstIndex + command.IndexCount; index += 3)
                 {
-                    var a = Vector3.Transform(geometry.Vertices[(int)geometry.Indices[index + command.BaseVertex]].Position, transform);
-                    var b = Vector3.Transform(geometry.Vertices[(int)geometry.Indices[index + 1 + command.BaseVertex]].Position, transform);
-                    var c = Vector3.Transform(geometry.Vertices[(int)geometry.Indices[index + 2 + command.BaseVertex]].Position, transform);
+                    var projection = _projectWithCamera
+                        ? transform * frame.View.View * frame.View.Projection
+                        : transform;
+                    var a = Project(geometry.Vertices[(int)geometry.Indices[index + command.BaseVertex]].Position, projection);
+                    var b = Project(geometry.Vertices[(int)geometry.Indices[index + 1 + command.BaseVertex]].Position, projection);
+                    var c = Project(geometry.Vertices[(int)geometry.Indices[index + 2 + command.BaseVertex]].Position, projection);
+                    if (a is null || b is null || c is null)
+                        continue;
                     var path = FormattableString.Invariant(
-                        $"M{F(X(a.X))} {F(Y(a.Y))}L{F(X(b.X))} {F(Y(b.Y))}L{F(X(c.X))} {F(Y(c.Y))}Z");
+                        $"M{F(a.Value.X)} {F(a.Value.Y)}L{F(b.Value.X)} {F(b.Value.Y)}L{F(c.Value.X)} {F(c.Value.Y)}Z");
                     var fill = Color(tint);
                     scene.Child("svg-path", $"draw-{drawIndex++}", node => node
                         .Property("d", path)
@@ -150,6 +157,25 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
                 .Property("begin", begin)
                 .Property("dur", "4s")
                 .Property("repeatCount", "indefinite")));
+    }
+
+    private static Vector2? Project(Vector3 position, Matrix4x4 transform)
+    {
+        var clip = Vector4.Transform(new Vector4(position, 1), transform);
+        if (!float.IsFinite(clip.W) || MathF.Abs(clip.W) < 1e-6f)
+            return null;
+
+        var x = clip.X / clip.W;
+        var y = clip.Y / clip.W;
+        if (!float.IsFinite(x) || !float.IsFinite(y))
+            return null;
+
+        // Camera-projected coordinates are normalized device coordinates; the first proof
+        // retains the legacy centered XY scale so its historical snapshot remains stable.
+        var cameraProjected = MathF.Abs(transform.M34) > 1e-6f || MathF.Abs(transform.M44 - 1f) > 1e-6f;
+        return cameraProjected
+            ? new Vector2((float)(50 + x * 50), (float)(28.125 - y * 28.125))
+            : new Vector2((float)X(x), (float)Y(y));
     }
 
     private static double X(float x) => 50 + x * 100;
