@@ -76,6 +76,7 @@ The tests verify the current contracts. To see an actual procedural sci-fi exosk
 - [Isolated WPF/Direct3D 12 experiment](samples/WpfD3D12Proof/README.md) — inspect the exploratory native-surface proof and its limitations.
 - [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md) — see the engineering milestones and their current boundaries.
 - [Performance and benchmark rules](docs/PERFORMANCE.md) — understand how performance evidence must be collected and reported.
+- [Physics-based lighting, shadows, and extensible math](docs/LIGHTING_AND_SHADOWS.md) — understand physical light-source meaning, independent horizon work buckets, MicroBundle arbitration, cache invalidation, and the staged plan for optional math optimizations.
 - [Open questions](docs/OPEN_QUESTIONS.md) — review unresolved design decisions.
 - [Decision records](docs/decisions/README.md) — follow architectural choices and their rationale.
 
