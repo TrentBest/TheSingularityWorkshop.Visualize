@@ -56,6 +56,17 @@ The responsibility flow is deliberate:
 
 This repository has backend-neutral frame contracts, revisioned geometry/material resources, and an immutable instance-buffer contract for indexed instancing. Draw commands can address an explicit range in a contiguous instance array, and Visualizer validates resource/range correctness before backend submission. A narrow adapter maps Renderer output into VisualizerFrame; the contract is deliberately independent of the Renderer package version. These are data/API contracts—not yet a concrete GPU upload or draw implementation.
 
+### What is real, what is illustrative, and what remains to build
+
+To keep the living documentation honest, examples use these distinctions:
+
+- **Implemented contract:** code and tests in this repository establish the behavior explicitly described by the contract. A passing contract test does not prove GPU execution.
+- **Browser experiment:** an HTML/SVG/WebGPU page may animate or render its own demonstration logic. Unless a documented bridge says otherwise, it must not be described as executing the C# Visualize or FSM_API implementation.
+- **Concept / proposed integration:** an architectural direction or illustrative behavior that still needs implementation and verification. It is intent, not a capability claim.
+- **Hardware-verified:** reserve this for a path actually exercised on identified hardware/browser or host—not merely one that compiles or passes CI.
+
+In particular, the interactive Primitive Gallery and lighting lab are browser-side experiments, while the SVG proof harness exercises the C# Visualizer contracts. They are related demonstrations, but they are not the same execution path. Likewise, the intended FSM_API → motion/pose → Renderer policy → Visualize presentation flow is an architectural direction wherever an end-to-end, tested connection has not yet been demonstrated. We should promote a claim from concept to implementation only when the corresponding code and evidence exist.
+
 An isolated WPF/Direct3D 12 clear-and-present experiment exists under `samples/WpfD3D12Proof`. It compiles in Windows CI, but a real hardware/runtime capture has not yet been recorded. It draws no geometry, uses correctness-first per-frame synchronization, and is **not a selected backend**.
 
 ## 🟢 04 See the work and explore it
