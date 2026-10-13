@@ -76,3 +76,16 @@ test("impact events add stable visible geometry only to their own component", ()
   assert.deepEqual(damaged, buildPartGeometry("torso.sternum-plate", [impact]));
   assert.ok(damaged.every(Number.isFinite));
 });
+
+
+test("soldier shader contract localizes heat effects to simulated muzzle and chassis regions", async () => {
+  const html = await readFile(new URL("./index.html", import.meta.url), "utf8");
+  assert.match(html, /@group\(0\) @binding\(1\) var<uniform> thermal: T/);
+  assert.match(html, /let chassisZone=/);
+  assert.match(html, /let barrelZone=/);
+  assert.match(html, /thermalGlow/);
+  assert.match(html, /thermal\.chassis/);
+  assert.match(html, /thermal\.barrel/);
+  assert.match(html, /getCompilationInfo/);
+  assert.match(html, /render-pipeline validation failed/);
+});
