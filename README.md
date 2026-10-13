@@ -12,7 +12,7 @@
 
 TheSingularityWorkshop.Visualize is the GPU-facing presentation project for The Singularity Workshop. It turns observer-aware presentation data from [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into pixels without making a particular windowing toolkit or graphics API the definition of the world.
 
-The first desktop host is **AnyApp on WPF**. An exploratory browser/WebGPU Soldier Field now proves a separate path can consume a deterministic geometry asset and render an instanced soldier workload; it is a lab, not a selected production backend or a claim that the .NET Visualize contracts are already wired end-to-end. **No production graphics API has been selected.** The next milestone is to connect the Workshop's array-first data model to a backend without binding world meaning to one display technology.
+The first desktop host is **AnyApp on WPF**. An exploratory browser/WebGPU Soldier Field proves a separate path can consume a deterministic geometry asset and render an instanced soldier workload; it is a lab, not a selected production backend or a claim that the .NET Visualize contracts are already wired end-to-end. **No production graphics API has been selected.** The next milestone is to connect the Workshop's array-first data model to a backend without binding world meaning to one display technology.
 
 ## 🟦 01 What
 
@@ -50,7 +50,7 @@ The responsibility flow is deliberate:
 
 This repository has backend-neutral frame contracts, revisioned geometry/material resources, and an immutable instance-buffer contract for indexed instancing. Draw commands can address an explicit range in a contiguous instance array, and Visualizer validates resource/range correctness before backend submission. A narrow adapter maps Renderer output into VisualizerFrame; the contract is deliberately independent of the Renderer package version. These are data/API contracts—not yet a concrete GPU upload or draw implementation.
 
-An isolated WPF/Direct3D 12 clear-and-present experiment exists under `samples/WpfD3D12Proof`. It compiles in Windows CI, but a real hardware/runtime capture has not yet been recorded. It draws no geometry, uses correctness-first per-frame synchronization, and is **not a selected backend**. The separate Soldier Field browser lab now provides an initial actual-geometry target for measuring crowd scaling; it is exploratory and not a selected production backend.
+An isolated WPF/Direct3D 12 clear-and-present experiment exists under `samples/WpfD3D12Proof`. It compiles in Windows CI, but a real hardware/runtime capture has not yet been recorded. It draws no geometry, uses correctness-first per-frame synchronization, and is **not a selected backend**. The separate Soldier Field browser lab provides an initial actual-geometry target for measuring crowd scaling; it is exploratory and not a selected production backend.
 
 ## 🟢 04 See it in a minute
 
@@ -71,6 +71,7 @@ The tests verify the current contracts. To see an actual procedural sci-fi exosk
 ![](docs/assets/dividers/purple.svg)
 
 - [Architecture](docs/ARCHITECTURE.md) — follow data from authoritative state to the host surface and understand which layer owns each decision.
+- [Visual primitives](docs/PRIMITIVES.md) — start from semantic parts, see the current box/ellipsoid mesh generators, and distinguish the WebGPU path from future SVG representations.
 - [Gestures and procedural motion](docs/GESTURES_AND_POSE_PIPELINE.md) — see how physical procedures become evaluated pose data without making Visualize the owner of motion semantics.
 - [GPU backend strategy](docs/GPU_BACKEND_STRATEGY.md) — compare backend responsibilities and the intended native/browser directions, with array-first execution as a constraint.
 - [Soldier Field scaling lab](samples/SoldierField/WebGpuRunner/README.md) — run the procedural exoskeleton scene and compare independent Event Horizon workload counters.
