@@ -87,6 +87,8 @@ See [Visualizer Architecture](ARCHITECTURE.md) for the intended boundary between
 
 SVG represents visible geometry through a retained, document-shaped set of elements such as paths, rectangles, ellipses, and groups. The current WebGPU sample instead produces triangles in a GPU vertex buffer. These approaches can share semantic identity and source descriptions, but they are not interchangeable rendering backends by default.
 
+The [Primitive Gallery](../samples/PrimitiveGallery/index.html) is the first visible SVG progression: point, point cloud, connected points, line, and line bundle. It demonstrates basic SVG construction and exposes DOM-generation observations. It does **not** yet project a Soldier Field semantic part into SVG, consume a Visualize C# frame, or establish a shared production rendering backend. See its [manual visual checks and run instructions](../samples/PrimitiveGallery/README.md).
+
 A useful next experiment is to preserve one semantic part description and compare representations without changing the meaning of the part:
 
 1. Keep the same stable part ID and source dimensions.
