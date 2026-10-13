@@ -122,7 +122,7 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
             AddMotionMarker(scene, "marker-trailing", "#8fcaff", "2.1", "-0.7s", route);
         }
 
-        var svg = _renderer.Render(scene, width: 320, height: 180);
+        var svg = _renderer.Render(scene.Build(), width: 320, height: 180);
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(_outputPath))!);
         File.WriteAllText(_outputPath, svg);
         stopwatch.Stop();
