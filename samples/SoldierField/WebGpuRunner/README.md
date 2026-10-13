@@ -1,6 +1,6 @@
 # Soldier Field — Event Horizon Scaling Lab
 
-This is a visible soldier-first rendering target, not a triangle placeholder. The page procedurally constructs an original low-poly science-fiction exoskeleton trooper: modular armor, articulated chassis, helmet/visor, backpack/life-support pack, and a held tool silhouette. It avoids contemporary national military imagery and requires no downloaded model or external image.
+This is a visible soldier-first rendering target, not a triangle placeholder. The WebGPU page imports a separate, deterministic geometry asset whose stable semantic part IDs describe the modular armor, articulated chassis, helmet/visor, six provisional neural-shunt endpoints, life-support pack, and held tool silhouette. It avoids contemporary national military imagery and requires no downloaded model or external image. The current mesh is an intentional silhouette blockout; its component inventory is ready to refine without rewriting the renderer.
 
 ## Run
 
@@ -9,6 +9,14 @@ From the repository root:
     py -m http.server 8080
 
 Open http://localhost:8080/samples/SoldierField/WebGpuRunner/ in a browser with WebGPU enabled.
+
+## Geometry asset
+
+- `soldier-geometry.js` owns the semantic part inventory and deterministic mesh generator.
+- `soldier-geometry.json` declares the asset ID, coordinate system, vertex format, and shunt endpoint IDs.
+- `SOLDIER_DOSSIER.md` is the in-universe field dossier for neural shunts, the quiet seam, fabrication, failure signatures, and ambient soldier culture.
+- Each part has a stable ID, primitive, local-space position/dimensions, and material key. The generated vertex stream is contiguous float32 position + colour data for triangle-list rendering.
+- The lore currently enumerates six endpoints (paired ocular and auditory plus olfactory and cortical-stem). The possible five-assembly grouping is explicitly unresolved rather than silently choosing a canon.
 
 ## What it does
 
