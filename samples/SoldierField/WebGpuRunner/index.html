@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Soldier Field — Event Horizon Scaling Lab</title>
 <style>
-:root{color-scheme:dark;font:15px/1.5 system-ui,sans-serif;background:#0a0d13;color:#e8eef8}body{max-width:1440px;margin:auto;padding:1rem}h1{margin:.2rem 0;font-size:1.7rem}.muted{color:#9cabc0}main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:1rem}canvas{display:block;width:100%;aspect-ratio:16/10;background:#05080e;border:1px solid #35445b;border-radius:8px}aside,.panel{background:#131a25;border:1px solid #2d3b50;border-radius:8px;padding:1rem}label{display:block;margin:.7rem 0 .2rem}input,button{font:inherit;color:inherit;background:#0b111a;border:1px solid #40516b;border-radius:5px;padding:.55rem;box-sizing:border-box}input{width:100%}button{cursor:pointer}.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}dl{display:grid;grid-template-columns:1fr auto;gap:.35rem;margin:1rem 0;font-variant-numeric:tabular-nums}dt{color:#9cabc0}dd{margin:0;text-align:right}table{width:100%;border-collapse:collapse;font-size:.82rem}th,td{text-align:right;padding:.4rem .3rem;border-bottom:1px solid #29364a;font-variant-numeric:tabular-nums}th:first-child,td:first-child{text-align:left}.status{white-space:pre-wrap;overflow-wrap:anywhere;color:#b9d8ff;font-size:.9rem}.legend{display:flex;gap:.8rem;flex-wrap:wrap;font-size:.82rem;color:#b9c6d9;margin:.5rem 0}.swatch{display:inline-block;width:.65rem;height:.65rem;border-radius:2px;margin-right:.35rem}@media(max-width:900px){main{grid-template-columns:1fr}}
+:root{color-scheme:dark;font:15px/1.5 system-ui,sans-serif;background:#0a0d13;color:#e8eef8}body{max-width:1440px;margin:auto;padding:1rem}h1{margin:.2rem 0;font-size:1.7rem}.muted{color:#9cabc0}main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:1rem}canvas{display:block;width:100%;aspect-ratio:16/10;background:#05080e;border:1px solid #35445b;border-radius:8px}aside,.panel{background:#131a25;border:1px solid #2d3b50;border-radius:8px;padding:1rem}label{display:block;margin:.7rem 0 .2rem}input,button,select{font:inherit;color:inherit;background:#0b111a;border:1px solid #40516b;border-radius:5px;padding:.55rem;box-sizing:border-box}input,select{width:100%}button{cursor:pointer}.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}dl{display:grid;grid-template-columns:1fr auto;gap:.35rem;margin:1rem 0;font-variant-numeric:tabular-nums}dt{color:#9cabc0}dd{margin:0;text-align:right}table{width:100%;border-collapse:collapse;font-size:.82rem}th,td{text-align:right;padding:.4rem .3rem;border-bottom:1px solid #29364a;font-variant-numeric:tabular-nums}th:first-child,td:first-child{text-align:left}.status{white-space:pre-wrap;overflow-wrap:anywhere;color:#b9d8ff;font-size:.9rem}.legend{display:flex;gap:.8rem;flex-wrap:wrap;font-size:.82rem;color:#b9c6d9;margin:.5rem 0}.swatch{display:inline-block;width:.65rem;height:.65rem;border-radius:2px;margin-right:.35rem}@media(max-width:900px){main{grid-template-columns:1fr}}
 </style></head><body>
 <header><h1>Soldier Field — Event Horizon Scaling Lab</h1>
 <p class="muted">A procedural science-fiction exoskeleton trooper rendered as real 3D geometry and instanced across eight independently updated Event Horizon workloads. This lab deliberately repeats the selected population in every horizon to compare computational cost even where that many full-size soldiers could not physically fit. It is a stress model, not a claim that Renderer policy is already wired in.</p></header>
@@ -12,9 +12,11 @@
 <aside><strong>Population controls</strong><label for="population">Soldiers per horizon workload</label><input id="population" type="number" min="1" max="100000" step="1" value="1">
 <div class="actions"><button id="x10">×10</button><button id="x100">×100</button><button id="apply">Apply</button></div>
 <dl><dt>Instances across horizons</dt><dd id="total">8</dd><dt>GPU draw submissions</dt><dd id="submissions">0</dd><dt>Frame interval p50 / p95</dt><dd id="frame">—</dd><dt>JS encode + submit p50 / p95</dt><dd id="submit">—</dd><dt>CPU instance-update p95</dt><dd id="update">—</dd><dt>Instance upload bytes / frame</dt><dd id="bytes">—</dd><dt>Adapter</dt><dd id="adapter">—</dd></dl>
+<section class="panel" aria-labelledby="part-data-heading"><strong id="part-data-heading">Part engineering data</strong><label for="part-select">Select a stable part ID</label><select id="part-select"><option value="">Loading part records…</option></select><dl id="part-fields"></dl><strong>Open engineering issues</strong><ul id="part-issues" class="muted"></ul><button id="download-cut-sheet" type="button" disabled>Download derived cut sheet (JSON)</button><p class="muted">Derived from the shared part record. Unknown tolerances, materials, interfaces, and inspection criteria stay explicitly unresolved; this blockout is not fabrication-ready.</p><p class="status" id="part-status" role="status">Loading 38 part records…</p></section>
 <p class="status" id="status" role="status">Initializing WebGPU…</p><p class="muted">Frame intervals include browser scheduling. JS encode/submit time is not GPU execution time. Upload bytes count actual queue writes. GPU timestamp queries are not implemented; this page does not claim a hardware benchmark.</p></aside></main>
 <script type="module">
 import { buildSoldierGeometry, SOLDIER_PARTS, SOLDIER_GEOMETRY_LAYOUT } from './soldier-geometry.js';
+import { deriveCutSheet, findPartRecord } from './soldier-cut-sheet.mjs';
 const canvas=document.querySelector("#view"),status=document.querySelector("#status"),tbody=document.querySelector("#horizons");
 const hs=[{n:"Contact",c:[.25,.95,.95],rate:1,z:3},{n:"1 m",c:[.36,.88,.91],rate:1,z:5},{n:"2 m",c:[.42,.82,.91],rate:2,z:8},{n:"4 m",c:[.49,.72,.96],rate:4,z:13},{n:"16 m",c:[.59,.63,.98],rate:8,z:24},{n:"32 m",c:[.68,.56,.96],rate:16,z:40},{n:"64 m",c:[.76,.51,.90],rate:32,z:64},{n:"128 m+",c:[.86,.55,.78],rate:64,z:100}];
 document.querySelector("#legend").innerHTML=hs.map(h=>'<span><i class="swatch" style="background:rgb('+h.c.map(v=>Math.round(v*255)).join(",")+')"></i>'+h.n+'</span>').join("");
@@ -23,6 +25,44 @@ const frameSamples=[],submitSamples=[],updateSamples=[];const fmt=n=>Math.round(
 function pct(a,p){if(!a.length)return 0;const s=a.slice().sort((x,y)=>x-y);return s[Math.min(s.length-1,Math.floor((s.length-1)*p))];}
 function sample(a,v){a.push(v);if(a.length>180)a.shift();}
 const vertices=buildSoldierGeometry();
+const partSelect=document.querySelector("#part-select"),partFields=document.querySelector("#part-fields"),partIssues=document.querySelector("#part-issues"),partStatus=document.querySelector("#part-status"),downloadCutSheet=document.querySelector("#download-cut-sheet");
+let partBundle=null,selectedCutSheet=null;
+function appendField(label,value){const dt=document.createElement("dt"),dd=document.createElement("dd");dt.textContent=label;dd.textContent=value;partFields.append(dt,dd);}
+function renderPartCutSheet(){
+ const record=findPartRecord(partBundle,partSelect.value);
+ partFields.replaceChildren();partIssues.replaceChildren();selectedCutSheet=null;downloadCutSheet.disabled=true;
+ if(!record){partStatus.textContent="No part record selected.";return;}
+ const sheet=deriveCutSheet(record);selectedCutSheet=sheet;downloadCutSheet.disabled=false;
+ const vector=value=>Array.isArray(value)?value.map(n=>n===null?"TBD":n).join(", "):"TBD";
+ appendField("Part ID",sheet.partId);appendField("Revision",sheet.revision);appendField("Maturity",sheet.maturity);
+ appendField("Primitive",sheet.geometry.primitive);appendField("Nominal position (m)",vector(sheet.geometry.position));
+ appendField(sheet.geometry.dimensionsMeaning==="radii"?"Nominal radii (m)":"Nominal dimensions (m)",vector(sheet.geometry.dimensions));
+ appendField("Coordinate system",sheet.geometry.coordinateSystem);appendField("Material key",sheet.material.key);
+ appendField("Material specification",sheet.material.specificationStatus);appendField("Manufacturing",sheet.manufacturing.status||"to-be-engineered");
+ appendField("Inspection",sheet.inspection.status||"not-defined");appendField("Interfaces",String(sheet.interfaces.length));
+ appendField("Research",sheet.research.status||"not-started");
+ for(const issue of sheet.traceability.openIssues){const li=document.createElement("li");li.textContent=issue;partIssues.append(li);}
+ partStatus.textContent="Derived cut sheet ready. Render geometry only; unresolved engineering values are intentionally not invented.";
+}
+async function initializeCutSheets(){
+ try{
+  const response=await fetch("./soldier-part-records.json");if(!response.ok)throw new Error("HTTP "+response.status);
+  partBundle=await response.json();
+  partSelect.replaceChildren();
+  for(const record of partBundle.records||[]){const option=document.createElement("option");option.value=record.partId;option.textContent=record.displayName+" ["+record.partId+"]";partSelect.append(option);}
+  partSelect.value=partBundle.records?.[0]?.partId||"";renderPartCutSheet();
+  partStatus.textContent="Loaded "+(partBundle.records?.length||0)+" stable part records.";
+ }catch(error){partStatus.textContent="Part records unavailable: "+String(error);}
+}
+partSelect.addEventListener("change",renderPartCutSheet);
+downloadCutSheet.addEventListener("click",()=>{
+ if(!selectedCutSheet)return;
+ const blob=new Blob([JSON.stringify(selectedCutSheet,null,2)+"\\n"],{type:"application/json"});
+ const url=URL.createObjectURL(blob),link=document.createElement("a");
+ link.href=url;link.download=selectedCutSheet.partId.replace(/[^a-z0-9.-]/gi,"-")+"-cut-sheet.json";
+ link.click();URL.revokeObjectURL(url);
+});
+
 const wgsl="struct I { posScale: vec4f, tint: vec4f };\n"+
 "@group(0) @binding(0) var<storage,read> instances: array<I>;\n"+
 "struct O { @builtin(position) p: vec4f, @location(0) c: vec3f };\n"+
