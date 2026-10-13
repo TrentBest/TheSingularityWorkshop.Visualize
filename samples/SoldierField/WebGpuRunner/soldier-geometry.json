@@ -1,6 +1,7 @@
 {
   "assetId":"workshop.soldier.exoskeleton.trooper",
   "assetVersion":"0.1.0",
+  "partCount":38,
   "status":"silhouette-blockout",
   "coordinateSystem":{"up":"+Y","forward":"+Z","soldierRight":"+X","units":"metres","nominalHeightMetres":1.9},
   "vertexFormat":{"name":"float32-position3-colour3-nonindexed-triangles","floatsPerVertex":6,"bytesPerVertex":24,"primitive":"triangle-list"},
