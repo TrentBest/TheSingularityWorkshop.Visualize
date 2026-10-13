@@ -7,6 +7,20 @@ import {
 } from "./soldier-research-simulation.mjs";
 
 const catalog = JSON.parse(await readFile(new URL("./research-demonstrations.json", import.meta.url), "utf8"));
+const parts = JSON.parse(await readFile(new URL("./soldier-part-records.json", import.meta.url), "utf8"));
+
+
+test("catalog demonstrations and the most-hit hypothesis reference stable part records", () => {
+  const ids = new Set(parts.records.map(part => part.partId));
+  assert.equal(catalog.simulationAssumptions.mostFrequentlyHitArmorPartId, "torso.sternum-plate");
+  assert.equal(catalog.simulationAssumptions.hitFrequencyStatus, "gameplay-premise-not-measured");
+  assert.equal(catalog.simulationAssumptions.hitShare, null);
+  for (const demo of catalog.demonstrations) {
+    assert.ok(ids.has(demo.partId), "unknown part reference: " + demo.partId);
+    assert.ok(demo.cost > 0);
+    assert.ok(demo.setupMinutes > 0);
+  }
+});
 
 test("catalog quotes cost and setup before a demonstration is ordered", () => {
   const state = createResearchState();
