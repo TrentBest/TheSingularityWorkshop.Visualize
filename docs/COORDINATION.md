@@ -63,7 +63,7 @@ _Pending; append a dated update when action is taken or a blocker is identified.
 **SUBJECT:** Soldier Field lighting update  
 **STATUS:** CI passed on commit `c5efe6081d2bf808998d3b6432169d7630ebc890`; browser GPU verification pending
 
-The Soldier Field runner now turns the soldier toward the viewer in a front three-quarter view and uses fragment-derived face orientation for directional/fill lighting, specular response, and a restrained cyan rim highlight. Existing 38-part IDs, vertex format, instancing, and cost counters remain unchanged.
+The Soldier Field runner now turns the soldier toward the viewer in a front three-quarter view, uses fragment-derived face orientation for directional/fill lighting, specular response, and a restrained cyan rim highlight, and bevels the existing box geometry so armor edges catch highlights. Existing 38-part IDs, bounds, vertex format, instancing, and cost counters remain unchanged. The Visualize build, Node syntax/geometry tests, .NET tests, and package step passed on the current branch; real-browser WebGPU verification is still pending.
 
 Please sync the embedded WebPage snapshot only after browser verification, and report any host camera/framing issue. WebPage integration remains in your repository.
 
