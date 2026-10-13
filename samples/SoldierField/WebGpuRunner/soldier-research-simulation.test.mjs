@@ -60,6 +60,8 @@ test("baseline shot records impact, heat and scientist explanation as fictional 
   assert.equal(state.lastResult.impact, true);
   assert.equal(state.lastResult.valuesAreFictional, true);
   assert.ok(state.lastResult.barrelHeatC > 500);
+  assert.equal(state.partConditions["weapon.muzzle"].peakTemperatureC, state.lastResult.barrelHeatC);
+  assert.equal(state.partConditions["weapon.muzzle"].thermalCycleCount, 1);
   assert.ok(state.log.some(line => line.includes("struggle with dissipating the heat")));
 });
 
@@ -82,6 +84,8 @@ test("funding cooling research changes the next simulated thermal result and unl
   assert.equal(state.trials[1].coolingTier, 1);
   assert.ok(state.trials[1].barrelHeatC < state.trials[0].barrelHeatC);
   assert.ok(state.log.some(line => line.includes("Nearby trooper")));
+  assert.equal(state.partConditions["weapon.muzzle"].thermalCycleCount, 2);
+  assert.ok(state.partConditions["weapon.muzzle"].residualTemperatureC > 20);
 });
 
 test("rejects unaffordable requests without changing credits", () => {
