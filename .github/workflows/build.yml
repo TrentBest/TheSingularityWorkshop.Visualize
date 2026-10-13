@@ -62,6 +62,14 @@ jobs:
           --configuration Release
           -- ./samples/PrimitiveGallery/generated/07-gui-svg-connected-points.svg
 
+      - name: Generate perspective-projected 3D mesh through Visualizer and GUI.SVG
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/GuiSvg/Proof/PerspectiveMeshProof.csproj
+          --configuration Release
+          -- ./samples/PrimitiveGallery/generated/08-gui-svg-perspective-mesh.svg
+
       - name: Verify generated Visualizer SVG proof outputs
         shell: bash
         run: |
@@ -73,7 +81,8 @@ jobs:
             04-one-line.svg \
             05-many-lines-24.svg \
             06-lit-hemisphere-normals.svg \
-            07-gui-svg-connected-points.svg; do
+            07-gui-svg-connected-points.svg \
+            08-gui-svg-perspective-mesh.svg; do
             file="./samples/PrimitiveGallery/generated/$sample"
             test -s "$file" || { echo "Missing or empty Visualizer output: $file"; exit 1; }
             grep -q '<path' "$file" || { echo "No rendered paths in: $file"; exit 1; }
