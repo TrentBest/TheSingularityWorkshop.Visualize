@@ -25,6 +25,7 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
     /// <summary>Creates an SVG backend that writes each submitted frame to a file.</summary>
     /// <param name="outputPath">Destination path for the emitted SVG document.</param>
     /// <param name="animateConnectedPoints">Whether to add the optional SVG-only route animation.</param>
+    /// <param name="projectWithCamera">Whether to use the frame view and projection matrices for CPU-side perspective projection.</param>
     public GuiSvgVisualizerBackend(string outputPath, bool animateConnectedPoints = false, bool projectWithCamera = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
@@ -125,9 +126,12 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
                     .Property("to", "-48")
                     .Property("dur", "4s")
                     .Property("repeatCount", "indefinite")));
-            AddMotionMarker(scene, "marker-leading", "#ffcf86", "5.2", "0s", route);
-            AddMotionMarker(scene, "marker-middle", "#7ee0bd", "3.2", "-0.35s", route);
-            AddMotionMarker(scene, "marker-trailing", "#8fcaff", "2.1", "-0.7s", route);
+            // Keep each point attached to its actual vertex. Earlier animateMotion markers
+            // drifted across the closed path and read like objects falling into the shape.
+            AddPulseMarker(scene, "vertex-a", "#ffcf86", "18", "46.125", "0s");
+            AddPulseMarker(scene, "vertex-b", "#7ee0bd", "78", "50.125", "-0.7s");
+            AddPulseMarker(scene, "vertex-c", "#8fcaff", "86", "16.125", "-1.4s");
+            AddPulseMarker(scene, "vertex-d", "#c5a4ff", "32", "4.125", "-2.1s");
         }
 
         var svg = _renderer.Render(scene.Build(), width: 320, height: 180);
@@ -142,20 +146,22 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
     /// <summary>Releases backend resources. The SVG proof backend owns no persistent native resources.</summary>
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
-    private static void AddMotionMarker(GuiBuilder scene, string id, string fill, string radius, string begin, string route)
+    private static void AddPulseMarker(GuiBuilder scene, string id, string fill, string x, string y, string begin)
     {
         scene.Child("svg-circle", id, marker => marker
-            .Property("cx", "18")
-            .Property("cy", "46.125")
-            .Property("r", radius)
+            .Property("cx", x)
+            .Property("cy", y)
+            .Property("r", "1.35")
             .Property("fill", fill)
-            .Property("opacity", "0.9")
+            .Property("opacity", "0.92")
             .Property("stroke", "#fff1ce")
             .Property("stroke-width", "0.35")
-            .Child("svg-animate-motion", id + "-motion", motion => motion
-                .Property("path", route)
+            .Child("svg-animate", id + "-pulse", animation => animation
+                .Property("attributeName", "r")
+                .Property("values", "1.35;2.15;1.35")
+                .Property("keyTimes", "0;0.5;1")
+                .Property("dur", "2.8s")
                 .Property("begin", begin)
-                .Property("dur", "4s")
                 .Property("repeatCount", "indefinite")));
     }
 
