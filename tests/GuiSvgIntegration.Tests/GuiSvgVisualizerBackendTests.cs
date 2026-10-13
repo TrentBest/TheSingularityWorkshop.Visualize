@@ -78,7 +78,7 @@ public sealed class GuiSvgVisualizerBackendTests
             Assert.Contains("fill=\"#59CCEB\"", svg);
             Assert.Contains("fill=\"#7DE8BF\"", svg);
             Assert.Contains("<animate", svg);
-            Assert.Contains("<animateMotion", svg);
+            Assert.Contains("attributeName=\"r\"", svg);
         }
         finally
         {
