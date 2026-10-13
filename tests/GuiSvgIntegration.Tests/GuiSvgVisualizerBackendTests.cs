@@ -1,3 +1,5 @@
+using Xunit;
+using TheSingularityWorkshop.Visualize;
 using System.Numerics;
 using TheSingularityWorkshop.Visualize.GuiSvg;
 
