@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="docs/assets/moniker.svg" alt="The Singularity Workshop animated moniker" width="100%" />
-</p>
+![The Singularity Workshop animated moniker](https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg)
 
 # ✳️ 00 The Singularity Workshop — Visualize
 
