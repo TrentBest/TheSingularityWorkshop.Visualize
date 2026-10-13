@@ -4,7 +4,7 @@ This is a browser-run visual experiment for the first drawing primitives. It use
 
 ## Generate the visible proof with Visualize
 
-The checked-in pictures in steps 01–06 are emitted by the C# `Visualizer` path—not hand-authored SVG lookalikes. Step 07 is a second backend path: Visualizer submits the same kind of geometry/resource frame, `GuiSvgVisualizerBackend` maps its indexed triangles to neutral GUI nodes, and `TheSingularityWorkshop.GUI.SVG` emits the SVG document. Both outputs are generated in development CI. The GUI.SVG path is a 2D manifestation proof, not a production perspective/depth-tested renderer.
+The checked-in pictures in steps 01–05 are emitted by the C# `Visualizer` path—not hand-authored SVG lookalikes. Step 06 is a documentation preview of the C# lighting/normal study; its exact generated SVG is linked in the table. Step 07 is a second backend path: Visualizer submits the same kind of geometry/resource frame, `GuiSvgVisualizerBackend` maps its indexed triangles to neutral GUI nodes, and `TheSingularityWorkshop.GUI.SVG` emits the SVG document. Both backend outputs are generated in development CI. The GUI.SVG path is a 2D manifestation proof, not a production perspective/depth-tested renderer.
 
 From the repository root, run:
 
