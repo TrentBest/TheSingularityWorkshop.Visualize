@@ -27,14 +27,14 @@
     <circle cx="135" cy="340" r="5"/><circle cx="385" cy="310" r="5"/><circle cx="640" cy="275" r="5"/><circle cx="900" cy="290" r="5"/><circle cx="1080" cy="235" r="5"/>
   </g>
   <g fill="none" stroke="#7ee0bd" stroke-width="2">
-    <circle cx="135" cy="340" r="22" opacity=".7"><animate attributeName="r" values="18;31;18" dur="3.2s" repeatCount="indefinite"/></circle>
-    <circle cx="385" cy="310" r="22" opacity=".7"><animate attributeName="r" values="18;31;18" dur="3.2s" begin="-0.64s" repeatCount="indefinite"/></circle>
-    <circle cx="640" cy="275" r="22" opacity=".7"><animate attributeName="r" values="18;31;18" dur="3.2s" begin="-1.28s" repeatCount="indefinite"/></circle>
-    <circle cx="900" cy="290" r="22" opacity=".7"><animate attributeName="r" values="18;31;18" dur="3.2s" begin="-1.92s" repeatCount="indefinite"/></circle>
-    <circle cx="1080" cy="235" r="22" opacity=".7"><animate attributeName="r" values="18;31;18" dur="3.2s" begin="-2.56s" repeatCount="indefinite"/></circle>
+    <circle class="pulse pulse-1" cx="135" cy="340" r="22" opacity=".7"/>
+    <circle class="pulse pulse-2" cx="385" cy="310" r="22" opacity=".7"/>
+    <circle class="pulse pulse-3" cx="640" cy="275" r="22" opacity=".7"/>
+    <circle class="pulse pulse-4" cx="900" cy="290" r="22" opacity=".7"/>
+    <circle class="pulse pulse-5" cx="1080" cy="235" r="22" opacity=".7"/>
   </g>
-  <circle r="46" fill="url(#halo)" filter="url(#glow)"><animateMotion dur="8s" repeatCount="indefinite" rotate="auto"><mpath href="#route"/></animateMotion></circle>
-  <circle r="11" fill="#ffcf86" stroke="#fff1ce" stroke-width="3"><animateMotion dur="8s" repeatCount="indefinite" rotate="auto"><mpath href="#route"/></animateMotion></circle>
+  <circle class="traveler-halo" r="46" fill="url(#halo)" filter="url(#glow)"/>
+  <circle class="traveler" r="11" fill="#ffcf86" stroke="#fff1ce" stroke-width="3"/>
   <g font-family="system-ui, sans-serif">
     <text x="135" y="390" fill="#edf5fc" font-size="15" font-weight="750" text-anchor="middle">DATA</text>
     <text x="385" y="360" fill="#edf5fc" font-size="15" font-weight="750" text-anchor="middle">RELATION</text>
@@ -46,7 +46,20 @@
     <text x="48" y="566" fill="#a9bfd2" font-size="13">It is an SVG presentation experiment—not a claim that the C# GPU backend has rendered this scene.</text>
     <text x="1152" y="515" fill="#8fcaff" font-size="14" font-weight="800" letter-spacing="1.5" text-anchor="end">NEXT: INTERACTIVE LAB ↗</text>
     <text x="1152" y="542" fill="#d3e2ee" font-size="15" text-anchor="end">Adjust the scene, then inspect the C# proof separately.</text>
-    <text x="1152" y="566" fill="#a9bfd2" font-size="13" text-anchor="end">Animation respects a reduced-motion preference where supported.</text>
+    <text x="1152" y="566" fill="#a9bfd2" font-size="13" text-anchor="end">Motion can be disabled by the system's reduced-motion setting.</text>
   </g>
-  <style>@media (prefers-reduced-motion: reduce) { circle animateMotion, circle animate { display:none; } }</style>
+  <style>
+    .pulse { animation: pulse 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .pulse-2 { animation-delay: -.64s; } .pulse-3 { animation-delay: -1.28s; }
+    .pulse-4 { animation-delay: -1.92s; } .pulse-5 { animation-delay: -2.56s; }
+    .traveler, .traveler-halo { offset-path: path("M 135 340 C 220 180 300 190 385 310 S 555 430 640 275 S 820 145 900 290 S 1035 420 1080 235"); offset-distance: 0%; animation: travel 8s linear infinite; }
+    .traveler { offset-rotate: 0deg; }
+    @keyframes pulse { 0%, 100% { r: 18px; opacity: .45; } 50% { r: 31px; opacity: .95; } }
+    @keyframes travel { to { offset-distance: 100%; } }
+    @media (prefers-reduced-motion: reduce) {
+      .pulse, .traveler, .traveler-halo { animation: none; }
+      .traveler { cx: 135px; cy: 340px; }
+      .traveler-halo { cx: 135px; cy: 340px; }
+    }
+  </style>
 </svg>
