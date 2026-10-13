@@ -62,7 +62,7 @@ dotnet build TheSingularityWorkshop.Visualize.slnx --configuration Release
 dotnet test TheSingularityWorkshop.Visualize.slnx --configuration Release
 ```
 
-The tests verify the current contracts. To see an actual procedural sci-fi exoskeleton soldier rendered by WebGPU, run `py -m http.server 8080` from the repository root and open [Soldier Field](http://localhost:8080/samples/SoldierField/WebGpuRunner/) in a browser with WebGPU enabled. Its ×10/×100 controls scale a deliberately repeated population across eight independently refreshed horizon workloads. Read the [lab guide](samples/SoldierField/WebGpuRunner/README.md) before interpreting the timing: Renderer bucket decisions and GPU timestamp measurements are not yet integrated.
+The tests verify the current contracts. To see an actual procedural sci-fi exoskeleton soldier rendered by WebGPU, run `py -m http.server 8080` from the repository root and open [Soldier Field](http://localhost:8080/samples/SoldierField/WebGpuRunner/) in a browser with WebGPU enabled. Its ×10/×100 controls scale a deliberately repeated population across eight independently refreshed horizon workloads. Read the [lab guide](samples/SoldierField/WebGpuRunner/README.md) before interpreting the timing: Renderer bucket decisions and GPU timestamp measurements are not yet integrated. The lab also carries versioned engineering records for all 38 semantic parts and derives downloadable preliminary cut sheets from those records; these are structured design data, not certified or fabrication-ready BIM.
 
 ## 🟪 05 Available documentation and theory
 
