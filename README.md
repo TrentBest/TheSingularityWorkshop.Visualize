@@ -12,13 +12,13 @@
 
 ## Living visual showcase
 
-[![Animated SVG: data becomes connected, moving geometry](docs/assets/living-showcase.svg)](samples/PrimitiveGallery/README.md)
+[![Animated connected-point geometry emitted by the C# Visualizer SVG proof backend](samples/PrimitiveGallery/generated/03-four-connected-points.svg)](samples/PrimitiveGallery/README.md)
 
-The geometry above is alive **inside this documentation image**: a moving marker follows a connected path while the relationship nodes pulse. This is the first layer of the living-documentation experience—readers can see motion without building the repository or launching a separate app.
+This is the first living visual in the documentation sequence whose **geometry is submitted through the actual C# Visualizer contracts and written by its SVG proof backend**. The connected points and segments are real backend output; the moving marker and dashed trace are SVG presentation effects layered over that output. The animation does not pretend to be an FSM update loop or a production GPU renderer.
 
-**[Explore the interactive SVG Primitive Lab](samples/PrimitiveGallery/index.html)** from a local checkout to change the primitive type, count, positions, colour, and spread. The page redraws the scene from its own data and reports its own SVG/DOM work. Then use the [Primitive Gallery guide](samples/PrimitiveGallery/README.md) to inspect a separate, C#-generated SVG proof produced through the actual Visualizer resource/frame contracts. Those are three intentionally distinct evidence levels: animated documentation artwork, browser-interactive exploration, and C# contract-backed output.
+The larger [living SVG illustration](docs/assets/living-showcase.svg) shows the direction for documentation visuals. The [interactive SVG Primitive Lab source](samples/PrimitiveGallery/index.html) is the browser-only sandbox for changing primitive type, count, positions, colour, and spread; it is intentionally a separate execution path. The [Primitive Gallery guide](samples/PrimitiveGallery/README.md) puts the contract-backed output, browser experiment, and their evidence boundaries side by side.
 
-The next engineering goal is to bring more of the visible experience under the Workshop's real state and composition controls—not to disguise a browser-only experiment as execution of FSM_API or the unfinished GPU backend. Consumer-specific scenes, such as raWWar's soldier and exoskeleton, belong in the consuming Experience and should exercise Visualize through its public contracts, not define Visualize's own sample identity.
+Next, we will replace more illustrative motion with behavior and scene data controlled by the Workshop's own code, keeping the SVG surface subordinate to your state and composition rules. Consumer-specific scenes, such as raWWar's soldier and exoskeleton, belong in the consuming Experience and should exercise Visualize through its public contracts, not define Visualize's own sample identity.
 
 TheSingularityWorkshop.Visualize is the GPU-facing presentation project for The Singularity Workshop. It turns observer-aware presentation data from [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into pixels without making a particular windowing toolkit or graphics API the definition of the world.
 
