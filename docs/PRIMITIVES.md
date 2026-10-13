@@ -1,6 +1,10 @@
 # Visual Primitives — From Meaning to Pixels
 
-**Status:** Living guide. The Soldier Field browser lab currently demonstrates 3D mesh generation; the new Primitive Gallery is an interactive SVG experiment that makes the early drawing progression visible. These are separate proof paths, not an integrated .NET rendering backend.
+**Status:** Living guide. The Soldier Field browser lab currently demonstrates 3D mesh generation; the Primitive Gallery is an interactive SVG experiment that makes the early drawing progression visible. These are separate proof paths, not an integrated .NET rendering backend.
+
+![Visualize showcase illustration: semantic soldier parts, mesh generation, and observer-detail concept](assets/visualize-showcase.svg)
+
+This artwork is part of the documentation, so readers can see the current visual direction without building or launching anything. It is an explanatory illustration—not a screenshot or proof of a connected production pipeline. The [Soldier Field guide](../samples/SoldierField/WebGpuRunner/README.md) describes the actual browser/WebGPU scene; the [Primitive Gallery](../samples/PrimitiveGallery/README.md) documents the interactive 2D experiment and its boundaries.
 
 ## 0. See the primitives, not just read about them
 
