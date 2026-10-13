@@ -118,7 +118,7 @@ static Example BuildLitHemisphereExample(string path)
     const int rings = 12;
     const int segments = 48;
     const float radius = 0.48f;
-    var vertices = new List<VisualizerVertex> { Vertex(0, 0, radius, 0, 0, 1) };
+    var vertices = new List<VisualizerVertex> { Vertex3D(0, 0, radius, 0, 0, 1) };
     for (var ring = 1; ring <= rings; ring++)
     {
         var theta = (MathF.PI / 2) * ring / rings;
@@ -128,15 +128,15 @@ static Example BuildLitHemisphereExample(string path)
             var nx = MathF.Sin(theta) * MathF.Cos(phi);
             var ny = MathF.Sin(theta) * MathF.Sin(phi);
             var nz = MathF.Cos(theta);
-            vertices.Add(Vertex(radius * nx, radius * ny, radius * nz, nx, ny, nz));
+            vertices.Add(Vertex3D(radius * nx, radius * ny, radius * nz, nx, ny, nz));
         }
     }
-    var indices = new List<int>();
+    var indices = new List<uint>();
     for (var segment = 0; segment < segments; segment++)
     {
         indices.Add(0);
-        indices.Add(1 + segment);
-        indices.Add(1 + (segment + 1) % segments);
+        indices.Add((uint)(1 + segment));
+        indices.Add((uint)(1 + (segment + 1) % segments));
     }
     for (var ring = 1; ring < rings; ring++)
     {
@@ -145,8 +145,8 @@ static Example BuildLitHemisphereExample(string path)
         for (var segment = 0; segment < segments; segment++)
         {
             var next = (segment + 1) % segments;
-            indices.Add(inner + segment); indices.Add(outer + segment); indices.Add(outer + next);
-            indices.Add(inner + segment); indices.Add(outer + next); indices.Add(inner + next);
+            indices.Add((uint)(inner + segment)); indices.Add((uint)(outer + segment)); indices.Add((uint)(outer + next));
+            indices.Add((uint)(inner + segment)); indices.Add((uint)(outer + next)); indices.Add((uint)(inner + next));
         }
     }
     catalog.SetGeometry(geometryId, new VisualizerGeometry(1, vertices, indices));
@@ -172,7 +172,7 @@ static VisualizerGeometry LineMesh() => new(1,
 static VisualizerVertex Vertex(float x, float y) =>
     new(new Vector3(x, y, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One);
 
-static VisualizerVertex Vertex(float x, float y, float z, float nx, float ny, float nz) =>
+static VisualizerVertex Vertex3D(float x, float y, float z, float nx, float ny, float nz) =>
     new(new Vector3(x, y, z), Vector3.Normalize(new Vector3(nx, ny, nz)), Vector2.Zero, Vector4.One);
 
 sealed record Example(string Path, string Title, VisualizerResourceCatalog Resources, VisualizerFrame Frame);
