@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">Lit hemisphere and projected surface normals</title>
+  <desc id="desc">A tessellated blue hemisphere-like surface on a dark grid, lit from the upper left, with green projected normal vectors.</desc>
+  <defs>
+    <radialGradient id="surface" cx="34%" cy="27%" r="78%">
+      <stop offset="0" stop-color="#9bd8ff"/>
+      <stop offset=".38" stop-color="#4e9bc9"/>
+      <stop offset=".76" stop-color="#24557d"/>
+      <stop offset="1" stop-color="#122a42"/>
+    </radialGradient>
+    <clipPath id="disc"><circle cx="320" cy="180" r="118"/></clipPath>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#203447" stroke-width="1"/>
+    </pattern>
+    <marker id="arrow" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0 0L5 2.5L0 5Z" fill="#7ee0bd"/></marker>
+  </defs>
+  <rect width="640" height="360" rx="14" fill="#0b1725"/>
+  <rect width="640" height="360" rx="14" fill="url(#grid)"/>
+  <circle cx="320" cy="180" r="118" fill="url(#surface)" stroke="#a9ddff" stroke-opacity=".65"/>
+  <g clip-path="url(#disc)" fill="none" stroke="#c1e8ff" stroke-opacity=".3" stroke-width="1">
+    <ellipse cx="320" cy="180" rx="118" ry="30"/><ellipse cx="320" cy="180" rx="118" ry="61"/><ellipse cx="320" cy="180" rx="118" ry="90"/>
+    <ellipse cx="320" cy="180" rx="30" ry="118"/><ellipse cx="320" cy="180" rx="61" ry="118"/><ellipse cx="320" cy="180" rx="90" ry="118"/>
+    <path d="M202 180H438M320 62V298"/>
+  </g>
+  <g stroke="#7ee0bd" stroke-width="2.5" stroke-linecap="round" marker-end="url(#arrow)">
+    <path d="M320 180L320 139"/><path d="M355 145L370 110"/><path d="M390 180L429 180"/><path d="M355 215L370 250"/>
+    <path d="M320 235L320 276"/><path d="M285 215L270 250"/><path d="M250 180L211 180"/><path d="M285 145L270 110"/>
+    <path d="M338 165L356 149"/><path d="M302 165L284 149"/><path d="M338 195L356 211"/><path d="M302 195L284 211"/>
+  </g>
+  <g fill="#e6f5ff" font-family="system-ui, sans-serif">
+    <text x="28" y="38" font-size="18" font-weight="700">06 · Lit hemisphere + normals</text>
+    <text x="28" y="62" font-size="12" fill="#a9c6dc">Indexed surface geometry · Lambert response · projected vertex normals</text>
+    <text x="28" y="330" font-size="12" fill="#7ee0bd">Illustrative preview; the exact C# SVG is attached to the CI run.</text>
+  </g>
+</svg>
