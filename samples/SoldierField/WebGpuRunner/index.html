@@ -14,6 +14,7 @@
 <dl><dt>Instances across horizons</dt><dd id="total">8</dd><dt>GPU draw submissions</dt><dd id="submissions">0</dd><dt>Frame interval p50 / p95</dt><dd id="frame">—</dd><dt>JS encode + submit p50 / p95</dt><dd id="submit">—</dd><dt>CPU instance-update p95</dt><dd id="update">—</dd><dt>Instance upload bytes / frame</dt><dd id="bytes">—</dd><dt>Adapter</dt><dd id="adapter">—</dd></dl>
 <p class="status" id="status" role="status">Initializing WebGPU…</p><p class="muted">Frame intervals include browser scheduling. JS encode/submit time is not GPU execution time. Upload bytes count actual queue writes. GPU timestamp queries are not implemented; this page does not claim a hardware benchmark.</p></aside></main>
 <script type="module">
+import { buildSoldierGeometry, SOLDIER_PARTS, SOLDIER_GEOMETRY_LAYOUT } from './soldier-geometry.js';
 const canvas=document.querySelector("#view"),status=document.querySelector("#status"),tbody=document.querySelector("#horizons");
 const hs=[{n:"Contact",c:[.25,.95,.95],rate:1,z:3},{n:"1 m",c:[.36,.88,.91],rate:1,z:5},{n:"2 m",c:[.42,.82,.91],rate:2,z:8},{n:"4 m",c:[.49,.72,.96],rate:4,z:13},{n:"16 m",c:[.59,.63,.98],rate:8,z:24},{n:"32 m",c:[.68,.56,.96],rate:16,z:40},{n:"64 m",c:[.76,.51,.90],rate:32,z:64},{n:"128 m+",c:[.86,.55,.78],rate:64,z:100}];
 document.querySelector("#legend").innerHTML=hs.map(h=>'<span><i class="swatch" style="background:rgb('+h.c.map(v=>Math.round(v*255)).join(",")+')"></i>'+h.n+'</span>').join("");
@@ -21,15 +22,7 @@ let device,context,pipeline,meshBuffer,depthTexture,frameNumber=0,submissions=0,
 const frameSamples=[],submitSamples=[],updateSamples=[];const fmt=n=>Math.round(n).toLocaleString();
 function pct(a,p){if(!a.length)return 0;const s=a.slice().sort((x,y)=>x-y);return s[Math.min(s.length-1,Math.floor((s.length-1)*p))];}
 function sample(a,v){a.push(v);if(a.length>180)a.shift();}
-function box(m,center,size,color){const [x,y,z]=center,[sx,sy,sz]=size,x0=x-sx/2,x1=x+sx/2,y0=y-sy/2,y1=y+sy/2,z0=z-sz/2,z1=z+sz/2;const f=[[[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]],[[x1,y0,z0],[x0,y0,z0],[x0,y1,z0],[x1,y1,z0]],[[x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0]],[[x1,y0,z1],[x1,y0,z0],[x1,y1,z0],[x1,y1,z1]],[[x0,y1,z1],[x1,y1,z1],[x1,y1,z0],[x0,y1,z0]],[[x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1]]];for(const face of f)for(const tri of [[0,1,2],[0,2,3]])for(const j of tri)m.push(...face[j],...color);}
-function ellipsoid(m,center,radii,color,seg=10,rings=6){const [cx,cy,cz]=center,[rx,ry,rz]=radii,pt=(u,v)=>[cx+rx*Math.sin(v)*Math.cos(u),cy+ry*Math.cos(v),cz+rz*Math.sin(v)*Math.sin(u)];for(let r=0;r<rings;r++)for(let s=0;s<seg;s++){const u=s/seg*Math.PI*2,U=(s+1)/seg*Math.PI*2,v=r/rings*Math.PI,V=(r+1)/rings*Math.PI,p=[pt(u,v),pt(u,V),pt(U,V),pt(U,v)];for(const j of [0,1,2,0,2,3])m.push(...p[j],...color);}}
-function soldier(){const m=[],dark=[.075,.12,.17],armor=[.25,.34,.40],edge=[.47,.60,.65],glow=[.12,.95,.94],joint=[.13,.19,.23],weapon=[.12,.15,.19];
-box(m,[-.19,.28,0],[.17,.52,.19],dark);box(m,[.19,.28,0],[.17,.52,.19],dark);box(m,[-.19,.08,.07],[.23,.13,.34],armor);box(m,[.19,.08,.07],[.23,.13,.34],armor);box(m,[-.19,.53,0],[.22,.4,.24],armor);box(m,[.19,.53,0],[.22,.4,.24],armor);box(m,[-.19,.7,0],[.13,.12,.26],edge);box(m,[.19,.7,0],[.13,.12,.26],edge);
-box(m,[0,.91,0],[.48,.25,.29],joint);box(m,[0,1.22,0],[.56,.48,.31],armor);box(m,[0,1.28,.165],[.38,.27,.045],edge);box(m,[0,1.29,.193],[.19,.09,.025],glow);box(m,[0,1.53,0],[.3,.13,.27],dark);
-ellipsoid(m,[-.39,1.43,0],[.17,.17,.19],edge);ellipsoid(m,[.39,1.43,0],[.17,.17,.19],edge);box(m,[-.42,1.19,0],[.16,.34,.17],armor);box(m,[.42,1.19,0],[.16,.34,.17],armor);ellipsoid(m,[-.43,.98,0],[.095,.10,.11],glow);ellipsoid(m,[.43,.98,0],[.095,.10,.11],glow);box(m,[-.43,.83,.01],[.15,.22,.16],dark);box(m,[.43,.83,.01],[.15,.22,.16],dark);
-box(m,[0,1.30,-.23],[.36,.45,.20],dark);box(m,[-.13,1.32,-.35],[.07,.34,.07],edge);box(m,[.13,1.32,-.35],[.07,.34,.07],edge);ellipsoid(m,[0,1.78,0],[.20,.23,.20],armor,12,8);box(m,[0,1.78,.173],[.27,.095,.045],dark);box(m,[0,1.79,.201],[.20,.035,.012],glow);box(m,[0,1.61,.02],[.19,.09,.17],joint);
-box(m,[.16,1.04,.24],[.62,.075,.085],weapon);box(m,[.38,1.04,.24],[.26,.045,.06],edge);box(m,[-.02,.98,.24],[.12,.15,.11],dark);for(const y of [.98,1.08,1.38])box(m,[.05,y,.183],[.045,.018,.012],glow);return new Float32Array(m);}
-const vertices=soldier();
+const vertices=buildSoldierGeometry();
 const wgsl="struct I { posScale: vec4f, tint: vec4f };\n"+
 "@group(0) @binding(0) var<storage,read> instances: array<I>;\n"+
 "struct O { @builtin(position) p: vec4f, @location(0) c: vec3f };\n"+
