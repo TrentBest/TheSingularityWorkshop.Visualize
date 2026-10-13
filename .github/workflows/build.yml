@@ -26,6 +26,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Checkout Renderer source for the explicit integration adapter
+        uses: actions/checkout@v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.Renderer
+          ref: development
+          path: integrations/RendererAdapter/RendererSource
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
