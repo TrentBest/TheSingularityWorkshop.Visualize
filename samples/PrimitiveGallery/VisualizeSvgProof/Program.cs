@@ -36,7 +36,7 @@ static Example BuildPointExample(string path, int count, bool instanced)
         var instances = Enumerable.Range(0, count).Select(i =>
         {
             var x = -0.42f + (i % 10) * 0.093f;
-            var y = 0.36f - (i / 10) * 0.073f;
+            var y = 0.24f - (i / 10) * 0.052f;
             var tint = new Vector4(0.25f + (i % 5) * 0.14f, 0.78f, 0.95f - (i % 4) * 0.13f, 1);
             return new VisualizerInstance(Matrix4x4.CreateTranslation(x, y, 0), tint);
         }).ToArray();
@@ -68,7 +68,7 @@ static Example BuildConnectedExample(string path)
     for (var i = 0; i < points.Length; i++)
     {
         var a = points[i]; var b = points[(i + 1) % points.Length]; var delta = b - a;
-        var transform = Matrix4x4.CreateScale(delta.Length(), 1, 1) *
+        var transform = Matrix4x4.CreateScale(delta.Length() * 2, 1, 1) *
             Matrix4x4.CreateRotationZ(MathF.Atan2(delta.Y, delta.X)) *
             Matrix4x4.CreateTranslation((a.X + b.X) / 2, (a.Y + b.Y) / 2, 0);
         commands.Add(new VisualizerDrawCommand(lineId, materialId, transform, 6, 0, 0, VisualizerRepresentation.Near));
@@ -93,8 +93,8 @@ static Example BuildLineExample(string path, int count)
     {
         var instances = Enumerable.Range(0, count).Select(i =>
         {
-            var x = -0.42f + (i % 6) * 0.17f;
-            var y = 0.32f - (i / 6) * 0.16f;
+            var x = -0.30f + (i % 6) * 0.12f;
+            var y = 0.24f - (i / 6) * 0.16f;
             var angle = (i % 6 - 2.5f) * 0.16f;
             return new VisualizerInstance(Matrix4x4.CreateRotationZ(angle) * Matrix4x4.CreateTranslation(x, y, 0),
                 new Vector4(0.48f, 0.76f + (i % 3) * 0.08f, 1, 1));
@@ -117,8 +117,8 @@ static VisualizerGeometry PointMesh() => new(1,
 
 static VisualizerGeometry LineMesh() => new(1,
 [
-    Vertex(-0.5f, -0.0025f), Vertex(-0.5f, 0.0025f),
-    Vertex(0.5f, 0.0025f), Vertex(0.5f, -0.0025f)
+    Vertex(-0.25f, -0.0025f), Vertex(-0.25f, 0.0025f),
+    Vertex(0.25f, 0.0025f), Vertex(0.25f, -0.0025f)
 ], [0, 1, 2, 0, 2, 3]);
 
 static VisualizerVertex Vertex(float x, float y) =>
