@@ -48,6 +48,21 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
         var stopwatch = Stopwatch.StartNew();
         var scene = GuiBuilder.Create("svg-scene", $"visualize-frame-{_frame + 1}")
             .Text("Visualizer frame manifested through GUI.SVG");
+        scene.Child("svg-rect", "background", background => background
+            .Property("x", "0").Property("y", "0")
+            .Property("width", "100").Property("height", "56.25")
+            .Property("fill", "#0b1725"));
+        for (var x = 10; x < 100; x += 10)
+            scene.Child("svg-path", $"grid-x-{x}", line => line
+                .Property("d", $"M{x} 0V56.25").Property("fill", "none")
+                .Property("stroke", "#203447").Property("stroke-width", "0.2"));
+        for (var y = 5.625; y < 56.25; y += 5.625)
+        {
+            var gridY = y.ToString(CultureInfo.InvariantCulture);
+            scene.Child("svg-path", $"grid-y-{gridY}", line => line
+                .Property("d", $"M0 {gridY}H100").Property("fill", "none")
+                .Property("stroke", "#203447").Property("stroke-width", "0.2"));
+        }
 
         var drawIndex = 0;
         foreach (var command in frame.Commands)
@@ -89,7 +104,7 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
 
         if (_animateConnectedPoints)
         {
-            const string route = "M20 48.125L80 48.125L80 8.125L20 8.125Z";
+            const string route = "M18 46.125L78 50.125L82 16.125L32 4.125L18 46.125";
             scene.Child("svg-path", "connected-route", path => path
                 .Property("d", route)
                 .Property("fill", "none")
@@ -102,17 +117,9 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
                     .Property("to", "-48")
                     .Property("dur", "4s")
                     .Property("repeatCount", "indefinite")));
-            scene.Child("svg-circle", "moving-marker", marker => marker
-                .Property("cx", "20")
-                .Property("cy", "48.125")
-                .Property("r", "1.4")
-                .Property("fill", "#ffcf86")
-                .Property("stroke", "#fff1ce")
-                .Property("stroke-width", "0.45")
-                .Child("svg-animate-motion", "marker-motion", motion => motion
-                    .Property("path", route)
-                    .Property("dur", "4s")
-                    .Property("repeatCount", "indefinite")));
+            AddMotionMarker(scene, "marker-leading", "#ffcf86", "5.2", "0s", route);
+            AddMotionMarker(scene, "marker-middle", "#7ee0bd", "3.2", "-0.35s", route);
+            AddMotionMarker(scene, "marker-trailing", "#8fcaff", "2.1", "-0.7s", route);
         }
 
         var svg = _renderer.Render(scene, width: 320, height: 180);
@@ -126,6 +133,23 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
 
     /// <summary>Releases backend resources. The SVG proof backend owns no persistent native resources.</summary>
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
+    private static void AddMotionMarker(GuiBuilder scene, string id, string fill, string radius, string begin, string route)
+    {
+        scene.Child("svg-circle", id, marker => marker
+            .Property("cx", "18")
+            .Property("cy", "46.125")
+            .Property("r", radius)
+            .Property("fill", fill)
+            .Property("opacity", "0.9")
+            .Property("stroke", "#fff1ce")
+            .Property("stroke-width", "0.35")
+            .Child("svg-animate-motion", id + "-motion", motion => motion
+                .Property("path", route)
+                .Property("begin", begin)
+                .Property("dur", "4s")
+                .Property("repeatCount", "indefinite")));
+    }
 
     private static double X(float x) => 50 + x * 100;
     private static double Y(float y) => 28.125 - y * 100;
