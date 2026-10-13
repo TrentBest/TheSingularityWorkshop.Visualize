@@ -67,6 +67,7 @@ The illustration above is the no-launch overview. For deeper inspection, the doc
 - **[Soldier Field guide](samples/SoldierField/WebGpuRunner/README.md)** — the most developed procedural 3D sample, its controls, data, and measurement boundaries.
 - **[Primitive Gallery source and guide](samples/PrimitiveGallery/README.md)** — the interactive point/line progression and what each step demonstrates.
 - **[Primitive Gallery page](samples/PrimitiveGallery/index.html)** — inspect the experiment's actual HTML, SVG, and JavaScript.
+- **[Surface Normals & Light lab](samples/NormalLightingLab/index.html)** — change light direction, ambient contribution, diffuse strength, sample density, and normal overlays in a live SVG study.
 
 To run the current .NET test suite, you need the **.NET 8 SDK**. From the repository root:
 
@@ -83,7 +84,7 @@ The tests verify the current contracts. To explore the first visible SVG sequenc
 ![](docs/assets/dividers/purple.svg)
 
 - [Architecture](docs/ARCHITECTURE.md) — follow data from authoritative state to the host surface and understand which layer owns each decision.
-- [Visual primitives](docs/PRIMITIVES.md) — start with the [interactive SVG Primitive Gallery](samples/PrimitiveGallery/index.html), then compare point/line experiments with the Soldier Field box/ellipsoid mesh generators and distinguish each sample path from the current C# contracts.
+- [Visual primitives](docs/PRIMITIVES.md) — start with the [interactive SVG Primitive Gallery](samples/PrimitiveGallery/index.html), then explore [surface normals and live diffuse lighting](samples/NormalLightingLab/index.html), compare point/line experiments with Soldier Field's box/ellipsoid mesh generators, and distinguish each sample path from the current C# contracts.
 - [Gestures and procedural motion](docs/GESTURES_AND_POSE_PIPELINE.md) — see how physical procedures become evaluated pose data without making Visualize the owner of motion semantics.
 - [GPU backend strategy](docs/GPU_BACKEND_STRATEGY.md) — compare backend responsibilities and the intended native/browser directions, with array-first execution as a constraint.
 - [Soldier Field scaling lab](samples/SoldierField/WebGpuRunner/README.md) — run the procedural exoskeleton scene and compare independent Event Horizon workload counters.
