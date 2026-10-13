@@ -88,7 +88,7 @@ jobs:
             grep -q '<path' "$file" || { echo "No rendered paths in: $file"; exit 1; }
           done
           grep -q 'stroke="#7ee0bd"' ./samples/PrimitiveGallery/generated/06-lit-hemisphere-normals.svg
-          grep -q '<animateMotion' ./samples/PrimitiveGallery/generated/07-gui-svg-connected-points.svg
+          grep -q 'attributeName="r"' ./samples/PrimitiveGallery/generated/07-gui-svg-connected-points.svg
 
       - name: Upload Visualizer SVG proof images
         uses: actions/upload-artifact@v7
