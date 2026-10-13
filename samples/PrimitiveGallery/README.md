@@ -41,6 +41,10 @@ The interactive page is a visual experiment, not yet an automated rendering test
 
 The next progression should be derived from the actual C# contract tests and the drawing capabilities that are implemented, adding assertions and visible examples together rather than documenting planned primitives as if they already exist.
 
+## Replay an actual FSM_API run
+
+The [FSM Trace Replay](fsm-trace-replay.html) page loads JSON snapshots exported by the C# [SimpleDemos](https://github.com/TrentBest/SimpleDemos) console app. Run its `--export-trace` mode, then select the resulting JSON file in the replay page. The page maps recorded agent positions and labels to the recorded FSM states; it does not execute FSM_API or synthesize missing frames. This is the first file-based bridge from real FSM execution to a living documentation visual, while keeping the simulation and renderer responsibilities separate.
+
 ## Next visual experiment
 
 Continue with [Surface Normals & Light](../NormalLightingLab/index.html): move the light direction, vary ambient and diffuse contributions, and toggle the projected normal vectors while the SVG scene updates live. Its [guide](../NormalLightingLab/README.md) explains the model and its boundaries.
