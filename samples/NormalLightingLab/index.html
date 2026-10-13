@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Surface Normals &amp; Light — Visualize Lab</title>
+<style>
+:root{color-scheme:dark;--bg:#091321;--panel:#12243a;--line:#38516a;--ink:#edf5fc;--muted:#a9bdd0;--mint:#7ee0bd;--gold:#ffd08a;--blue:#8fcaff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}main{max-width:1200px;margin:auto;padding:24px 18px 42px}h1{font-size:clamp(1.8rem,4vw,3rem);line-height:1.08;margin:.25rem 0 .7rem}h2{font-size:1.05rem;margin:0 0 8px}.kicker{color:var(--mint);font-size:.76rem;font-weight:850;letter-spacing:.14em;text-transform:uppercase}p{color:var(--muted)}a{color:var(--blue)}.intro{max-width:900px}.layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);gap:16px;align-items:start}.stage,.panel,.card{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}.stagehead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:13px 15px;border-bottom:1px solid var(--line)}.tag{border:1px solid #42647c;border-radius:999px;padding:3px 9px;color:var(--mint);font-size:.78rem;font-weight:750}svg{display:block;width:100%;height:auto;background:#091725}.readout{display:flex;flex-wrap:wrap;gap:8px 18px;padding:11px 15px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line)}.readout strong{color:var(--ink);font-variant-numeric:tabular-nums}.panel{padding:16px}.controls{display:grid;gap:12px}.field{display:grid;gap:5px;color:#d5e2ee;font-size:.88rem}.field input[type=range]{width:100%;accent-color:var(--mint)}.field output{color:var(--mint);font-weight:800;font-variant-numeric:tabular-nums}.check{display:flex;align-items:center;gap:9px;color:#d5e2ee}.check input{accent-color:var(--mint);width:17px;height:17px}.buttons{display:flex;gap:8px;flex-wrap:wrap}button{border:1px solid #456078;background:#20394f;color:var(--ink);border-radius:8px;padding:9px 12px;font:inherit;font-weight:750;cursor:pointer}button:hover{background:#2b4b65}button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:3px}.below{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:15px}.card{padding:15px}.card p{margin:.4rem 0}.formula{font:.92rem/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:#d6e7f5}.note{font-size:.84rem}.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:.83rem;padding:10px 15px}.swatch{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.below{grid-template-columns:1fr}}@media(max-width:520px){.controls{grid-template-columns:1fr}}
+</style></head>
+<body><main>
+<header class="intro"><div class="kicker">The Singularity Workshop · Visual experiment 02</div>
+<h1>Surface normals: turn the light, change the surface</h1>
+<p>A surface normal tells the lighting model which way a surface faces. Move the light around the sphere, change ambient contribution, and reveal the normal directions. The geometry stays in place while its lighting response changes live.</p></header>
+<div class="layout">
+<section class="stage" aria-label="Interactive surface normal and diffuse lighting experiment">
+<div class="stagehead"><strong>Lambert diffuse response</strong><span class="tag">Live SVG · generated from values</span></div>
+<svg id="scene" viewBox="0 0 760 610" role="img" aria-labelledby="svgTitle svgDesc">
+<title id="svgTitle">Shaded sphere with movable light direction and surface normals</title><desc id="svgDesc">The sphere is shaded according to the angle between its surface normals and a movable light. Normal vectors can be displayed.</desc>
+<defs><radialGradient id="baseGlow" cx="35%" cy="28%" r="80%"><stop offset="0" stop-color="#223f58"/><stop offset="1" stop-color="#0b1a2a"/></radialGradient><clipPath id="sphereClip"><circle cx="330" cy="300" r="205"/></clipPath><marker id="lightArrow" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ffd08a"/></marker></defs>
+<rect width="760" height="610" fill="url(#baseGlow)"/><g stroke="#1d3448" stroke-width="1"><path d="M0 100H760M0 200H760M0 300H760M0 400H760M0 500H760M100 0V610M200 0V610M300 0V610M400 0V610M500 0V610M600 0V610M700 0V610"/></g>
+<circle cx="330" cy="300" r="205" fill="#10283b" stroke="#5a7890" stroke-width="1.5"/><g id="shadeLayer" clip-path="url(#sphereClip)"></g><g id="normalLayer" clip-path="url(#sphereClip)"></g><circle cx="330" cy="300" r="205" fill="none" stroke="#6f8da3" stroke-width="1.5"/><g id="lightLayer"></g>
+<g fill="#9bb3c7" font-size="13"><text x="22" y="28">PROJECTED UNIT SPHERE</text><text x="22" y="588">NORMALS: N · LIGHT DIRECTION: L</text></g></svg>
+<div class="legend"><span><i class="swatch" style="background:#ffd08a"></i>Light direction</span><span><i class="swatch" style="background:#7ee0bd"></i>Surface normal (projected)</span><span><i class="swatch" style="background:#8fcaff"></i>Diffuse response</span></div>
+<div class="readout" aria-live="polite"><span>Light direction: <strong id="directionReadout">az 35° · el 35°</strong></span><span>Sampled surface points: <strong id="sampleReadout">—</strong></span><span>Average diffuse: <strong id="diffuseReadout">—</strong></span></div></section>
+<aside class="panel"><h2>Change the lighting</h2><div class="controls">
+<label class="field">Light azimuth <output id="azOut">35°</output><input id="azimuth" type="range" min="-180" max="180" step="1" value="35"></label>
+<label class="field">Light elevation <output id="elOut">35°</output><input id="elevation" type="range" min="-10" max="85" step="1" value="35"></label>
+<label class="field">Ambient light <output id="ambientOut">0.12</output><input id="ambient" type="range" min="0" max="0.6" step="0.01" value="0.12"></label>
+<label class="field">Diffuse strength <output id="diffuseOut">0.88</output><input id="diffuse" type="range" min="0" max="1" step="0.01" value="0.88"></label>
+<label class="field">Surface sample density <output id="densityOut">17 × 17</output><input id="density" type="range" min="7" max="29" step="2" value="17"></label>
+<label class="check"><input id="showNormals" type="checkbox" checked> Show surface normal vectors</label>
+<label class="check"><input id="showGrid" type="checkbox" checked> Show sampled surface points</label>
+<label class="check"><input id="showLambert" type="checkbox" checked> Apply Lambert diffuse shading</label>
+<div class="buttons"><button id="reset" type="button">Reset experiment</button><button id="reverse" type="button">Reverse light</button></div></div>
+<p class="note">Try azimuth −90°, 0°, 90°, then 180°. Watch the bright region move around the fixed sphere. Lower ambient light to expose the difference between surfaces facing the light and surfaces turned away.</p></aside></div>
+<section class="below">
+<article class="card"><h2>01 · The normal</h2><p>A normal is a direction perpendicular to a surface at a point. This experiment samples a unit sphere, so each surface position also supplies its outward normal.</p><p class="formula">N = (x, y, z), where x² + y² + z² = 1</p></article>
+<article class="card"><h2>02 · Diffuse response</h2><p>The simple Lambert model brightens a surface in proportion to how directly it faces the light. Light from behind the surface contributes no direct diffuse light.</p><p class="formula">diffuse = max(0, N · L)</p></article>
+<article class="card"><h2>03 · What this proves</h2><p>Controls change SVG marks and their colour values; no image is swapped in. This is a pedagogical 2D projection of a sampled 3D lighting calculation—not a GPU shader or production material system.</p><p class="note">The current .NET Visualize contracts do not yet execute this page. The experiment is honest about that boundary.</p></article></section>
+<p class="note">Standalone page: no build step, external library, or network request. Open directly or serve the repository with <code>py -m http.server 8080</code>. See the <a href="../../docs/LIGHTING_AND_SHADOWS.md">lighting design notes</a>, <a href="../../docs/PRIMITIVES.md">primitive guide</a>, and <a href="https://github.com/TrentBest/TheSingularityWorkshop.Visualize">Visualize repository</a>.</p>
+</main>
+<script>
+(() => {
+ const $ = id => document.getElementById(id), NS = "http://www.w3.org/2000/svg";
+ const shadeLayer=$("shadeLayer"),normalLayer=$("normalLayer"),lightLayer=$("lightLayer");
+ const controls=["azimuth","elevation","ambient","diffuse","density","showNormals","showGrid","showLambert"];
+ const make=(tag,attrs,parent)=>{const n=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,String(v)));parent.appendChild(n);return n;};
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),fmt=n=>Number(n).toFixed(2);
+ function render(){
+  const az=Number($("azimuth").value)*Math.PI/180,el=Number($("elevation").value)*Math.PI/180;
+  const ambient=Number($("ambient").value),strength=Number($("diffuse").value),density=Number($("density").value);
+  const light=[Math.cos(el)*Math.sin(az),Math.sin(el),Math.cos(el)*Math.cos(az)];
+  const showNormals=$("showNormals").checked,showGrid=$("showGrid").checked,useLambert=$("showLambert").checked;
+  [shadeLayer,normalLayer,lightLayer].forEach(n=>n.replaceChildren());
+  let samples=0,sum=0;const radius=205,cx=330,cy=300;
+  for(let iy=0;iy<density;iy++){const y=-0.94+1.88*iy/(density-1);
+   for(let ix=0;ix<density;ix++){const x=-0.94+1.88*ix/(density-1),rr=x*x+y*y;if(rr>=0.94)continue;
+    const z=Math.sqrt(1-rr),lambert=Math.max(0,x*light[0]+y*light[1]+z*light[2]);
+    const intensity=useLambert?clamp(ambient+strength*lambert,0,1):clamp(ambient+strength,0,1);
+    samples++;sum+=lambert;const px=cx+x*radius,py=cy-y*radius;
+    const r=Math.round(17+intensity*48),g=Math.round(39+intensity*119),b=Math.round(58+intensity*174);
+    make("circle",{cx:px,cy:py,r:radius*1.9/(density-1),fill:"rgb("+r+","+g+","+b+")",opacity:.98},shadeLayer);
+    if(showGrid)make("circle",{cx:px,cy:py,r:2.2,fill:"#d9eaf6",opacity:.68},normalLayer);
+    if(showNormals){const vx=x*23,vy=-y*23;if(Math.hypot(vx,vy)>3)make("line",{x1:px,y1:py,x2:px+vx,y2:py+vy,stroke:"#7ee0bd","stroke-width":1.35,opacity:.88},normalLayer);make("circle",{cx:px,cy:py,r:1.6,fill:"#7ee0bd"},normalLayer);}
+   }
+  }
+  const lx=light[0],ly=light[1],lz=light[2],ox=620,oy=130,scale=66;
+  make("circle",{cx:ox,cy:oy,r:45,fill:"#101f30",stroke:"#38516a"},lightLayer);
+  make("line",{x1:ox,y1:oy,x2:ox+lx*scale,y2:oy-ly*scale,stroke:"#ffd08a","stroke-width":4,"stroke-linecap":"round","marker-end":"url(#lightArrow)"},lightLayer);
+  make("circle",{cx:ox,cy:oy,r:3,fill:"#edf5fc"},lightLayer);
+  make("text",{x:ox,y:oy+61,fill:"#ffd08a","font-size":13,"text-anchor":"middle"},lightLayer).textContent="LIGHT DIRECTION";
+  make("text",{x:ox,y:oy+79,fill:"#9bb3c7","font-size":12,"text-anchor":"middle"},lightLayer).textContent="L = ("+fmt(lx)+", "+fmt(ly)+", "+fmt(lz)+")";
+  make("text",{x:ox,y:oy+97,fill:"#9bb3c7","font-size":11,"text-anchor":"middle"},lightLayer).textContent="projected into view";
+  $("azOut").textContent=$("azimuth").value+"°";$("elOut").textContent=$("elevation").value+"°";
+  $("ambientOut").textContent=fmt(ambient);$("diffuseOut").textContent=fmt(strength);$("densityOut").textContent=density+" × "+density;
+  $("directionReadout").textContent="az "+$("azimuth").value+"° · el "+$("elevation").value+"°";
+  $("sampleReadout").textContent=samples.toLocaleString();$("diffuseReadout").textContent=fmt(samples?sum/samples:0);
+ }
+ controls.forEach(id=>$(id).addEventListener("input",render));
+ $("reset").addEventListener("click",()=>{$("azimuth").value=35;$("elevation").value=35;$("ambient").value=.12;$("diffuse").value=.88;$("density").value=17;$("showNormals").checked=true;$("showGrid").checked=true;$("showLambert").checked=true;render();});
+ $("reverse").addEventListener("click",()=>{let az=Number($("azimuth").value)+180;if(az>180)az-=360;$("azimuth").value=az;render();});
+ render();
+})();
+</script></body></html>
