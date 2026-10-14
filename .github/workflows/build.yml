@@ -47,6 +47,12 @@ jobs:
       - name: Test GUI.SVG contracts
         run: dotnet test GuiSource/tests/SVG.Tests/TheSingularityWorkshop.GUI.SVG.Tests.csproj --configuration Release
 
+      - name: Generate package-embedded GUI.SVG gallery
+        run: >-
+          dotnet run --project GuiSource/samples/SvgGallery/SvgGallery.csproj
+          --configuration Release
+          -- ./GuiSource/artifacts/svg-adapter-gallery.svg
+
       - name: Pack GUI Core dependency
         run: dotnet pack GuiSource/src/Core/TheSingularityWorkshop.GUI.Core.csproj --configuration Release --no-restore --output ./artifacts/gui-svg-feed
 
@@ -63,6 +69,9 @@ jobs:
           test -n "$core_package" && test -s "$core_package" || { echo "GUI Core dependency package was not produced."; exit 1; }
           unzip -l "$package" > ./artifacts/gui-svg-feed/package-contents.txt
           grep -q 'lib/net8.0/TheSingularityWorkshop.GUI.SVG.dll' ./artifacts/gui-svg-feed/package-contents.txt
+          grep -q 'README.md' ./artifacts/gui-svg-feed/package-contents.txt
+          grep -q 'docs/SVG_ADAPTER.md' ./artifacts/gui-svg-feed/package-contents.txt
+          grep -q 'docs/assets/svg-adapter-gallery.svg' ./artifacts/gui-svg-feed/package-contents.txt
           echo "Verified package: $package"
           echo "Verified dependency package: $core_package"
 
