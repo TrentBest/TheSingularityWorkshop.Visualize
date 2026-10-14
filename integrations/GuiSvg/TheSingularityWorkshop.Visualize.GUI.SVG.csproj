@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Remove="GuiSource/**/*.cs" />
     <Compile Remove="Proof/**/*.cs" />
+    <Compile Remove="CityMassingProof/**/*.cs" />
     <ProjectReference Include="../../TheSingularityWorkshop.Visualize.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(WorkshopGuiSvgProjectPath)' != ''">
