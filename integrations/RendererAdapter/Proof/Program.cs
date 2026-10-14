@@ -13,21 +13,22 @@ var output = args.Length > 0
 
 var catalog = new VisualizerResourceCatalog();
 var commands = new List<RenderDrawCommand>();
-var horizons = new[]
+var rules = new[]
 {
-    new EventHorizon(nameof(RepresentationTarget.Interactive), 1, 10),
-    new EventHorizon(nameof(RepresentationTarget.Near), 5, 8),
-    new EventHorizon(nameof(RepresentationTarget.Distant), 15, 4),
-    new EventHorizon(nameof(RepresentationTarget.Aggregate), 30, 2),
-    new EventHorizon(nameof(RepresentationTarget.Semantic), 100, 1)
+    (Horizon: new EventHorizon("Interactive", 1, 10), Representation: RepresentationTarget.Interactive),
+    (Horizon: new EventHorizon("Near", 5, 8), Representation: RepresentationTarget.Near),
+    (Horizon: new EventHorizon("Distant", 15, 4), Representation: RepresentationTarget.Distant),
+    (Horizon: new EventHorizon("Aggregate", 30, 2), Representation: RepresentationTarget.Aggregate),
+    (Horizon: new EventHorizon("Semantic", 100, 1), Representation: RepresentationTarget.Semantic)
 };
+var horizons = rules.Select(rule => rule.Horizon).ToArray();
 var observerDistances = new[] { 0.5, 2.5, 8, 20, 45 };
 
 for (var index = 0; index < observerDistances.Length; index++)
 {
     var distance = observerDistances[index];
     var horizon = ObserverDistance.Select(distance, horizons);
-    var desired = Enum.Parse<RepresentationTarget>(horizon.Name);
+    var desired = rules.First(rule => ReferenceEquals(rule.Horizon, horizon)).Representation;
     var context = new RendererComputationContext($"renderer-proof-{desired}", desired);
     using var machine = new RendererComputationMachine(context);
     var selected = machine.Advance();
