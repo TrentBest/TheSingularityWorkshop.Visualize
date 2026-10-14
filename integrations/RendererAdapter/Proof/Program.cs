@@ -15,11 +15,11 @@ var catalog = new VisualizerResourceCatalog();
 var commands = new List<RenderDrawCommand>();
 var horizons = new[]
 {
-    new EventHorizon(nameof(RepresentationTarget.Semantic), 1, 10),
-    new EventHorizon(nameof(RepresentationTarget.Aggregate), 5, 8),
+    new EventHorizon(nameof(RepresentationTarget.Interactive), 1, 10),
+    new EventHorizon(nameof(RepresentationTarget.Near), 5, 8),
     new EventHorizon(nameof(RepresentationTarget.Distant), 15, 4),
-    new EventHorizon(nameof(RepresentationTarget.Near), 30, 2),
-    new EventHorizon(nameof(RepresentationTarget.Interactive), 100, 1)
+    new EventHorizon(nameof(RepresentationTarget.Aggregate), 30, 2),
+    new EventHorizon(nameof(RepresentationTarget.Semantic), 100, 1)
 };
 var observerDistances = new[] { 0.5, 2.5, 8, 20, 45 };
 
