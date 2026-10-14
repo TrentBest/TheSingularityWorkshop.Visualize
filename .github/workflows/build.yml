@@ -52,6 +52,8 @@ jobs:
           dotnet run --project GuiSource/samples/SvgGallery/SvgGallery.csproj
           --configuration Release
           -- ./GuiSource/artifacts/svg-adapter-gallery.svg
+      - name: Verify package gallery matches checked-in generated snapshot
+        run: cmp ./GuiSource/artifacts/svg-adapter-gallery.svg ./GuiSource/docs/assets/svg-adapter-gallery.svg
 
       - name: Pack GUI Core dependency
         run: dotnet pack GuiSource/src/Core/TheSingularityWorkshop.GUI.Core.csproj --configuration Release --no-restore --output ./artifacts/gui-svg-feed
