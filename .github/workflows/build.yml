@@ -209,6 +209,31 @@ jobs:
           --configuration Release
           -- ./samples/PrimitiveGallery/generated/08-gui-svg-perspective-mesh.svg
 
+      - name: Generate Renderer-selected frame through Visualize and GUI.SVG
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/RendererAdapter/Proof/RendererFrameToSvgProof.csproj
+          --configuration Release
+          -- ./artifacts/renderer-selected-frame.svg
+
+      - name: Verify and upload the Renderer-to-Visualize integration proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          proof="./artifacts/renderer-selected-frame.svg"
+          test -s "$proof"
+          grep -q '<path' "$proof"
+          grep -q 'Visualizer frame manifested through GUI.SVG' "$proof"
+          echo "Verified executable Renderer → Visualizer → GUI.SVG proof: $proof"
+
+      - name: Upload Renderer-to-Visualize frame proof
+        uses: actions/upload-artifact@v7
+        with:
+          name: renderer-to-visualize-frame-proof
+          path: ./artifacts/renderer-selected-frame.svg
+          if-no-files-found: error
+
       - name: Generate GUI.SVG feature gallery in the combined proof set
         run: >
           dotnet run --project integrations/GuiSvg/GuiSource/samples/SvgGallery/SvgGallery.csproj
