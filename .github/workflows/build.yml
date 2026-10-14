@@ -88,6 +88,8 @@ jobs:
           grep -q '<use' "$gallery"
           grep -q '<a ' "$gallery"
           grep -q '<animate' "$gallery"
+          grep -q '<mpath' "$gallery"
+          grep -q '<set' "$gallery"
           grep -q 'aria-label="GUI.SVG manifestation gallery"' "$gallery"
       - uses: actions/upload-artifact@v7
         with:
@@ -232,6 +234,8 @@ jobs:
           grep -q '<use' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
           grep -q '<a ' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
           grep -q '<animate' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<mpath' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<set' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
 
       - name: Upload Visualizer SVG proof images
         uses: actions/upload-artifact@v7
