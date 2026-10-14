@@ -6,12 +6,26 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>false</IsPackable>
+    <!-- Match the workspace convention: package references by default, sibling source only when explicitly requested. -->
+    <WorkshopUseRepositorySources Condition="'$(WorkshopUseRepositorySources)' == ''">false</WorkshopUseRepositorySources>
+    <WorkshopSourceRoot Condition="'$(WorkshopSourceRoot)' == ''">$(MSBuildThisFileDirectory)../../../</WorkshopSourceRoot>
+    <WorkshopRendererProjectPath Condition="'$(WorkshopUseRepositorySources)' == 'true' and Exists('$(WorkshopSourceRoot)/TheSingularityWorkshop.Renderer/TheSingularityWorkshop.Renderer.csproj')">$(WorkshopSourceRoot)/TheSingularityWorkshop.Renderer/TheSingularityWorkshop.Renderer.csproj</WorkshopRendererProjectPath>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="RendererSource/**/*.cs" />
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../TheSingularityWorkshop.Visualize.csproj" />
-    <ProjectReference Include="RendererSource/TheSingularityWorkshop.Renderer.csproj" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(WorkshopUseRepositorySources)' == 'true'">
+    <ProjectReference Include="$(WorkshopRendererProjectPath)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(WorkshopUseRepositorySources)' != 'true'">
+    <PackageReference Include="TheSingularityWorkshop.Renderer" Version="0.1.0-alpha.2" />
+  </ItemGroup>
+
+  <Target Name="ValidateWorkshopRendererSource" BeforeTargets="ResolveReferences"
+          Condition="'$(WorkshopUseRepositorySources)' == 'true' and !Exists('$(WorkshopSourceRoot)/TheSingularityWorkshop.Renderer/TheSingularityWorkshop.Renderer.csproj')">
+    <Error Text="WorkshopUseRepositorySources=true requires the sibling TheSingularityWorkshop.Renderer repository at '$(WorkshopSourceRoot)/TheSingularityWorkshop.Renderer/TheSingularityWorkshop.Renderer.csproj'." />
+  </Target>
 </Project>
