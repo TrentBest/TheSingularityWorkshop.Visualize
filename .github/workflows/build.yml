@@ -224,7 +224,7 @@ jobs:
           proof="./artifacts/renderer-selected-frame.svg"
           test -s "$proof"
           grep -q '<path' "$proof"
-          grep -q 'visualize-frame-' "$proof"
+          grep -q 'Visualizer frame manifested through GUI.SVG' "$proof"
           echo "Verified executable Renderer → Visualizer → GUI.SVG proof: $proof"
 
       - name: Generate GUI.SVG feature gallery in the combined proof set
