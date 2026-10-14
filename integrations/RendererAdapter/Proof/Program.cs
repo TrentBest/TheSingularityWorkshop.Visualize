@@ -13,11 +13,21 @@ var output = args.Length > 0
 
 var catalog = new VisualizerResourceCatalog();
 var commands = new List<RenderDrawCommand>();
-var targets = Enum.GetValues<RepresentationTarget>();
-
-for (var index = 0; index < targets.Length; index++)
+var horizons = new[]
 {
-    var desired = targets[index];
+    new EventHorizon(nameof(RepresentationTarget.Semantic), 1, 10),
+    new EventHorizon(nameof(RepresentationTarget.Aggregate), 5, 8),
+    new EventHorizon(nameof(RepresentationTarget.Distant), 15, 4),
+    new EventHorizon(nameof(RepresentationTarget.Near), 30, 2),
+    new EventHorizon(nameof(RepresentationTarget.Interactive), 100, 1)
+};
+var observerDistances = new[] { 0.5, 2.5, 8, 20, 45 };
+
+for (var index = 0; index < observerDistances.Length; index++)
+{
+    var distance = observerDistances[index];
+    var horizon = ObserverDistance.Select(distance, horizons);
+    var desired = Enum.Parse<RepresentationTarget>(horizon.Name);
     var context = new RendererComputationContext($"renderer-proof-{desired}", desired);
     using var machine = new RendererComputationMachine(context);
     var selected = machine.Advance();
@@ -47,7 +57,7 @@ for (var index = 0; index < targets.Length; index++)
         firstIndex: 0,
         baseVertex: 0,
         Enum.Parse<RendererRepresentation>(selected.ToString())));
-    Console.WriteLine($"{context.Name}: {selected} -> geometry {geometryId.Value}");
+    Console.WriteLine($"distance {distance,5:0.0} -> horizon {horizon.Name,-11} -> FSM {selected,-11} -> geometry {geometryId.Value}");
 }
 
 var renderFrame = new RenderFrame(
