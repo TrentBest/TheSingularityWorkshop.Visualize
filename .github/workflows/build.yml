@@ -209,6 +209,14 @@ jobs:
           --configuration Release
           -- ./samples/PrimitiveGallery/generated/08-gui-svg-perspective-mesh.svg
 
+      - name: Generate the same city scene through Visualizer for three material skins
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/GuiSvg/CityMassingProof/CityMassingProof.csproj
+          --configuration Release
+          -- ./samples/CityMassing/generated
+
       - name: Generate GUI.SVG feature gallery in the combined proof set
         run: >
           dotnet run --project integrations/GuiSvg/GuiSource/samples/SvgGallery/SvgGallery.csproj
@@ -251,12 +259,27 @@ jobs:
           grep -q '<animate' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
           grep -q '<mpath' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
           grep -q '<set' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          for skin in noir metro harmony; do
+            file="./samples/CityMassing/generated/singularity-city-$skin.svg"
+            test -s "$file" || { echo "Missing city skin output: $file"; exit 1; }
+            grep -q 'Singularity City /' "$file"
+            grep -q 'draw-' "$file"
+          done
+          grep -q 'fill="#050A12"' ./samples/CityMassing/generated/singularity-city-noir.svg
+          grep -q 'fill="#EDF4E9"' ./samples/CityMassing/generated/singularity-city-harmony.svg
 
       - name: Upload Visualizer SVG proof images
         uses: actions/upload-artifact@v7
         with:
           name: visualize-svg-primitive-proof
           path: ./samples/PrimitiveGallery/generated/*.svg
+          if-no-files-found: error
+
+      - name: Upload Visualizer-backed city massing skins
+        uses: actions/upload-artifact@v7
+        with:
+          name: visualize-city-massing-proof
+          path: ./samples/CityMassing/generated/*.svg
           if-no-files-found: error
 
       - name: Test with coverage
