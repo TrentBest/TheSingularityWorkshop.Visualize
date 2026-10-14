@@ -265,8 +265,8 @@ jobs:
             grep -q 'Singularity City /' "$file"
             grep -q 'draw-' "$file"
           done
-          grep -q 'fill="#050A12"' ./samples/CityMassing/generated/singularity-city-noir.svg
-          grep -q 'fill="#EDF4E9"' ./samples/CityMassing/generated/singularity-city-harmony.svg
+          grep -q 'fill="#050a12"' ./samples/CityMassing/generated/singularity-city-noir.svg
+          grep -q 'fill="#edf4e9"' ./samples/CityMassing/generated/singularity-city-harmony.svg
 
       - name: Upload Visualizer SVG proof images
         uses: actions/upload-artifact@v7
