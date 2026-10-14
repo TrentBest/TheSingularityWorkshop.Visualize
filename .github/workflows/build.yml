@@ -223,6 +223,11 @@ jobs:
           grep -q '<pattern' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
           grep -q '<marker' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
           grep -q '<filter' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feTurbulence' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDisplacementMap' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feComponentTransfer' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDiffuseLighting' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDistantLight' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
           grep -q '<use' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
           grep -q '<animate' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
 
