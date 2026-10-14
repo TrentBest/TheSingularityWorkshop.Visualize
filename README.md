@@ -160,6 +160,14 @@ The package is not ready for NuGet merely because its contracts compile. A selec
 
 ---
 
+---
+
 <p align="center">
-  <em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em>
+  <a href="https://github.com/TrentBest/WebPage" aria-label="Visit The Singularity Workshop">
+    <img src="https://raw.githubusercontent.com/TrentBest/WebPage/master/TheSingularityWorkshop/wwwroot/Images/TheSingularityWorkshopLivingAvatar.svg" alt="The Singularity Workshop living avatar — a digital vortex of information converging on its central eye" width="112" />
+  </a><br />
+  <strong>The Singularity Workshop</strong><br />
+  <em>Forging Software for the Singularity.</em><br />
+  <a href="https://github.com/TrentBest">GitHub</a> · <a href="https://github.com/TrentBest/WebPage">Workshop</a>
 </p>
+
