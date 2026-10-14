@@ -6,12 +6,29 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>false</IsPackable>
+    <!-- Package mode is the default. Source mode can use the shared workspace or the CI checkout path. -->
+    <WorkshopUseRepositorySources Condition="'$(WorkshopUseRepositorySources)' == ''">false</WorkshopUseRepositorySources>
+    <WorkshopSourceRoot Condition="'$(WorkshopSourceRoot)' == ''">$(MSBuildThisFileDirectory)../../../</WorkshopSourceRoot>
+    <WorkshopRendererProjectPath Condition="'$(WorkshopUseRepositorySources)' == 'true' and Exists('$(WorkshopSourceRoot)/TheSingularityWorkshop.Renderer/TheSingularityWorkshop.Renderer.csproj')">$(WorkshopSourceRoot)/TheSingularityWorkshop.Renderer/TheSingularityWorkshop.Renderer.csproj</WorkshopRendererProjectPath>
+    <WorkshopRendererProjectPath Condition="'$(WorkshopRendererProjectPath)' == '' and Exists('$(MSBuildThisFileDirectory)RendererSource/TheSingularityWorkshop.Renderer.csproj')">$(MSBuildThisFileDirectory)RendererSource/TheSingularityWorkshop.Renderer.csproj</WorkshopRendererProjectPath>
   </PropertyGroup>
+
   <ItemGroup>
+    <!-- Renderer is built through its own project; do not compile the nested checkout into this adapter. -->
     <Compile Remove="RendererSource/**/*.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="../../TheSingularityWorkshop.Visualize.csproj" />
-    <ProjectReference Include="RendererSource/TheSingularityWorkshop.Renderer.csproj" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(WorkshopRendererProjectPath)' != ''">
+    <ProjectReference Include="$(WorkshopRendererProjectPath)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(WorkshopRendererProjectPath)' == ''">
+    <PackageReference Include="TheSingularityWorkshop.Renderer" Version="0.1.0-alpha.2" />
+  </ItemGroup>
+
+  <Target Name="ValidateWorkshopRendererSource" BeforeTargets="ResolveReferences"
+          Condition="'$(WorkshopUseRepositorySources)' == 'true' and '$(WorkshopRendererProjectPath)' == ''">
+    <Error Text="WorkshopUseRepositorySources=true requires the sibling TheSingularityWorkshop.Renderer repository at '$(WorkshopSourceRoot)/TheSingularityWorkshop.Renderer/TheSingularityWorkshop.Renderer.csproj' or a CI checkout at '$(MSBuildThisFileDirectory)RendererSource/TheSingularityWorkshop.Renderer.csproj'." />
+  </Target>
 </Project>
