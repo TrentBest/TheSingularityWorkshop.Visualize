@@ -43,6 +43,8 @@ File.WriteAllText(_outputPath, svg);
 
 [Open the scene builder](integrations/GuiSvg/Proof/Program.cs) · [Open the GUI.SVG Visualizer backend](integrations/GuiSvg/GuiSvgVisualizerBackend.cs) · [Open the reusable SVG renderer](https://github.com/TrentBest/TheSingularityWorkshop.GUI/blob/development/src/SVG/SvgGuiRenderer.cs) · [Inspect the color-coded presentation](samples/PrimitiveGallery/api-consumption.html)
 
+The separate [Renderer → Visualize → GUI.SVG proof](integrations/RendererAdapter/Proof/README.md) connects actual Renderer distance/horizon selection and FSM-backed representation state to a `RenderFrame`, the adapter, `Visualizer`, and GUI.SVG. It is a CPU-side integration proof—not the complete bucket/scheduling pipeline or a GPU backend. Its generated SVG is available from the integration-proof PR's CI artifact.
+
 This is the **first integration proof**, not yet the visual evidence for the full rendering ambition. GUI.SVG is the 2D manifestation path alongside Visualize's future 3D presentation backend. This proof uses a deliberately simple XY projection; it is not perspective-correct, depth-tested production rendering, and it should not be presented as such.
 
 ### First perspective-projected 3D proof—and the boundary stays explicit
