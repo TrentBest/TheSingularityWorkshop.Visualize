@@ -85,6 +85,8 @@ jobs:
           grep -q '<feComponentTransfer' "$gallery"
           grep -q '<feDiffuseLighting' "$gallery"
           grep -q '<feDistantLight' "$gallery"
+          grep -q 'filter="url(#surface-relief)"' "$gallery"
+          grep -q 'filter="url(#surface-lighting)"' "$gallery"
           grep -q '<use' "$gallery"
           grep -q '<a ' "$gallery"
           grep -q '<animate' "$gallery"
@@ -231,6 +233,8 @@ jobs:
           grep -q '<feComponentTransfer' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
           grep -q '<feDiffuseLighting' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
           grep -q '<feDistantLight' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q 'filter="url(#surface-relief)"' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q 'filter="url(#surface-lighting)"' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
           grep -q '<use' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
           grep -q '<a ' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
           grep -q '<animate' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
