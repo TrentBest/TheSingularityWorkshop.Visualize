@@ -19,6 +19,10 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
     private readonly string _outputPath;
     private readonly bool _animateConnectedPoints;
     private readonly bool _projectWithCamera;
+    private readonly string _backgroundColor;
+    private readonly string _gridColor;
+    private readonly string _sceneLabel;
+    private readonly bool _drawGrid;
     private readonly SvgGuiRenderer _renderer = new();
     private long _frame;
 
@@ -26,12 +30,30 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
     /// <param name="outputPath">Destination path for the emitted SVG document.</param>
     /// <param name="animateConnectedPoints">Whether to add the optional SVG-only route animation.</param>
     /// <param name="projectWithCamera">Whether to use the frame view and projection matrices for CPU-side perspective projection.</param>
-    public GuiSvgVisualizerBackend(string outputPath, bool animateConnectedPoints = false, bool projectWithCamera = false)
+    /// <param name="backgroundColor">SVG canvas background colour.</param>
+    /// <param name="gridColor">SVG guide-grid colour.</param>
+    /// <param name="sceneLabel">Accessible scene label written into the GUI scene tree.</param>
+    /// <param name="drawGrid">Whether to draw the backend guide grid.</param>
+    public GuiSvgVisualizerBackend(
+        string outputPath,
+        bool animateConnectedPoints = false,
+        bool projectWithCamera = false,
+        string backgroundColor = "#0b1725",
+        string gridColor = "#203447",
+        string sceneLabel = "Visualizer frame manifested through GUI.SVG",
+        bool drawGrid = true)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(backgroundColor);
+        ArgumentException.ThrowIfNullOrWhiteSpace(gridColor);
+        ArgumentException.ThrowIfNullOrWhiteSpace(sceneLabel);
         _outputPath = outputPath;
         _animateConnectedPoints = animateConnectedPoints;
         _projectWithCamera = projectWithCamera;
+        _backgroundColor = backgroundColor;
+        _gridColor = gridColor;
+        _sceneLabel = sceneLabel;
+        _drawGrid = drawGrid;
     }
 
     /// <summary>Describes the SVG proof backend's presentation capabilities.</summary>
@@ -50,21 +72,24 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
 
         var stopwatch = Stopwatch.StartNew();
         var scene = GuiBuilder.Create("svg-scene", $"visualize-frame-{_frame + 1}")
-            .Text("Visualizer frame manifested through GUI.SVG");
+            .Text(_sceneLabel);
         scene.Child("svg-rect", "background", background => background
             .Property("x", "0").Property("y", "0")
             .Property("width", "100").Property("height", "56.25")
-            .Property("fill", "#0b1725"));
-        for (var x = 10; x < 100; x += 10)
-            scene.Child("svg-path", $"grid-x-{x}", line => line
-                .Property("d", $"M{x} 0V56.25").Property("fill", "none")
-                .Property("stroke", "#203447").Property("stroke-width", "0.2"));
-        for (var y = 5.625; y < 56.25; y += 5.625)
+            .Property("fill", _backgroundColor));
+        if (_drawGrid)
         {
-            var gridY = y.ToString(CultureInfo.InvariantCulture);
-            scene.Child("svg-path", $"grid-y-{gridY}", line => line
-                .Property("d", $"M0 {gridY}H100").Property("fill", "none")
-                .Property("stroke", "#203447").Property("stroke-width", "0.2"));
+            for (var x = 10; x < 100; x += 10)
+                scene.Child("svg-path", $"grid-x-{x}", line => line
+                    .Property("d", $"M{x} 0V56.25").Property("fill", "none")
+                    .Property("stroke", _gridColor).Property("stroke-width", "0.2"));
+            for (var y = 5.625; y < 56.25; y += 5.625)
+            {
+                var gridY = y.ToString(CultureInfo.InvariantCulture);
+                scene.Child("svg-path", $"grid-y-{gridY}", line => line
+                    .Property("d", $"M0 {gridY}H100").Property("fill", "none")
+                    .Property("stroke", _gridColor).Property("stroke-width", "0.2"));
+            }
         }
 
         var drawIndex = 0;
