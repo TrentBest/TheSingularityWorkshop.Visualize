@@ -45,9 +45,11 @@ File.WriteAllText(_outputPath, svg);
 
 This is the **first integration proof**, not yet the visual evidence for the full rendering ambition. GUI.SVG is the 2D manifestation path alongside Visualize's future 3D presentation backend. This proof uses a deliberately simple XY projection; it is not perspective-correct, depth-tested production rendering, and it should not be presented as such.
 
-### The next proof must be visibly 3D—and trace back to the code
+### First perspective-projected 3D proof—and the boundary stays explicit
 
-The next showcase milestone is a real 3D mesh submitted through Visualizer's C# geometry/material/frame contracts, with camera/view/projection transforms and the Renderer-to-Visualize adapter path made inspectable. The image must be generated from that path, not redrawn in browser JavaScript. The code beneath it will identify the exact handoff points with the same color-coded convention used above. Until that milestone passes its build and output checks, the current SVG is evidence of **API interoperability**, not evidence of a finished 3D renderer. That distinction protects the credibility we are trying to earn.
+The C# proof now submits an indexed octahedron through Visualizer's geometry, material, draw-command, and frame contracts, then uses the frame's world, view, and perspective-projection matrices to produce **08 · Perspective-projected 3D mesh**. The same CI proof set emits **09 · GUI.SVG feature gallery**, including advanced filter and lighting definitions. Both outputs are generated from the C# code path, not redrawn in browser JavaScript; CI uploads them with the other generated SVG proofs.
+
+This is a perspective-projection proof, not a finished 3D renderer: the sample uses a convex opaque mesh and painter ordering, while the GUI.SVG backend remains a CPU-side manifestation adapter without GPU depth testing, general clipping, or production lighting. Keeping that boundary visible is part of the proof, not a disclaimer to hide.
 
 
 Development CI checks out the GUI repository's `development` branch and tests this integration against the actual GUI.SVG project. The package project declares `TheSingularityWorkshop.GUI.SVG` version `0.1.0-alpha.1` and is packed by the GUI workflow; NuGet Trusted Publishing remains hard-gated off. The package is **not published**, and nothing has been deployed.
