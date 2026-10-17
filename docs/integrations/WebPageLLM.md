@@ -119,3 +119,21 @@ A rendered SVG is valuable evidence of the GUI.SVG path, but is not proof of GPU
 - **Build / CI constraints:**
 - **Contract gaps / requested changes:**
 - **Questions for Renderer / Visualize:**
+
+
+## Additional scene candidate: impossible-scale monarch migration
+
+A second proving ground is proposed alongside Singularity City: an immersive natural environment during a monarch butterfly migration, at a deliberately impossible population far beyond what nature could sustain. The intent is to let the observer experience a phenomenon larger than people ordinarily witness and better understand something lost to us. This is an artistic/technical stress test inspired by migration, not a claim of ecological realism at that density.
+
+This scene should use the same world/observer/rendering contracts, not introduce a separate rendering engine. It stresses moving populations, overlapping trajectories, depth, occlusion, density, temporal coherence, and attention-driven detail in ways static city massing cannot.
+
+**WebPageLLM coordination questions for this scene:**
+- What current WebPage host/camera/input architecture can place an observer inside a natural environment and record reproducible observer traces?
+- Is there an existing world/scene composition model suitable for terrain, vegetation, and deterministic migration cohorts, or should the first proof live as an isolated Visualize fixture until a host contract is agreed?
+- How should an experience select between overview, walking-through, and attention-focused observation while preserving the same migration state?
+- What is the narrowest host-facing contract for observer position/orientation, intent, and viewport requirements, without making Renderer own experience UI or world content?
+- Can the host eventually supply attention/interaction signals (for example, tracking one butterfly or looking toward a sunbeam) as observer inputs, rather than Renderer guessing what the user intends?
+
+The initial engineering proof should start with deterministic terrain and a density field, then add a CPU reference with a manageable set of individual butterflies plus a much larger cohort representation. It must measure represented population separately from actual individual evaluations, cohort updates, generated geometry/instances, reuse/skips, allocations, and elapsed time. A larger count alone is not proof of performance, and aggregate representations must preserve visible density, direction, motion, and identity through observer changes.
+
+Renderer owns representation and computation decisions; Visualize manifests the selected frame; WebPage owns the experience, camera, navigation, and interaction; the natural-world content owner owns terrain and migration state. Physics remains separately owned and should be coordinated by contract if needed. This is proposed work, not an implemented feature.
