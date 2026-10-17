@@ -12,6 +12,7 @@ public interface IGpuDevice : IAsyncDisposable
     GpuDeviceInfo Info { get; }
 
     /// <summary>Creates a buffer using an explicit size and usage declaration.</summary>
+    /// <remarks>Implementations should call <see cref="GpuBufferDescriptor.Validate"/> before native allocation.</remarks>
     ValueTask<IGpuBuffer> CreateBufferAsync(
         GpuBufferDescriptor descriptor,
         CancellationToken cancellationToken = default);
@@ -19,6 +20,7 @@ public interface IGpuDevice : IAsyncDisposable
     /// <summary>
     /// Uploads one contiguous memory region into a GPU buffer.
     /// Implementations must reject disposed buffers and out-of-range writes.
+    /// Use <see cref="GpuBufferDescriptor.ValidateUploadRange"/> for overflow-safe range validation.
     /// </summary>
     ValueTask UploadAsync(
         IGpuBuffer destination,
