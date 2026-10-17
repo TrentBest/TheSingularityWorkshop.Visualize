@@ -55,9 +55,31 @@ public sealed class VisualizerBaseVertexTests
         return catalog;
     }
 
+    [Fact]
+    public async Task Disposal_is_idempotent_and_prevents_future_submission()
+    {
+        var resources = CreateResources(vertexCount: 3);
+        var backend = new RecordingBackend();
+        var visualizer = new Visualizer(backend, resources);
+        var command = new VisualizerDrawCommand(
+            new VisualizerResourceId(1), new VisualizerResourceId(2), Matrix4x4.Identity,
+            indexCount: 3, firstIndex: 0, baseVertex: 0, VisualizerRepresentation.Near);
+        var frame = new VisualizerFrame(
+            new VisualizerView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity), [command]);
+
+        await visualizer.DisposeAsync();
+        await visualizer.DisposeAsync();
+
+        Assert.Equal(1, backend.DisposeCount);
+        await Assert.ThrowsAsync<ObjectDisposedException>(
+            async () => await visualizer.RenderAsync(frame));
+        Assert.False(backend.WasCalled);
+    }
+
     private sealed class RecordingBackend : IVisualizerBackend
     {
         public bool WasCalled { get; private set; }
+        public int DisposeCount { get; private set; }
         public VisualizerCapabilities Capabilities { get; } = new("Test backend", "Test", false, false, false, false);
 
         public ValueTask<VisualizerFrameResult> RenderAsync(
@@ -67,7 +89,11 @@ public sealed class VisualizerBaseVertexTests
             return ValueTask.FromResult(new VisualizerFrameResult(1, frame.Commands.Count));
         }
 
-        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+        public ValueTask DisposeAsync()
+        {
+            DisposeCount++;
+            return ValueTask.CompletedTask;
+        }
     }
 
     [Fact]
