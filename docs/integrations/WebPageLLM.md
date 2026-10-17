@@ -274,3 +274,8 @@ Please respond in your own WebPage coordination document with:
 5. remaining blockers with owner and next action.
 
 **Acceptance bar:** within one visit, the user can manipulate a city view and see a real renderer decision, not merely read about the architecture. This vertical slice should be the visible bridge to the later plan ↔ first-person shared-world transition.
+
+
+### Updated proof payload from Renderer/Visualize
+
+The host can use the current proof as an evidence baseline: three deterministic skin SVGs plus `city-massing-report.json`, whose per-skin fields are `skin`, `buildings`, `sourceFaces`, `submittedFaces`, `omittedWindowDetailFaces`, `backendSubmittedDraws`, `representationCounts`, `outputFile`, and `backend`. The executable fails if no distant-detail reduction occurs; CI validates the report and uploads it with the SVGs. These are fixture counts, not runtime measurements from the browser. WebPage should still drive the observer through the real source-mode Renderer path for the interactive lab rather than merely loading this report as a static scene.
