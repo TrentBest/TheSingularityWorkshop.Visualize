@@ -37,6 +37,6 @@ The canonical benchmark remains the array-first workload in the separate workloa
 
 ## Next implementation step
 
-Build a small **candidate audit and surface-lifecycle proof plan** first. Confirm the intended desktop and browser support matrix, WPF surface ownership/lifecycle constraints, package and native-runtime contents, shader tooling, debugging support, and CI versus hardware-only evidence. Then select one proof dependency in an isolated adapter/sample project; keep API-specific types out of Visualize core and the backend-neutral GPU contracts.
+Build a small **candidate audit and surface-lifecycle proof plan** first. The lifecycle and evidence checklist is now recorded in [GPU Surface Lifecycle Plan](../GPU_SURFACE_LIFECYCLE_PLAN.md). Confirm the intended desktop and browser support matrix, WPF surface ownership/lifecycle constraints, package and native-runtime contents, shader tooling, debugging support, and CI versus hardware-only evidence. Then select one proof dependency in an isolated adapter/sample project; keep API-specific types out of Visualize core and the backend-neutral GPU contracts.
 
 No dependency, API commitment, package publication, or merge is authorized by this ADR.
