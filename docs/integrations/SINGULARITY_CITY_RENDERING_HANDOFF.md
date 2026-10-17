@@ -10,6 +10,21 @@ The goal is not one enormous static picture. It is the same world represented at
 
 > **One world, many observer-relative representations.**
 
+
+## Observer choice and the hidden laboratory switch
+
+The user should be able to choose how to observe the same city. The ordinary experience starts with the useful top-down plan/map view; a later street-level/FPS view must be a different observer and presentation of the same spatial world, not a separate game level or a replacement city dataset.
+
+A deliberately hidden **Magic switch** in the laboratory is a discovery for curious visitors. It should be a physical, interactive 3D switch in the lab environment: flipping it enters first-person observation; flipping it again returns to the top-down plan. Do not expose it as a prominent global mode button or spoil the discovery in ordinary navigation. The host must preserve world identity and relevant world state across the transition, with a safe fallback if FPS content is not yet available.
+
+Ownership:
+- WebPage owns the secret's placement/discovery, interaction, mode transition, camera controls, and return path.
+- The world/experience model owns the lab and switch identity/placement.
+- Renderer supplies observer-dependent representation and work decisions for the new observer; it must not assume that switching camera mode means changing worlds.
+- Visualize renders the frame supplied to it. The switch itself is not a substitute for a real FPS-capable scene/backend.
+
+The initial honest milestone is the mode-transition contract and a shared scene visible in both modes. Realistic FPS presentation is an incremental target: geometry and scale first, then materials/lighting, street furniture/vehicles, and populated activity as authored data and backend capability permit. Label any temporary proxy scene as a prototype; do not call it realistic until inspected and measured.
+
 ## Ownership boundaries
 
 | Concern | Owner | Contract |
