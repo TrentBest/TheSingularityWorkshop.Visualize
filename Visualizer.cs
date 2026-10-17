@@ -46,6 +46,17 @@ public sealed class Visualizer : IAsyncDisposable
                 throw new InvalidOperationException($"Frame command {i} references missing geometry resource {command.Geometry.Value}.");
             if ((long)command.FirstIndex + command.IndexCount > geometry.Indices.Count)
                 throw new InvalidOperationException($"Frame command {i} requests indices outside geometry resource {command.Geometry.Value}.");
+
+            // BaseVertex is a vertex offset, not an offset into the index buffer.
+            // Validate the effective vertex indices before handing the frame to any backend.
+            for (var index = command.FirstIndex; index < command.FirstIndex + command.IndexCount; index++)
+            {
+                var vertexIndex = (long)geometry.Indices[index] + command.BaseVertex;
+                if (vertexIndex < 0 || vertexIndex >= geometry.Vertices.Count)
+                    throw new InvalidOperationException(
+                        $"Frame command {i} resolves index {index} to vertex {vertexIndex}, outside geometry resource {command.Geometry.Value}.");
+            }
+
             if (!_resources.TryGetMaterial(command.Material, out var material) || material is null)
                 throw new InvalidOperationException($"Frame command {i} references missing material resource {command.Material.Value}.");
 
