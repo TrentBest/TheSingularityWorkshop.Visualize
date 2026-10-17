@@ -41,19 +41,28 @@ foreach (var skin in skins)
     ]);
 
     var observer = new Vector3(0, 0, 0.04f);
-    var renderCommands = scene.Faces.Select(face =>
+    var decisions = scene.Faces.Select(face =>
     {
         var center = FaceCenter(scene, face);
-        var decision = policy.Select(Vector3.Distance(observer, center));
-        return new RenderDrawCommand(
-            new RenderResourceId(geometryId.Value),
-            new RenderResourceId(materialIds[face.MaterialSlot].Value),
-            Matrix4x4.Identity,
-            face.IndexCount,
-            face.FirstIndex,
-            0,
-            ToRendererRepresentation(decision.Representation));
+        var target = policy.Select(Vector3.Distance(observer, center)).Representation;
+        return (Face: face, Target: target);
     }).ToArray();
+
+    // A distant city should preserve its silhouette while dropping window-level detail.
+    // This is real command-level work reduction (fewer submitted face commands), not geometry
+    // buffer compaction: the shared source vertex/index buffers remain unchanged.
+    var submittedFaces = decisions
+        .Where(item => ShouldSubmitFace(item.Face, item.Target))
+        .ToArray();
+    var renderCommands = submittedFaces.Select(item => new RenderDrawCommand(
+        new RenderResourceId(geometryId.Value),
+        new RenderResourceId(materialIds[item.Face.MaterialSlot].Value),
+        Matrix4x4.Identity,
+        item.Face.IndexCount,
+        item.Face.FirstIndex,
+        0,
+        ToRendererRepresentation(item.Target)))
+        .ToArray();
 
     var renderFrame = new RenderFrame(
         new RenderView(observer, Matrix4x4.Identity, Matrix4x4.Identity),
@@ -73,8 +82,16 @@ foreach (var skin in skins)
     var counts = renderCommands.GroupBy(command => command.Representation)
         .OrderBy(group => group.Key)
         .Select(group => $"{group.Key}={group.Count()}");
-    Console.WriteLine($"{skin.Name}: {scene.BuildingCount} buildings, {result.SubmittedDrawCount} draw commands; {string.Join(", ", counts)} -> {output}");
+    var omittedWindowFaces = decisions.Count(item =>
+        item.Face.MaterialSlot == "window" && !ShouldSubmitFace(item.Face, item.Target));
+    Console.WriteLine($"{skin.Name}: {scene.BuildingCount} buildings; source faces={scene.Faces.Count}, " +
+        $"submitted faces={submittedFaces.Length}, omitted window-detail faces={omittedWindowFaces}, " +
+        $"backend submitted draws={result.SubmittedDrawCount}; {string.Join(", ", counts)} -> {output}");
 }
+
+static bool ShouldSubmitFace(CityFace face, RepresentationTarget target) =>
+    face.MaterialSlot != "window" ||
+    target is RepresentationTarget.Interactive or RepresentationTarget.Near;
 
 static Vector3 FaceCenter(CityScene scene, CityFace face)
 {
