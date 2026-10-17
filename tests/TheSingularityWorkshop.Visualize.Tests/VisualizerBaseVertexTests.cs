@@ -76,6 +76,57 @@ public sealed class VisualizerBaseVertexTests
         Assert.False(backend.WasCalled);
     }
 
+    [Fact]
+    public async Task Disposal_waits_for_an_in_flight_submission_and_is_shared_by_callers()
+    {
+        var resources = CreateResources(vertexCount: 3);
+        var backend = new BlockingBackend();
+        var visualizer = new Visualizer(backend, resources);
+        var command = new VisualizerDrawCommand(
+            new VisualizerResourceId(1), new VisualizerResourceId(2), Matrix4x4.Identity,
+            indexCount: 3, firstIndex: 0, baseVertex: 0, VisualizerRepresentation.Near);
+        var frame = new VisualizerFrame(
+            new VisualizerView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity), [command]);
+
+        var renderTask = visualizer.RenderAsync(frame).AsTask();
+        await backend.RenderStarted.Task;
+        var disposeTask = visualizer.DisposeAsync().AsTask();
+        var secondDisposeTask = visualizer.DisposeAsync().AsTask();
+
+        Assert.Equal(0, backend.DisposeCount);
+        backend.AllowRenderToFinish.TrySetResult(true);
+        await renderTask;
+        await Task.WhenAll(disposeTask, secondDisposeTask);
+
+        Assert.Equal(1, backend.DisposeCount);
+        await Assert.ThrowsAsync<ObjectDisposedException>(
+            async () => await visualizer.RenderAsync(frame));
+    }
+
+    private sealed class BlockingBackend : IVisualizerBackend
+    {
+        public TaskCompletionSource<bool> RenderStarted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource<bool> AllowRenderToFinish { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public int DisposeCount { get; private set; }
+        public VisualizerCapabilities Capabilities { get; } = new("Blocking test backend", "Test", false, false, false, false);
+
+        public async ValueTask<VisualizerFrameResult> RenderAsync(
+            VisualizerFrame frame, IVisualizerResourceProvider resources, CancellationToken cancellationToken = default)
+        {
+            RenderStarted.TrySetResult(true);
+            await AllowRenderToFinish.Task.WaitAsync(cancellationToken);
+            return new VisualizerFrameResult(1, frame.Commands.Count);
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            DisposeCount++;
+            return ValueTask.CompletedTask;
+        }
+    }
+
     private sealed class RecordingBackend : IVisualizerBackend
     {
         public bool WasCalled { get; private set; }
