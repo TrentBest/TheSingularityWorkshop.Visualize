@@ -23,6 +23,7 @@
     <Compile Remove="tests/**/*.cs" />
     <Compile Remove="samples/**/*.cs" />
     <Compile Remove="integrations/**/*.cs" />
+    <Compile Remove="src/GPU/**/*.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="" />
