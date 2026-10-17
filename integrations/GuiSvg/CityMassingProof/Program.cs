@@ -8,6 +8,7 @@ var outputDirectory = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.GetFull
 Directory.CreateDirectory(outputDirectory);
 
 var scene = CityMassing.Build();
+var proofReport = new List<object>();
 var skins = new[]
 {
     new CitySkin("noir", "#050a12", "#153447", "#00eaff", "#ff3fd2", "#d7eaff", "#9beeff", "#7d9cab"),
@@ -54,6 +55,13 @@ foreach (var skin in skins)
     var submittedFaces = decisions
         .Where(item => ShouldSubmitFace(item.Face, item.Target))
         .ToArray();
+    var omittedWindowFaces = decisions.Count(item =>
+        item.Face.MaterialSlot == "window" && !ShouldSubmitFace(item.Face, item.Target));
+    if (omittedWindowFaces == 0 || submittedFaces.Length >= scene.Faces.Count)
+        throw new InvalidOperationException(
+            $"The {skin.Name} proof failed to reduce distant detail: source={scene.Faces.Count}, " +
+            $"submitted={submittedFaces.Length}, omittedWindowFaces={omittedWindowFaces}.");
+
     var renderCommands = submittedFaces.Select(item => new RenderDrawCommand(
         new RenderResourceId(geometryId.Value),
         new RenderResourceId(materialIds[item.Face.MaterialSlot].Value),
@@ -82,12 +90,30 @@ foreach (var skin in skins)
     var counts = renderCommands.GroupBy(command => command.Representation)
         .OrderBy(group => group.Key)
         .Select(group => $"{group.Key}={group.Count()}");
-    var omittedWindowFaces = decisions.Count(item =>
-        item.Face.MaterialSlot == "window" && !ShouldSubmitFace(item.Face, item.Target));
+    var representationCounts = renderCommands
+        .GroupBy(command => command.Representation)
+        .ToDictionary(group => group.Key.ToString(), group => group.Count());
+    proofReport.Add(new
+    {
+        skin = skin.Name,
+        buildings = scene.BuildingCount,
+        sourceFaces = scene.Faces.Count,
+        submittedFaces = submittedFaces.Length,
+        omittedWindowDetailFaces = omittedWindowFaces,
+        backendSubmittedDraws = result.SubmittedDrawCount,
+        representationCounts,
+        outputFile = Path.GetFileName(output),
+        backend = "CPU/SVG"
+    });
     Console.WriteLine($"{skin.Name}: {scene.BuildingCount} buildings; source faces={scene.Faces.Count}, " +
         $"submitted faces={submittedFaces.Length}, omitted window-detail faces={omittedWindowFaces}, " +
         $"backend submitted draws={result.SubmittedDrawCount}; {string.Join(", ", counts)} -> {output}");
 }
+
+var reportPath = Path.Combine(outputDirectory, "city-massing-report.json");
+await File.WriteAllTextAsync(reportPath, System.Text.Json.JsonSerializer.Serialize(
+    proofReport, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+Console.WriteLine($"Machine-readable proof report -> {reportPath}");
 
 static bool ShouldSubmitFace(CityFace face, RepresentationTarget target) =>
     face.MaterialSlot != "window" ||
