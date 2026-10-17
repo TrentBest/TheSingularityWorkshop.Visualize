@@ -1,0 +1,108 @@
+# WebPageLLM — Renderer / Visualize Coordination Handoff
+
+**Audience:** the LLM working on `TheSingularityWorkshop.WebPage`  
+**From:** Renderer / Visualize workstream  
+**Purpose:** exchange the concrete integration facts and questions needed to make Singularity City one coherent, observer-relative world rather than separate demos.
+
+This is a living handoff. Please append answers under **WebPageLLM response** or update the relevant sections as implementation decisions become clear. The repository owner will relay this document between workstreams.
+
+## The shared objective
+
+Build Singularity City from an inspectable plan / map-like view toward district and aerial views, street-level experiences, building and venue plans, vehicles, and interiors. The same places and objects must retain stable identity as the observer moves between representations.
+
+The north star is not a collection of disconnected illustrations. It is one world with many observer-relative representations, whose detail and computational cost change with the observer and the experience.
+
+## Current ownership boundaries
+
+- **WebPage:** host experience, camera/navigation input, user interaction, selection, overlays, and experience-level orchestration. It should consume rendering capabilities rather than duplicate Renderer policy or Visualize backends.
+- **World / experience content:** authoritative city facts and authored content—stable IDs, placements, coordinate frame, units, topology, routes, and source revisions. A rendered mesh is not the city database.
+- **Renderer:** observer-relative representation decisions, event horizons, freshness / invalidation policy, bucket reuse, and platform-neutral render-frame assembly. It should not own city-authoring rules or the WebPage UI.
+- **Visualize:** platform-neutral visualization contracts and backend manifestation (currently including GUI.SVG integration). It should not become a duplicate world simulation or own WebPage navigation.
+- **FSM_API / domain owners:** state and domain semantics at their appropriate layer. Physics and other domain packages remain independently owned; coordinate contracts rather than editing their repositories from this workstream.
+- **FSM_COS:** composition boundary for capabilities, not an application loop.
+
+## What is already evidenced in the repositories
+
+- Visualize has a deterministic city-massing proof that sends a shared geometry / material catalog and draw commands through Visualize to GUI.SVG. Its current commands use the `Distant` representation; this is a useful visual/backend proof, **not yet proof of Renderer-driven city LOD**.
+- Renderer has platform-neutral view/frame/draw-command contracts, observer representation policy, event horizons, and a coordinator that combines representation state and horizon freshness. The host still has responsibility for preparing the representation and completing refreshes after output is ready.
+- A small Renderer-to-Visualize adapter exists, but the current city-massing proof project does not yet demonstrate the complete city scene passing through actual Renderer policy and then through Visualize.
+- The existing proof is not, by itself, evidence of GPU rendering, persistent live city state, full street view, or city-scale performance.
+
+Reference:
+- [Visualize city handoff](SINGULARITY_CITY_RENDERING_HANDOFF.md)
+- [Renderer implementation roadmap](https://github.com/TrentBest/TheSingularityWorkshop.Renderer/blob/development/docs/IMPLEMENTATION_ROADMAP.md)
+
+## Decisions we need from WebPageLLM
+
+Please answer with **current code evidence** (paths, types, and relevant behavior) where possible. Mark proposals as proposals, not implemented facts.
+
+1. **Current host entry point**
+   - What is the intended WebPage experience / microbundle entry point for Singularity City?
+   - Which component currently owns the camera/observer position, view/projection data, zoom, and navigation state?
+   - Which existing route, panel, or experience should host the first end-to-end city proof?
+
+2. **World and identity contract**
+   - Does WebPage already have a city/world model with stable IDs for districts, roads, buildings, lots, entrances, transit, vehicles, and Digitens?
+   - What coordinate frame and units does it use? What is the origin / axis convention?
+   - How are scene changes and source revisions represented?
+   - If this model does not exist yet, what is the smallest truthful contract we can agree on without building a second city database in Renderer or Visualize?
+
+3. **Existing spatial/camera work**
+   - Which current docs and code implement the zoomable-world, plan/map view, spatial index, camera transforms, and navigation?
+   - What is implemented and tested versus design-only?
+   - Are there existing controls or interactions the Renderer/Visualize proof must preserve?
+
+4. **Renderer → Visualize integration**
+   - Can the host provide observer position plus a deterministic list of city candidates with stable IDs, world bounds/centers, semantic roles, and a source revision?
+   - Can the host accept a platform-neutral `RenderFrame` and send it through the existing Renderer-to-Visualize adapter?
+   - If not, what exact API gap or dependency boundary blocks this?
+   - Which project should own the integration proof so the WebPage app remains an experience host, not a duplicate rendering engine?
+
+5. **First vertical slice**
+   - Recommend one small, visible slice: for example, city plan with roads and building footprints; observer movement changes representation decisions; stable IDs survive frame rebuilds; GUI.SVG output is a CI artifact.
+   - What existing WebPage experience can host or link to this proof?
+   - What is the smallest user-visible interaction that should be included now, and what must remain explicitly out of scope?
+
+6. **Build and CI**
+   - What commands/workflows currently build and test the relevant WebPage experience?
+   - Can the integration produce a deterministic, inspectable artifact without requiring secrets, network services, or publishing a package?
+   - Which CI constraints or project conventions must the Renderer/Visualize workstream respect?
+
+7. **Coordination**
+   - Please identify any existing WebPage work that would conflict with this proposed boundary or duplicate an existing capability.
+   - If WebPage needs a Renderer or Visualize API change, state the exact contract and use case rather than asking for an app-specific special case.
+
+## Proposed first acceptance gate
+
+A first vertical slice is complete only when all of the following are demonstrated:
+
+- A deterministic city candidate source with stable identity and explicit coordinate frame / units.
+- WebPage supplies an observer state through an agreed host boundary.
+- Renderer makes actual observer-relative representation / refresh decisions; the proof does not hard-code every city command as `Distant`.
+- The resulting platform-neutral frame passes through the existing Visualize path.
+- A deterministic artifact and tests make the behavior inspectable in CI.
+- The documentation clearly labels what is implemented, simulated, and still future work.
+
+A rendered SVG is valuable evidence of the GUI.SVG path, but is not proof of GPU execution or a fully persistent living city.
+
+## Constraints
+
+- Sith policy: keep only `master` and `development`; do not create another long-lived branch.
+- Do not publish packages, deploy, or merge to `master` without the owner's explicit approval.
+- This workstream does not edit the Physics repository. Coordinate any physics-facing needs with its owner.
+- Prefer one composed WebPage experience / manifest and reusable microbundles over standalone demo pages that duplicate the host.
+- Keep ownership clear: WebPage owns the experience; Renderer owns observer-relative decisions; Visualize owns visualization/backend manifestation.
+
+## WebPageLLM response
+
+*Please add your findings and answers here, preferably with repository paths, API names, and links to relevant documentation or commits.*
+
+- **Host entry point:**
+- **World model / stable identity:**
+- **Coordinate frame and units:**
+- **Camera / observer state:**
+- **Current implementation evidence:**
+- **Best first vertical slice:**
+- **Build / CI constraints:**
+- **Contract gaps / requested changes:**
+- **Questions for Renderer / Visualize:**
