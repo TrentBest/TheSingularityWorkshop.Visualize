@@ -73,6 +73,19 @@ The canonical array-first workload and its manifest live in the separate workloa
 
 Use GPU timestamp queries where the API and device support them. If unavailable, mark GPU execution timing unavailable; do not substitute queue-submit duration. Keep CPU submission duration, upload duration, GPU execution, synchronization wait, presentation interval, and end-to-end frame time as separate measurements. Report sample count and p50/p95/p99 rather than only a best frame.
 
+## Candidate audit snapshot (2026-10-17)
+
+This is a package-metadata audit, not a runtime compatibility test.
+
+| Candidate | Verified package fact | Implication for our host |
+| --- | --- | --- |
+| Vulkan via Silk.NET.Vulkan | NuGet lists stable 2.23.0, targeting .NET Standard 2.0/2.1 and .NET 5+ compatible frameworks; package depends on Silk.NET.Core 2.23.0. [NuGet package](https://www.nuget.org/packages/Silk.NET.Vulkan/2.23.0) | Binding framework compatibility is plausible for AnyApp's .NET 8 target, but does not prove WPF surface creation, native loader availability, or swap-chain correctness. A Windows Vulkan-capable device/driver and a WPF-compatible surface extension still need proof. |
+| Native WebGPU via Silk.NET.WebGPU + Silk.NET.WebGPU.Native.WGPU | Both packages publish stable 2.23.0; the binding package and native WGPU package are separate. [Binding](https://www.nuget.org/packages/Silk.NET.WebGPU/2.23.0), [native WGPU package](https://www.nuget.org/packages/Silk.NET.WebGPU.Native.WGPU/2.23.0) | Treat binding and native runtime as a versioned pair. Inspect the downloaded package's actual RID assets, ABI expectations, licenses/notices, and surface API before choosing it. NuGet metadata alone does not establish which native binaries ship or whether the exact WPF surface route works. |
+| Browser WebGPU | Browser API is hosted by the browser and its canvas; it is not the native Silk.NET.WebGPU.Native.WGPU deployment path. | Keep browser host/device acquisition and deployment independent. Share backend-neutral frame semantics and canonical workload data, not native surface objects. |
+| Existing D3D12 experiment | Separate Windows/WPF sample, compile proof only, no GPU geometry/pixel benchmark. | Keep as a comparison/reference; do not expand it by default or treat it as selected. |
+
+The upstream NuGet pages confirm published versions and declared target frameworks, not transitive binary contents or actual execution. Before dependency approval, inspect the exact nupkg contents and license files, lock the binding/runtime pair, test on a clean Windows machine, and capture adapter/device/driver plus visible output. This audit does not select a backend.
+
 ## Evidence levels
 
 - **Level A — contract/CI:** deterministic tests for descriptor validation, byte layout, resource revisions, lifecycle state transitions, and disposal policy. Does not claim pixels.
