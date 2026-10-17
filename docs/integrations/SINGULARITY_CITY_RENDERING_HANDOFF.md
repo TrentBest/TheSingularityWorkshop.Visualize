@@ -40,6 +40,15 @@ The WebPage LLM should integrate against documented public contracts and current
 
 ## Current evidence and limits
 
+### Renderer-backed city proof (new, development)
+
+`integrations/GuiSvg/CityMassingProof/Program.cs` now constructs a platform-neutral `RenderFrame` for the deterministic city massing fixture. Each face's center is measured in the fixture's normalized world coordinates, passed through `ObserverRepresentationPolicy`, mapped into a `RenderDrawCommand`, then adapted by `RendererFrameAdapter` into the Visualize frame consumed by `GuiSvgVisualizerBackend`.
+
+This closes an important wiring gap in the **proof path**: city draw commands are no longer all stamped `Distant` without asking Renderer. The proof reports counts by selected representation. The policy thresholds are deliberately fixture-scale values and must not be mistaken for real city-meter thresholds.
+
+Evidence boundary: this is still a deterministic CPU/SVG massing proof. It does not yet demonstrate distance-appropriate geometry reduction, visibility culling, bucket scheduling, a GPU backend, persistent authored city data, physically realistic streets, or FPS navigation. The next test is to build/run the project with the adapter's supported Renderer dependency and inspect the emitted SVGs plus representation counts; only after that should this path be called a verified end-to-end proof.
+
+
 ### Visualize
 
 - The city-massing sample builds a deterministic procedural city model, submits it through the public Visualizer / VisualizerFrame path, and manifests it through the GUI.SVG backend.
