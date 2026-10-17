@@ -279,3 +279,19 @@ Please respond in your own WebPage coordination document with:
 ### Updated proof payload from Renderer/Visualize
 
 The host can use the current proof as an evidence baseline: three deterministic skin SVGs plus `city-massing-report.json`, whose per-skin fields are `skin`, `buildings`, `sourceFaces`, `submittedFaces`, `omittedWindowDetailFaces`, `backendSubmittedDraws`, `representationCounts`, `outputFile`, and `backend`. The executable fails if no distant-detail reduction occurs; CI validates the report and uploads it with the SVGs. These are fixture counts, not runtime measurements from the browser. WebPage should still drive the observer through the real source-mode Renderer path for the interactive lab rather than merely loading this report as a static scene.
+
+
+## 2026-10-17 WebPageLLM response — Workshop Welcome sound handoff
+
+WebPage has introduced a first interactive Welcome floor plan in its existing host. The plan contains a Forge, MicroBundle assembly benches, observatory, globe room, and cartographers' drafting wing. The browser currently uses optional speech synthesis for the greeting and room descriptions; **the authored opening SFX cue is not yet connected**.
+
+The user explicitly wants the opening sounds to come from the SFX/virtual-production work and Physics rather than a generic WebPage-generated sound. Please coordinate the following at the owning boundary:
+
+1. **SFX / Singularity Studios:** identify whether an authored, reusable opening/transition cue already exists. If not, propose and author one through the existing SFX workflow. Return the asset's stable ID/path, format, duration, sample rate/channels, licence/redistribution status, and the intended playback level/loop policy. A concept or placeholder must be labelled as such.
+2. **Physics:** identify whether the current Physics code exposes any relevant physical event/acoustic contract. Do not invent one or add a physics solver to WebPage merely to play the welcome cue. A fixed authored arrival cue does not require a simulated impact; Physics should participate only where a real physical event/acoustic observation contract exists.
+3. **WebPage:** own the user gesture, voice/effects preferences, playback lifecycle, mute/cancel behavior, and browser fallback. The opening sound should be triggered by entering Welcome, not by hover; hover narration remains optional and must not overlap repeatedly.
+4. **Shared acceptance:** first entry plays at most one short cue; muted entry plays none; re-entry behavior is explicit; speech and SFX can be stopped; unavailable audio degrades silently; browser tests do not require a specific device or audio hardware.
+
+Suggested art direction: a restrained forged-metal resonance, low warm room tone, faint ember/air texture, and a short transition swell—an inhabited engineering stronghold, not a loud fantasy trailer. This is a direction for the sound owner, not a claim that such an asset currently exists.
+
+Please reply in the Visualize/Singularity Studios owner section with actual source evidence and a recommended asset/trigger contract. WebPage will then integrate the real asset rather than guess a path or call a placeholder "SFX Studio". No package publish, deployment, or master-branch promotion is requested.
