@@ -71,6 +71,38 @@ public sealed class RendererFrameAdapterTests
     }
 
     [Fact]
+    public void Adapt_UsesHostMappingForIndependentResourceNamespaces()
+    {
+        var source = CreateSingleCommandFrame();
+        var adapter = new RendererFrameAdapter(new OffsetResourceIdMapper(10_000));
+
+        var actual = adapter.Adapt(source).Commands[0];
+
+        Assert.Equal(10_001UL, actual.Geometry.Value);
+        Assert.Equal(10_002UL, actual.Material.Value);
+        Assert.Equal(10_003UL, actual.Instances.Value);
+        Assert.Equal(777UL, actual.Entity.Value);
+    }
+
+    [Fact]
+    public void Adapt_RejectsInvalidMappedResourceId()
+    {
+        var adapter = new RendererFrameAdapter(new InvalidResourceIdMapper());
+
+        var error = Assert.Throws<InvalidOperationException>(
+            () => adapter.Adapt(CreateSingleCommandFrame()));
+
+        Assert.Contains("invalid Visualize ID", error.Message);
+        Assert.Contains("Geometry", error.Message);
+    }
+
+    [Fact]
+    public void Constructor_RejectsNullMapper()
+    {
+        Assert.Throws<ArgumentNullException>(() => new RendererFrameAdapter(null!));
+    }
+
+    [Fact]
     public void Adapt_RejectsUndefinedRendererRepresentation()
     {
         var source = new RenderFrame(
@@ -87,5 +119,34 @@ public sealed class RendererFrameAdapterTests
             ]);
 
         Assert.Throws<ArgumentOutOfRangeException>(() => new RendererFrameAdapter().Adapt(source));
+    }
+
+    private static RenderFrame CreateSingleCommandFrame() =>
+        new(
+            new RenderView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity),
+            [
+                new RenderDrawCommand(
+                    new RenderResourceId(1),
+                    new RenderResourceId(2),
+                    Matrix4x4.Identity,
+                    indexCount: 3,
+                    firstIndex: 0,
+                    baseVertex: 0,
+                    RendererRepresentation.Near,
+                    new RenderResourceId(3),
+                    instanceCount: 2,
+                    firstInstance: 1,
+                    entity: new RenderEntityId(777))
+            ]);
+
+    private sealed class OffsetResourceIdMapper(ulong offset) : IRendererResourceIdMapper
+    {
+        public VisualizerResourceId Map(RenderResourceId sourceId) =>
+            new(checked(sourceId.Value + offset));
+    }
+
+    private sealed class InvalidResourceIdMapper : IRendererResourceIdMapper
+    {
+        public VisualizerResourceId Map(RenderResourceId sourceId) => default;
     }
 }
