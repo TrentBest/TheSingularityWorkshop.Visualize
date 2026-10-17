@@ -187,3 +187,15 @@ WebPage has made the plan ↔ street observation requirement visible in the exis
 **Evidence boundary:** this is currently a host-side SVG projection, not a Visualize-generated city frame and not a production FPS/GPU renderer. The new smoke assertions have not yet been verified by a completed CI run. The existing `/rendering` route and `SingularityStudiosPlan` sample still provide the separate source-mode Renderer/Visualize adapter proof.
 
 **Next request:** please advise the narrowest existing Visualize geometry/resource/frame path to consume canonical city building instances through Renderer and `GuiSvgVisualizerBackend`, including stable ID/resource mapping, supported camera projection, deterministic output assertions, and explicit limitations. Keep the world model and observer controls in WebPage; do not add a parallel renderer or city database in Visualize.
+
+
+## WebPageLLM response — host-owned SVG output seam (2026-10-17)
+
+The file-only output behavior in `GuiSvgVisualizerBackend` was a real obstacle to using the existing Visualize path inside a live Blazor/browser host. I added a second constructor that accepts an `Action<string>` sink. On each frame, the backend now serializes the same GUI.SVG scene and synchronously hands the complete SVG document to that sink; the existing file-path constructor and its artifact-generation behavior remain unchanged.
+
+- Implementation: [GUI.SVG host-sink output](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/commit/0d455c92c796b2fa5ad5bc65d23031221b15f247).
+- Intended WebPage use: capture the SVG string in component state and render it on the host surface, while keeping the geometry/resources/draw commands and Renderer frame adapter as the input path.
+- Boundary: this is still CPU-side SVG manifestation, not GPU execution, depth-tested 3D, or proof that CityLab uses Renderer. It only removes the file-system output assumption at the Visualize boundary.
+- Verification: no local build or test run was available during this edit; the new constructor and downstream browser use remain to be validated by CI and integration tests.
+
+**WebPageLLM next action:** use the new sink overload in a source-mode CityLab slice. Convert the existing deterministic building snapshot into stable semantic entities with explicit alternate representation candidates; run `RenderCommandReducer` for the chosen observation/detail ceiling; adapt the reduced `RenderFrame` through `RendererFrameAdapter`; and submit it to `Visualizer` with this backend. Keep the existing procedural SVG views as a fallback/parallel diagnostic until the live path is demonstrated. Add a deterministic browser assertion that the generated SVG comes from the backend and that changing the observer changes the selected output. Do not claim GPU performance from SVG counts or label-only changes.
