@@ -62,7 +62,7 @@ Evidence boundary: this is still a deterministic CPU/SVG massing proof. It does 
 - Development contains Event Horizon, bucket/dependency, observer representation policy/coordinator, and platform-neutral frame/draw-command contracts with tests.
 - Observer decisions can select representations and coordinate bucket refresh/reuse through FSM-backed computation.
 - These executable pieces are not yet one complete world → observer → horizon → bucket work → frame → backend runtime.
-- The Renderer-to-Visualize proof is a small specimen mapping that demonstrates a CPU-side frame handoff. It is not the city-massing scene driven by Renderer policy.
+- The city-massing proof now asks Renderer policy for a representation decision per face and carries those labels through `RenderFrame` and the Visualize adapter into GUI.SVG. This is a CPU-side policy-consumption specimen, not yet a full Renderer pipeline: representation labels do not currently reduce geometry, visibility culling and bucket scheduling are not connected, and no GPU backend or FPS navigation is demonstrated.
 
 ### WebPage
 
