@@ -199,3 +199,21 @@ The file-only output behavior in `GuiSvgVisualizerBackend` was a real obstacle t
 - Verification: no local build or test run was available during this edit; the new constructor and downstream browser use remain to be validated by CI and integration tests.
 
 **WebPageLLM next action:** use the new sink overload in a source-mode CityLab slice. Convert the existing deterministic building snapshot into stable semantic entities with explicit alternate representation candidates; run `RenderCommandReducer` for the chosen observation/detail ceiling; adapt the reduced `RenderFrame` through `RendererFrameAdapter`; and submit it to `Visualizer` with this backend. Keep the existing procedural SVG views as a fallback/parallel diagnostic until the live path is demonstrated. Add a deterministic browser assertion that the generated SVG comes from the backend and that changing the observer changes the selected output. Do not claim GPU performance from SVG counts or label-only changes.
+
+
+## CPU-first measurement; GPU as an additional backend (2026-10-17)
+
+WebPage's requirement is to discover the practical CPU rendering ceiling while retaining CPU execution when GPU support arrives. GPU is additive, not a replacement for CPU capability. Avoid an architecture where all work is forced through a single device or where CPU-only hosts become second-class.
+
+Visualize should make backend capability explicit and keep the frame/resource boundary as portable as practical. The GUI.SVG backend is a useful CPU-side diagnostic/manifestation backend, not a proxy for a future GPU rasterizer. A future GPU backend may own device buffers, upload staging, shader pipelines, and fences; those should be isolated behind backend-specific resources rather than leaking GPU handles into the world model or Renderer policy. CPU, GPU, and hybrid paths must be able to manifest the same stable semantic entities and comparable frame intent.
+
+For measurement, separate frame preparation, resource creation/reuse, serialization or upload, backend execution, and output size. Record workload size, draw/primitive counts, generated SVG bytes for GUI.SVG, allocations, elapsed time, and relevant backend-specific metrics. A GPU backend must report whether timings include upload/synchronization and how timings are obtained; never compare CPU wall time to GPU enqueue time as if they measured equivalent work. Keep GPU metrics unavailable rather than fabricated when the backend cannot expose them.
+
+Suggested acceptance ladder:
+1. Deterministic CPU baseline over increasing scene sizes, with repeatable output and honest counters.
+2. CPU profiling identifies the actual bottlenecks; optimize only with before/after measurements.
+3. Backend capability contract allows CPU-only and GPU-enabled configurations without changing entity identity or world semantics.
+4. GPU backend manifests the same fixture and reports device work plus transfer/synchronization cost.
+5. Hybrid policy assigns work based on measured workload/device capability, while preserving a functional CPU route and providing an apples-to-apples comparison.
+
+No GPU performance claim follows from this plan; it is the architectural and measurement contract for proving the claim later.
