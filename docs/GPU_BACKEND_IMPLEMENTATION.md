@@ -32,6 +32,24 @@ The first proof must answer these questions with a tiny running sample before we
 
 Do not choose an API because it is familiar, and do not add a second backend merely to make a diagram look cross-platform. Build the smallest real native proof, measure the integration and maintenance cost, and keep the browser path as a separate host adapter. If Vulkan surface integration proves disproportionately expensive for the intended host, record the measured obstacle and compare alternatives before changing this decision.
 
+## Package boundary: Visualize.GPU
+
+**Working package name:** `TheSingularityWorkshop.Visualize.GPU` (repository/project identity: `Visualize.GPU`).
+
+Keep the backend-neutral `TheSingularityWorkshop.Visualize` package small and graphics-API independent. Put concrete GPU execution in a separate `Visualize.GPU` implementation package that references Visualize core, never the reverse. This lets SVG, tests, and future backends continue using the same frame/resource contracts without inheriting native graphics dependencies.
+
+Initial responsibilities of `Visualize.GPU`:
+
+- Implement `IVisualizerBackend` using the existing `VisualizerFrame`, draw commands, and resource catalog.
+- Own device selection, shader/pipeline setup, GPU buffer allocation and revision-based uploads, command submission, synchronization, and deterministic GPU-resource disposal.
+- Report the actual API/device and supported capabilities; fail clearly when a required capability is unavailable.
+- Keep native handles and graphics-API types private to the implementation boundary wherever practical.
+- Provide a minimal executable proof that renders an indexed triangle to a real surface and records verifiable evidence.
+
+Keep host/window integration distinct from rendering contracts. AnyApp/WPF is the first native host to validate, but WPF surface handles and window lifetime must not enter Visualize core. If the native implementation requires host-specific glue, put that glue in a narrow host adapter rather than turning the core or the GPU package into a WPF-only library. WebPage/browser rendering is a separate WebGPU host/backend path, not a reason to add browser APIs to the .NET core.
+
+This is a package boundary decision, not a claim that the GPU backend already exists. Do not create a placeholder package or publish it until the first real surface proof, build/test lane, and lifecycle evidence are in place.
+
 ## First vertical slice: one triangle, one real surface
 
 Implement the smallest end-to-end GPU path before expanding the scene vocabulary.
