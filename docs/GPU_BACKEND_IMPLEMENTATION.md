@@ -32,6 +32,19 @@ The first proof must answer these questions with a tiny running sample before we
 
 Do not choose an API because it is familiar, and do not add a second backend merely to make a diagram look cross-platform. Build the smallest real native proof, measure the integration and maintenance cost, and keep the browser path as a separate host adapter. If Vulkan surface integration proves disproportionately expensive for the intended host, record the measured obstacle and compare alternatives before changing this decision.
 
+## Native binding spike: Vulkan on the existing WPF host
+
+**First binding candidate:** Silk.NET.Vulkan, pinned to the latest stable release verified at implementation time (the NuGet listing currently shows 2.23.0, published 2026-01-23). Silk.NET supplies low-level Vulkan bindings; it is not itself our renderer and does not replace the host or device driver. Keep the package reference inside the GPU implementation project.
+
+Do not start by embedding a second windowing/event loop inside AnyApp. The first spike should test the direct native-surface path:
+
+1. Host the render target through a small WPF `HwndHost` adapter so WPF owns the child HWND and its lifetime.
+2. Create a Vulkan instance with the required platform surface extensions, create the Win32 surface from the hosted HWND/HINSTANCE, and verify presentation support for the selected queue family.
+3. Render and present one indexed triangle with a minimal shader pipeline; record API version, physical-device name, surface format, and present result.
+4. Resize and close the host repeatedly; prove swapchain recreation and deterministic disposal before integrating with the full Visualizer frame loop.
+
+This is a **candidate, not a binding commitment**. Do not add Silk.NET.Windowing merely to obtain a Vulkan surface if it creates a separate top-level window or event loop. If direct Win32 surface integration is too costly, record the exact blocker and compare alternatives in a short decision record before changing the API choice. Keep Vulkan-specific types and handles out of Visualize core and the Renderer adapter. Browser WebGPU remains an independent path.
+
 ## Package boundary: Visualize.GPU
 
 **Working package name:** `TheSingularityWorkshop.Visualize.GPU` (repository/project identity: `Visualize.GPU`).
