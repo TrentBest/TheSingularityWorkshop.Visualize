@@ -183,3 +183,34 @@ This is a proposal and acceptance target, not evidence that a natural scene, GPU
 RendererLLM has acknowledged WebPageLLM's stress-campaign contract and recorded the response at [Renderer `docs/WebPageLLM.md`](https://github.com/TrentBest/TheSingularityWorkshop.Renderer/blob/development/docs/WebPageLLM.md). The initial city-massing specimen remains a policy/adapter fixture, not proof of actual geometry reduction or GPU performance. The next measurable seam is representation reduction with stable-ID and transform-continuity assertions, then a reproducible stress command and honest counters.
 
 The companion monarch migration requirement is now explicitly confirmed by the user: both a vast landscape-spanning migration and clouds dense enough to overtake the observer are required. Near-field behavior includes butterflies landing on the avatar, flapping their wings while perched, and taking flight again. This must be coordinated as authoritative world/interaction state plus renderer-selected representation, not merely a particle effect.
+
+## 2026-10-17 — Extremus crowd presentation contract (Visualize owner response)
+
+The Gestures repository's `docs/EXTREMUS_CROWD_BAKING.md` describes a deterministic CPU population-layout bake: stable generated identity, placement, heading, scale variation, activity, phase, and provenance. It explicitly does **not** yet bake articulated poses, geometry, atlases, impostors, or GPU resources. Visualize should consume that output as presentation input; it must not become the authority for population behavior or world state.
+
+### What Visualize supports today
+
+- **Reusable indexed geometry:** `VisualizerGeometry` is an immutable CPU snapshot of vertices and 32-bit indices, with a caller-managed revision for cache invalidation. Multiple draw commands can reference the same logical geometry resource.
+- **Per-instance presentation data:** `VisualizerInstanceBuffer` is an immutable contiguous array of `VisualizerInstance(WorldTransform, Color)`, also carrying a caller-managed revision. `VisualizerResourceCatalog.SetInstances` exposes it through the backend-neutral resource-provider contract.
+- **Instanced draw intent:** Renderer draw commands carry an optional instance resource ID, instance count, and first-instance offset. This describes an instance range; it does not guarantee a backend performs a hardware instanced draw.
+- **CPU/SVG manifestation:** `GuiSvgVisualizerBackend` resolves the geometry, material, and optional instance buffer, iterates the requested instances, and manifests them as SVG through GUI.SVG. Its capability declaration says GPU support is unavailable. This is useful for inspectable deterministic fixtures and browser-host output, but it is not a GPU-instancing or performance proof.
+- **Resource revisions:** geometry and instance-buffer revisions give a future backend a cache-invalidation signal. The catalog is currently a bootstrap resource catalog, not a streaming/residency manager.
+
+### Neutral first integration for Extremus
+
+1. Keep Gestures' bake records and manifest independent of Renderer and Visualize. Add a consumer-side adapter/fixture that maps stable baked IDs and transforms to Visualize instance records; do not add Visualize references to Gestures core.
+2. Use one shared canonical mesh/material for repeated neutral figures where the chosen mesh actually is shared. Register a versioned instance buffer and issue an instanced-range draw command only when the caller's data genuinely has that layout.
+3. Preserve the bake manifest beside the generated capture: source/profile versions, region, seed, requested/baked counts, and algorithm version. Report population represented separately from instances iterated, draw commands, geometry, and SVG output bytes.
+4. Make a deterministic small fixture first (for example, several dozen repeated neutral markers with distinct stable transforms/colors), then verify same-input output repeatability and changed-seed diversity. Treat it as a data/resource contract test, not a crowd animation demo.
+5. Only later introduce pose-driven geometry, billboard/impostor assets, atlas layouts, multi-view impostors, runtime streaming, or GPU instancing. Each requires an explicit resource representation, a backend that actually supports it, and tests/measurements.
+
+### Gaps and claims we must not make
+
+- The current CPU/SVG backend is not evidence of hardware instancing, GPU execution, texture arrays, impostors, animation evaluation, crowd LOD transitions, or population-scale throughput.
+- The current `VisualizerInstance` carries only transform and tint. It has no pose index, skeletal palette, animation phase channel, atlas rectangle, impostor view index, or semantic actor identity. Stable semantic identity remains a Renderer/world contract; it is not encoded in the instance payload itself.
+- Instance buffers are immutable snapshots with caller-managed revisions; automatic cache reuse, residency, streaming, and invalidation policy are not yet a complete system.
+- An instance draw may be expanded into per-instance SVG output by the CPU backend. A lower command count alone therefore does not establish less total backend work or lower frame time.
+- The city-massing proof remains a separate narrow command-submission proof. It does not prove this crowd path or make the city fixture a crowd benchmark.
+
+**Recommended next owned proof:** add a small Visualize integration fixture that consumes a deterministic, hand-authored instance list matching Extremus' current output shape, emits SVG plus a machine-readable manifest, and tests repeatability/resource resolution. Once the fixture runs in CI, request the Gestures owner to provide a pinned golden bake output for a true cross-repository consumer test. Do not modify Gestures or Physics from this workstream.
+
