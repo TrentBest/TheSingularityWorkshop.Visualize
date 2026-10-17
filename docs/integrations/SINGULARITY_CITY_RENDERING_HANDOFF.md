@@ -140,3 +140,39 @@ Turn the current city-massing proof into a traceable, testable vertical slice wi
 - [Renderer living explainer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer/blob/development/docs/LIVING_RENDERER.md)
 - [WebPage zoomable-world design contract](https://github.com/TrentBest/WebPage/blob/development/docs/SINGULARITY_CITY_ZOOMABLE_WORLD_AND_EXPERIENCES.md)
 - [WebPage living infrastructure contract](https://github.com/TrentBest/WebPage/blob/development/docs/integrations/SINGULARITY_CITY_LIVING_INFRASTRUCTURE.md)
+
+
+## Complementary proving ground: an impossible-scale monarch migration
+
+The Renderer/Visualize workstream proposes a second scene alongside Singularity City: place the observer inside a natural environment during a monarch migration, but at a deliberately impossible population—far beyond what nature can sustain. The intent is an immersive, primitive experience of a phenomenon larger than an individual could ordinarily witness, helping people understand something lost to us. This is an artistic/technical stress test inspired by monarch migration, not an ecological simulation claim.
+
+This scene should not become a disconnected demo or a separate renderer. It should reuse the same observer, representation, frame, identity, cadence, and measurement contracts being established for the city.
+
+### Why this scene matters
+
+City massing stresses spatial scale and representation of mostly static structures. A migration stresses enormous populations of moving entities, overlapping trajectories, depth, occlusion, and continuous change. It also gives us a meaningful test for concentrating computation: a single butterfly's wings, airborne particles, or a patch of smoke/pollen lit by sunlight may deserve far more work than a vast distant region when that detail is perceptually important.
+
+### Required experience and evidence
+
+- The observer can stand within the environment, see a dense migration crossing foreground/middle/background, and change viewpoint without the population popping, duplicating, freezing, or changing its underlying identity.
+- Individual butterflies may receive high detail near the observer or under direct attention; mid-range motion can use coherent cohorts; distant activity can use aggregates that preserve density, direction, and motion cues.
+- Update cadence is independently chosen for flight, wing phase, cohort flow, vegetation, lighting, and ambient particles according to perceptual and causal needs. A lower update rate must not produce a visible temporal discontinuity.
+- Deterministic seeds and stable cohort/individual identities permit repeatable observer traces and promotion/demotion tests.
+- Benchmarks report actual work and correctness together: total represented population, individually evaluated entities, cohorts updated, generated geometry/instances, refreshes, reuse/skips, allocations, and stage timings.
+- The same migration state supports overview, walking-through, and attention-focused views. A new view changes observer-relative representation, not the world itself.
+
+### Suggested progression
+
+1. Reproducible terrain, vegetation, and a large static density field.
+2. A CPU reference with a modest number of individually animated butterflies and a much larger deterministic cohort population.
+3. Observer traces that move through the swarm, turn toward sunlight, and focus on one nearby butterfly.
+4. Actual representation reduction and reuse, verified by output/work counters and tests for continuity and identity.
+5. Population-scale experiments, followed by a measured CPU/GPU comparison using equivalent scenarios.
+
+Do not begin by claiming that millions of individually simulated butterflies are affordable. Start with a workload that can be measured, identify which computation scales with individuals versus cohorts and observers, and increase scale until the evidence shows the next bottleneck. The goal is not to cheat the population; it is to compute the information each observer needs to experience it as a coherent, living whole.
+
+### Coordination boundary
+
+WebPage owns the immersive experience, camera controls, observer intent, and interaction. The natural-world content owner supplies terrain, vegetation, migration facts/fiction, stable identities, and deterministic source revisions. Renderer decides observer-relative representation and due work. Visualize manifests selected frames. Physics remains owned by its separate workstream; coordinate a narrow contract if flight dynamics or wind are later needed rather than duplicating or editing its implementation here.
+
+This is a proposal and acceptance target, not evidence that a natural scene, GPU backend, or migration simulation already exists.
