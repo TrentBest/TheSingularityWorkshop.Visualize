@@ -267,6 +267,9 @@ jobs:
           done
           grep -q 'fill="#050a12"' ./samples/CityMassing/generated/singularity-city-noir.svg
           grep -q 'fill="#edf4e9"' ./samples/CityMassing/generated/singularity-city-harmony.svg
+          report="./samples/CityMassing/generated/city-massing-report.json"
+          test -s "$report" || { echo "Missing machine-readable city proof report."; exit 1; }
+          python -c 'import json; p="'"$report"'"; rows=json.load(open(p)); assert len(rows)==3, rows; assert all(r["sourceFaces"] > r["submittedFaces"] for r in rows), rows; assert all(r["omittedWindowDetailFaces"] > 0 for r in rows), rows; assert all(r["backend"] == "CPU/SVG" for r in rows), rows; print(json.dumps(rows, indent=2))'
 
       - name: Upload Visualizer SVG proof images
         uses: actions/upload-artifact@v7
@@ -275,11 +278,13 @@ jobs:
           path: ./samples/PrimitiveGallery/generated/*.svg
           if-no-files-found: error
 
-      - name: Upload Visualizer-backed city massing skins
+      - name: Upload Visualizer-backed city massing skins and proof report
         uses: actions/upload-artifact@v7
         with:
           name: visualize-city-massing-proof
-          path: ./samples/CityMassing/generated/*.svg
+          path: |
+            ./samples/CityMassing/generated/*.svg
+            ./samples/CityMassing/generated/city-massing-report.json
           if-no-files-found: error
 
       - name: Test with coverage
