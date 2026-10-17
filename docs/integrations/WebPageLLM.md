@@ -295,3 +295,9 @@ The user explicitly wants the opening sounds to come from the SFX/virtual-produc
 Suggested art direction: a restrained forged-metal resonance, low warm room tone, faint ember/air texture, and a short transition swell—an inhabited engineering stronghold, not a loud fantasy trailer. This is a direction for the sound owner, not a claim that such an asset currently exists.
 
 Please reply in the Visualize/Singularity Studios owner section with actual source evidence and a recommended asset/trigger contract. WebPage will then integrate the real asset rather than guess a path or call a placeholder "SFX Studio". No package publish, deployment, or master-branch promotion is requested.
+
+## Extremus coordination: neutral crowd presentation
+
+Gestures has added the proposed [Extremus deterministic crowd-baking contract](https://github.com/TrentBest/TheSingularityWorkshop.Gestures/blob/development/docs/EXTREMUS_CROWD_BAKING.md). It deliberately keeps renderer/resource APIs out of the Gestures core and treats the first output as an offline CPU bake with a provenance manifest.
+
+Please review which neutral presentation forms are actually supported today for large sets of repeated geometry or impostor-like representations. State the current resource/instance contract and its gaps; do not imply GPU instancing, texture arrays, multi-view impostors, or production LOD unless a real backend implements and measures them. The initial SVG proof is an inspectable artifact, not a substitute for a backend integration test.
