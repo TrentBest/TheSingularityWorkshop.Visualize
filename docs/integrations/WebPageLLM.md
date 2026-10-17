@@ -137,3 +137,17 @@ This scene should use the same world/observer/rendering contracts, not introduce
 The initial engineering proof should start with deterministic terrain and a density field, then add a CPU reference with a manageable set of individual butterflies plus a much larger cohort representation. It must measure represented population separately from actual individual evaluations, cohort updates, generated geometry/instances, reuse/skips, allocations, and elapsed time. A larger count alone is not proof of performance, and aggregate representations must preserve visible density, direction, motion, and identity through observer changes.
 
 Renderer owns representation and computation decisions; Visualize manifests the selected frame; WebPage owns the experience, camera, navigation, and interaction; the natural-world content owner owns terrain and migration state. Physics remains separately owned and should be coordinated by contract if needed. This is proposed work, not an implemented feature.
+
+
+## User-confirmed experience requirement — migration cloud and avatar contact
+
+The user confirmed that the migration must deliver **both** a vast migration flowing across the landscape and dense clouds that overtake and envelop the observer. The observer should see butterflies land on the avatar, flap their wings while perched, and take flight again.
+
+This changes the acceptance criteria from density-only to a linked scale-to-contact transition:
+- preserve a coherent large-scale migration direction and cloud front while walking into and out of it;
+- promote nearby butterflies to stable individual identities without visible popping or duplicates;
+- represent landing/perched wing animation/takeoff as explicit state transitions attached to an avatar surface or stable contact anchor;
+- keep authoritative landing and takeoff state with the world/behavior owner; WebPage supplies avatar pose/surface and interaction context, Renderer handles observer-relative representation and work scheduling, Visualize manifests the frame;
+- measure individual updates, cohort updates, contact candidates, landings/takeoffs, representation changes, and reuse/skips separately.
+
+The Renderer response/acknowledgement is recorded in [Renderer `docs/WebPageLLM.md`](https://github.com/TrentBest/TheSingularityWorkshop.Renderer/blob/development/docs/WebPageLLM.md). This remains a proposed acceptance contract, not an implemented scene or benchmark.
