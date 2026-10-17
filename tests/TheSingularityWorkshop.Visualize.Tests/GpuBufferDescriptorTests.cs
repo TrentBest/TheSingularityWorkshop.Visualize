@@ -55,6 +55,48 @@ public sealed class GpuBufferDescriptorTests
     }
 
     [Fact]
+    public void ValidateUploadRange_AcceptsExactFitAndZeroLengthAtEnd()
+    {
+        var descriptor = new GpuBufferDescriptor(16, GpuBufferUsage.TransferDestination);
+
+        descriptor.ValidateUploadRange(destinationOffset: 8, uploadSizeInBytes: 8);
+        descriptor.ValidateUploadRange(destinationOffset: 16, uploadSizeInBytes: 0);
+    }
+
+    [Fact]
+    public void ValidateUploadRange_RejectsOffsetPastEnd()
+    {
+        var descriptor = new GpuBufferDescriptor(16, GpuBufferUsage.TransferDestination);
+
+        var error = Assert.Throws<ArgumentOutOfRangeException>(
+            () => descriptor.ValidateUploadRange(destinationOffset: 17, uploadSizeInBytes: 0));
+
+        Assert.Equal("destinationOffset", error.ParamName);
+    }
+
+    [Fact]
+    public void ValidateUploadRange_RejectsLengthPastEnd()
+    {
+        var descriptor = new GpuBufferDescriptor(16, GpuBufferUsage.TransferDestination);
+
+        var error = Assert.Throws<ArgumentOutOfRangeException>(
+            () => descriptor.ValidateUploadRange(destinationOffset: 8, uploadSizeInBytes: 9));
+
+        Assert.Equal("uploadSizeInBytes", error.ParamName);
+    }
+
+    [Fact]
+    public void ValidateUploadRange_RejectsOverflowingRangeWithoutAddingOffsetAndLength()
+    {
+        var descriptor = new GpuBufferDescriptor(ulong.MaxValue, GpuBufferUsage.TransferDestination);
+
+        var error = Assert.Throws<ArgumentOutOfRangeException>(
+            () => descriptor.ValidateUploadRange(destinationOffset: ulong.MaxValue - 3, uploadSizeInBytes: 4));
+
+        Assert.Equal("uploadSizeInBytes", error.ParamName);
+    }
+
+    [Fact]
     public void GpuDeviceInfo_PreservesAvailableDeviceDiagnostics()
     {
         var info = new GpuDeviceInfo(
