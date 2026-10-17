@@ -1,6 +1,6 @@
 using System.Numerics;
 using TheSingularityWorkshop.Visualize;
-using TheSingularityWorkshop.Visualize.GuiSvg;
+using TheSingularityWorkshop.Visualize.GuiSvg;\nusing TheSingularityWorkshop.Renderer;\nusing TheSingularityWorkshop.Renderer.VisualizeAdapter;
 
 var outputDirectory = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.GetFullPath("artifacts/city-massing");
 Directory.CreateDirectory(outputDirectory);
@@ -26,14 +26,37 @@ foreach (var skin in skins)
     foreach (var (slot, id) in materialIds)
         catalog.SetMaterial(id, new VisualizerMaterial(1, CityMassing.Color(skin.ColorFor(slot))));
 
-    var commands = scene.Faces.Select(face => new VisualizerDrawCommand(
-        geometryId,
-        materialIds[face.MaterialSlot],
-        Matrix4x4.Identity,
-        face.IndexCount,
-        face.FirstIndex,
-        0,
-        VisualizerRepresentation.Distant)).ToArray();
+    // This is the first city proof that asks Renderer for a representation decision per face.
+    // Distances use the proof scene's normalized world units; these thresholds are fixture policy,
+    // not production city-scale thresholds.
+    var policy = new ObserverRepresentationPolicy(
+    [
+        new RepresentationHorizonRule(new EventHorizon("Interactive", 0.035, 10), RepresentationTarget.Interactive),
+        new RepresentationHorizonRule(new EventHorizon("Near", 0.12, 8), RepresentationTarget.Near),
+        new RepresentationHorizonRule(new EventHorizon("Distant", 0.30, 4), RepresentationTarget.Distant),
+        new RepresentationHorizonRule(new EventHorizon("Aggregate", 0.65, 2), RepresentationTarget.Aggregate),
+        new RepresentationHorizonRule(new EventHorizon("Semantic", 2.0, 1), RepresentationTarget.Semantic)
+    ]);
+
+    var observer = new Vector3(0, 0, 0.04f);
+    var renderCommands = scene.Faces.Select(face =>
+    {
+        var center = FaceCenter(scene, face);
+        var decision = policy.Select(Vector3.Distance(observer, center));
+        return new RenderDrawCommand(
+            new RenderResourceId(geometryId.Value),
+            new RenderResourceId(materialIds[face.MaterialSlot].Value),
+            Matrix4x4.Identity,
+            face.IndexCount,
+            face.FirstIndex,
+            0,
+            ToRendererRepresentation(decision.Representation));
+    }).ToArray();
+
+    var renderFrame = new RenderFrame(
+        new RenderView(observer, Matrix4x4.Identity, Matrix4x4.Identity),
+        renderCommands);
+    var frame = new RendererFrameAdapter().Adapt(renderFrame);
 
     var output = Path.Combine(outputDirectory, $"singularity-city-{skin.Name}.svg");
     await using var visualizer = new Visualizer(
@@ -41,14 +64,39 @@ foreach (var skin in skins)
             output,
             backgroundColor: skin.Background,
             gridColor: skin.Grid,
-            sceneLabel: $"Singularity City / {skin.Name.ToUpperInvariant()} / Visualizer frame through GUI.SVG",
+            sceneLabel: $"Singularity City / {skin.Name.ToUpperInvariant()} / Renderer policy → Visualize → GUI.SVG",
             drawGrid: false),
         catalog);
-    var result = await visualizer.RenderAsync(new VisualizerFrame(
-        new VisualizerView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity),
-        commands));
-    Console.WriteLine($"{skin.Name}: {scene.BuildingCount} buildings, {result.SubmittedDrawCount} draw commands -> {output}");
+    var result = await visualizer.RenderAsync(frame);
+    var counts = renderCommands.GroupBy(command => command.Representation)
+        .OrderBy(group => group.Key)
+        .Select(group => $"{group.Key}={group.Count()}");
+    Console.WriteLine($"{skin.Name}: {scene.BuildingCount} buildings, {result.SubmittedDrawCount} draw commands; {string.Join(", ", counts)} -> {output}");
 }
+
+static Vector3 FaceCenter(CityScene scene, CityFace face)
+{
+    var sum = Vector3.Zero;
+    var count = 0;
+    for (var i = face.FirstIndex; i < face.FirstIndex + face.IndexCount; i++)
+    {
+        var vertexIndex = scene.Indices[i];
+        sum += scene.Vertices[(int)vertexIndex].Position;
+        count++;
+    }
+
+    return count == 0 ? Vector3.Zero : sum / count;
+}
+
+static RendererRepresentation ToRendererRepresentation(RepresentationTarget target) => target switch
+{
+    RepresentationTarget.Semantic => RendererRepresentation.Semantic,
+    RepresentationTarget.Aggregate => RendererRepresentation.Aggregate,
+    RepresentationTarget.Distant => RendererRepresentation.Distant,
+    RepresentationTarget.Near => RendererRepresentation.Near,
+    RepresentationTarget.Interactive => RendererRepresentation.Interactive,
+    _ => throw new ArgumentOutOfRangeException(nameof(target), target, "Unknown representation target.")
+};
 
 internal sealed record CityFace(int FirstIndex, int IndexCount, string MaterialSlot);
 internal sealed record CityScene(IReadOnlyList<VisualizerVertex> Vertices, IReadOnlyList<uint> Indices, IReadOnlyList<CityFace> Faces, int BuildingCount);
