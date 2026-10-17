@@ -16,7 +16,8 @@ namespace TheSingularityWorkshop.Visualize.GuiSvg;
 /// </remarks>
 public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
 {
-    private readonly string _outputPath;
+    private readonly string? _outputPath;
+    private readonly Action<string>? _svgSink;
     private readonly bool _animateConnectedPoints;
     private readonly bool _projectWithCamera;
     private readonly string _backgroundColor;
@@ -48,6 +49,43 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
         ArgumentException.ThrowIfNullOrWhiteSpace(gridColor);
         ArgumentException.ThrowIfNullOrWhiteSpace(sceneLabel);
         _outputPath = outputPath;
+        _svgSink = null;
+        _animateConnectedPoints = animateConnectedPoints;
+        _projectWithCamera = projectWithCamera;
+        _backgroundColor = backgroundColor;
+        _gridColor = gridColor;
+        _sceneLabel = sceneLabel;
+        _drawGrid = drawGrid;
+    }
+
+    /// <summary>Creates an SVG backend that sends each submitted frame to an in-memory sink.</summary>
+    /// <param name="svgSink">Receives the complete serialized SVG document for the submitted frame.</param>
+    /// <param name="animateConnectedPoints">Whether to add the optional SVG-only route animation.</param>
+    /// <param name="projectWithCamera">Whether to use the frame view and projection matrices for CPU-side perspective projection.</param>
+    /// <param name="backgroundColor">SVG canvas background colour.</param>
+    /// <param name="gridColor">SVG guide-grid colour.</param>
+    /// <param name="sceneLabel">Accessible scene label written into the GUI scene tree.</param>
+    /// <param name="drawGrid">Whether to draw the backend guide grid.</param>
+    /// <remarks>
+    /// Use this overload when the host owns the output surface, such as a browser component that
+    /// binds the resulting SVG to its UI. The sink is invoked synchronously on the rendering call.
+    /// This remains a CPU-side SVG manifestation path, not a GPU renderer.
+    /// </remarks>
+    public GuiSvgVisualizerBackend(
+        Action<string> svgSink,
+        bool animateConnectedPoints = false,
+        bool projectWithCamera = false,
+        string backgroundColor = "#0b1725",
+        string gridColor = "#203447",
+        string sceneLabel = "Visualizer frame manifested through GUI.SVG",
+        bool drawGrid = true)
+    {
+        ArgumentNullException.ThrowIfNull(svgSink);
+        ArgumentException.ThrowIfNullOrWhiteSpace(backgroundColor);
+        ArgumentException.ThrowIfNullOrWhiteSpace(gridColor);
+        ArgumentException.ThrowIfNullOrWhiteSpace(sceneLabel);
+        _outputPath = null;
+        _svgSink = svgSink;
         _animateConnectedPoints = animateConnectedPoints;
         _projectWithCamera = projectWithCamera;
         _backgroundColor = backgroundColor;
@@ -160,8 +198,17 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
         }
 
         var svg = _renderer.Render(scene.Build(), width: 320, height: 180);
-        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(_outputPath))!);
-        File.WriteAllText(_outputPath, svg);
+        if (_svgSink is not null)
+        {
+            _svgSink(svg);
+        }
+        else
+        {
+            var outputPath = _outputPath
+                ?? throw new InvalidOperationException("The SVG backend has neither an output path nor an SVG sink.");
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outputPath))!);
+            File.WriteAllText(outputPath, svg);
+        }
         stopwatch.Stop();
 
         return ValueTask.FromResult(
