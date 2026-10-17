@@ -69,4 +69,48 @@ public sealed class VisualizerBaseVertexTests
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
+
+    [Fact]
+    public async Task Rejects_instance_range_outside_buffer_before_backend_call()
+    {
+        var resources = CreateResources(vertexCount: 3);
+        resources.SetInstances(
+            new VisualizerResourceId(3),
+            new VisualizerInstanceBuffer(1, [new VisualizerInstance(Matrix4x4.Identity, Vector4.One)]));
+        var backend = new RecordingBackend();
+        await using var visualizer = new Visualizer(backend, resources);
+        var command = new VisualizerDrawCommand(
+            new VisualizerResourceId(1), new VisualizerResourceId(2), Matrix4x4.Identity,
+            indexCount: 3, firstIndex: 0, baseVertex: 0,
+            representation: VisualizerRepresentation.Near,
+            instances: new VisualizerResourceId(3), instanceCount: 2);
+        var frame = new VisualizerFrame(
+            new VisualizerView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity), [command]);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await visualizer.RenderAsync(frame));
+
+        Assert.Contains("outside instance resource", error.Message);
+        Assert.False(backend.WasCalled);
+    }
+
+    [Fact]
+    public async Task Rejects_index_range_outside_geometry_before_backend_call()
+    {
+        var resources = CreateResources(vertexCount: 3);
+        var backend = new RecordingBackend();
+        await using var visualizer = new Visualizer(backend, resources);
+        var command = new VisualizerDrawCommand(
+            new VisualizerResourceId(1), new VisualizerResourceId(2), Matrix4x4.Identity,
+            indexCount: 3, firstIndex: int.MaxValue, baseVertex: 0,
+            representation: VisualizerRepresentation.Near);
+        var frame = new VisualizerFrame(
+            new VisualizerView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity), [command]);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await visualizer.RenderAsync(frame));
+
+        Assert.Contains("requests indices outside geometry resource", error.Message);
+        Assert.False(backend.WasCalled);
+    }
 }
