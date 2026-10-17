@@ -6,6 +6,9 @@ public sealed class Visualizer : IAsyncDisposable
 {
     private readonly IVisualizerBackend _backend;
     private readonly IVisualizerResourceProvider _resources;
+    private readonly SemaphoreSlim _submissionGate = new(1, 1);
+    private readonly object _disposeSync = new();
+    private Task? _disposeTask;
     private int _disposed;
 
     /// <summary>Creates a Visualizer around a backend and resource provider.</summary>
@@ -31,53 +34,76 @@ public sealed class Visualizer : IAsyncDisposable
     }
 
     /// <summary>Validates referenced resources and submits a frame to the backend.</summary>
-    public ValueTask<VisualizerFrameResult> RenderAsync(
+    public async ValueTask<VisualizerFrameResult> RenderAsync(
         VisualizerFrame frame,
         CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
         ArgumentNullException.ThrowIfNull(frame);
-        cancellationToken.ThrowIfCancellationRequested();
-
-        for (var i = 0; i < frame.Commands.Count; i++)
+        await _submissionGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            var command = frame.Commands[i];
-            if (!_resources.TryGetGeometry(command.Geometry, out var geometry) || geometry is null)
-                throw new InvalidOperationException($"Frame command {i} references missing geometry resource {command.Geometry.Value}.");
-            if ((long)command.FirstIndex + command.IndexCount > geometry.Indices.Count)
-                throw new InvalidOperationException($"Frame command {i} requests indices outside geometry resource {command.Geometry.Value}.");
+            ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+            cancellationToken.ThrowIfCancellationRequested();
 
-            // BaseVertex is a vertex offset, not an offset into the index buffer.
-            // Validate the effective vertex indices before handing the frame to any backend.
-            for (var index = command.FirstIndex; index < command.FirstIndex + command.IndexCount; index++)
+            for (var i = 0; i < frame.Commands.Count; i++)
             {
-                var vertexIndex = (long)geometry.Indices[index] + command.BaseVertex;
-                if (vertexIndex < 0 || vertexIndex >= geometry.Vertices.Count)
-                    throw new InvalidOperationException(
-                        $"Frame command {i} resolves index {index} to vertex {vertexIndex}, outside geometry resource {command.Geometry.Value}.");
+                var command = frame.Commands[i];
+                if (!_resources.TryGetGeometry(command.Geometry, out var geometry) || geometry is null)
+                    throw new InvalidOperationException($"Frame command {i} references missing geometry resource {command.Geometry.Value}.");
+                if ((long)command.FirstIndex + command.IndexCount > geometry.Indices.Count)
+                    throw new InvalidOperationException($"Frame command {i} requests indices outside geometry resource {command.Geometry.Value}.");
+
+                // BaseVertex is a vertex offset, not an offset into the index buffer.
+                // Validate the effective vertex indices before handing the frame to any backend.
+                for (var index = command.FirstIndex; index < command.FirstIndex + command.IndexCount; index++)
+                {
+                    var vertexIndex = (long)geometry.Indices[index] + command.BaseVertex;
+                    if (vertexIndex < 0 || vertexIndex >= geometry.Vertices.Count)
+                        throw new InvalidOperationException(
+                            $"Frame command {i} resolves index {index} to vertex {vertexIndex}, outside geometry resource {command.Geometry.Value}.");
+                }
+
+                if (!_resources.TryGetMaterial(command.Material, out var material) || material is null)
+                    throw new InvalidOperationException($"Frame command {i} references missing material resource {command.Material.Value}.");
+
+                if (command.Instances.IsValid)
+                {
+                    if (!_resources.TryGetInstances(command.Instances, out var instances) || instances is null)
+                        throw new InvalidOperationException($"Frame command {i} references missing instance resource {command.Instances.Value}.");
+                    if ((long)command.FirstInstance + command.InstanceCount > instances.Instances.Count)
+                        throw new InvalidOperationException($"Frame command {i} requests instances outside instance resource {command.Instances.Value}.");
+                }
             }
 
-            if (!_resources.TryGetMaterial(command.Material, out var material) || material is null)
-                throw new InvalidOperationException($"Frame command {i} references missing material resource {command.Material.Value}.");
-
-            if (command.Instances.IsValid)
-            {
-                if (!_resources.TryGetInstances(command.Instances, out var instances) || instances is null)
-                    throw new InvalidOperationException($"Frame command {i} references missing instance resource {command.Instances.Value}.");
-                if ((long)command.FirstInstance + command.InstanceCount > instances.Instances.Count)
-                    throw new InvalidOperationException($"Frame command {i} requests instances outside instance resource {command.Instances.Value}.");
-            }
+            return await _backend.RenderAsync(frame, _resources, cancellationToken).ConfigureAwait(false);
         }
-
-        return _backend.RenderAsync(frame, _resources, cancellationToken);
+        finally
+        {
+            _submissionGate.Release();
+        }
     }
 
-    /// <summary>Disposes the backend and its device resources.</summary>
-    public async ValueTask DisposeAsync()
+    /// <summary>Disposes the backend and its device resources after any active submission finishes.</summary>
+    public ValueTask DisposeAsync()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
-            return;
+        lock (_disposeSync)
+        {
+            _disposeTask ??= DisposeBackendAsync();
+            return new ValueTask(_disposeTask);
+        }
+    }
 
-        await _backend.DisposeAsync().ConfigureAwait(false);
+    private async Task DisposeBackendAsync()
+    {
+        Interlocked.Exchange(ref _disposed, 1);
+        await _submissionGate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            await _backend.DisposeAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            _submissionGate.Release();
+        }
     }
 }
