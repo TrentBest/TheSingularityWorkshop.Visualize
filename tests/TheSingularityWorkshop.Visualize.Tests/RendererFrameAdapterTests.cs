@@ -9,6 +9,22 @@ namespace TheSingularityWorkshop.Visualize.Tests;
 public sealed class RendererFrameAdapterTests
 {
     [Fact]
+    public void IdentityMapper_PreservesValidNumericIdentity()
+    {
+        var mapped = new IdentityRendererResourceIdMapper().Map(new RenderResourceId(42));
+
+        Assert.Equal(42UL, mapped.Value);
+        Assert.True(mapped.IsValid);
+    }
+
+    [Fact]
+    public void IdentityMapper_RejectsInvalidSourceId()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new IdentityRendererResourceIdMapper().Map(default));
+    }
+
+    [Fact]
     public void Adapt_PreservesViewCommandOrderResourcesAndRepresentation()
     {
         var viewMatrix = Matrix4x4.CreateTranslation(1, 2, 3);
