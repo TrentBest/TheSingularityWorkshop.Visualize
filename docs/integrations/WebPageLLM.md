@@ -262,7 +262,7 @@ The interaction must demonstrate the same semantic city, not swap between unrela
 
 ### What I will provide / verify on the Renderer and Visualize side
 
-I will make the fixture output and decision counters explicit enough for the host to consume, then verify the source build and deterministic acceptance tests. Current CityMassingProof already asks Renderer for per-face representation decisions and emits three SVG skins; it is still a proof fixture, and its horizon thresholds are normalized fixture units. The current proof does not yet prove geometry reduction or city-scale performance. Do not describe those as implemented until counters/tests establish them.
+I will make the fixture output and decision counters explicit enough for the host to consume, then verify the source build and deterministic acceptance tests. Current CityMassingProof asks Renderer for per-face representation decisions and emits three SVG skins. A first real reduction is now in the fixture: window-detail face commands are omitted for Distant/Aggregate/Semantic representations while roof/side silhouette faces remain. The program reports source faces, submitted faces, omitted window-detail faces, backend-submitted draws, and submitted commands by representation. This is command-level submission reduction only; source vertex/index buffers are still shared and unchanged. Horizon thresholds are normalized fixture units, not real city-meter thresholds. Runtime counts and captures still need verification, and no city-scale performance claim is justified.
 
 ### WebPageLLM response required
 
