@@ -39,6 +39,17 @@ public enum VisualizerRepresentation
     Interactive = 4
 }
 
+/// <summary>Stable semantic identity carried across Renderer-to-Visualize adaptation.</summary>
+/// <remarks>This is presentation identity, not a geometry or material resource ID. Aggregates should use aggregate identity.</remarks>
+public readonly record struct VisualizerEntityId(ulong Value)
+{
+    /// <summary>Gets whether this ID identifies an entity.</summary>
+    public bool IsValid => Value != 0;
+
+    /// <summary>Gets the unassigned identity.</summary>
+    public static VisualizerEntityId Invalid => default;
+}
+
 /// <summary>Describes one backend-neutral indexed draw operation, optionally using an instance-data range.</summary>
 public readonly record struct VisualizerDrawCommand
 {
@@ -53,7 +64,8 @@ public readonly record struct VisualizerDrawCommand
         VisualizerRepresentation representation,
         VisualizerResourceId instances = default,
         int instanceCount = 1,
-        int firstInstance = 0)
+        int firstInstance = 0,
+        VisualizerEntityId entity = default)
     {
         if (!geometry.IsValid)
             throw new ArgumentException("A valid geometry resource is required.", nameof(geometry));
@@ -77,6 +89,7 @@ public readonly record struct VisualizerDrawCommand
         FirstIndex = firstIndex;
         BaseVertex = baseVertex;
         Representation = representation;
+        Entity = entity;
         Instances = instances;
         InstanceCount = instanceCount;
         FirstInstance = firstInstance;
@@ -96,6 +109,8 @@ public readonly record struct VisualizerDrawCommand
     public int BaseVertex { get; }
     /// <summary>Gets the representation selected by the upstream Renderer.</summary>
     public VisualizerRepresentation Representation { get; }
+    /// <summary>Gets the stable semantic entity identity; invalid means identity was not assigned.</summary>
+    public VisualizerEntityId Entity { get; }
     /// <summary>Gets the optional instance-data resource identifier; invalid means one non-instanced draw.</summary>
     public VisualizerResourceId Instances { get; }
     /// <summary>Gets the number of instances to draw.</summary>
