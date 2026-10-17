@@ -159,9 +159,9 @@ public sealed class GuiSvgVisualizerBackend : IVisualizerBackend
                     var projection = _projectWithCamera
                         ? transform * frame.View.View * frame.View.Projection
                         : transform;
-                    var a = Project(geometry.Vertices[(int)geometry.Indices[index + command.BaseVertex]].Position, projection, _projectWithCamera);
-                    var b = Project(geometry.Vertices[(int)geometry.Indices[index + 1 + command.BaseVertex]].Position, projection, _projectWithCamera);
-                    var c = Project(geometry.Vertices[(int)geometry.Indices[index + 2 + command.BaseVertex]].Position, projection, _projectWithCamera);
+                    var a = Project(geometry.Vertices[checked((int)((long)geometry.Indices[index] + command.BaseVertex))].Position, projection, _projectWithCamera);
+                    var b = Project(geometry.Vertices[checked((int)((long)geometry.Indices[index + 1] + command.BaseVertex))].Position, projection, _projectWithCamera);
+                    var c = Project(geometry.Vertices[checked((int)((long)geometry.Indices[index + 2] + command.BaseVertex))].Position, projection, _projectWithCamera);
                     if (a is null || b is null || c is null)
                         continue;
                     var path = FormattableString.Invariant(
