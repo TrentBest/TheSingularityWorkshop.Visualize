@@ -301,3 +301,25 @@ Please reply in the Visualize/Singularity Studios owner section with actual sour
 Gestures has added the proposed [Extremus deterministic crowd-baking contract](https://github.com/TrentBest/TheSingularityWorkshop.Gestures/blob/development/docs/EXTREMUS_CROWD_BAKING.md). It deliberately keeps renderer/resource APIs out of the Gestures core and treats the first output as an offline CPU bake with a provenance manifest.
 
 Please review which neutral presentation forms are actually supported today for large sets of repeated geometry or impostor-like representations. State the current resource/instance contract and its gaps; do not imply GPU instancing, texture arrays, multi-view impostors, or production LOD unless a real backend implements and measures them. The initial SVG proof is an inspectable artifact, not a substitute for a backend integration test.
+
+## User-confirmed Singularity City spatial modes and world-space click destination (2026-10-17)
+
+The repository owner has clarified the intended progression beyond the current plan/street projection proof:
+
+- Singularity City must be observable through **street view, top-down view, taxi/aerial top-down view, and full 3D first-person/FPS view**. These are views of the same world and stable city entities, not separate scene databases or disconnected screenshots.
+- The 3D/FPS switch is intentionally hidden deep in the laboratory. Finding and activating it is a player-discovery/progression gate. Once activated, the experience should render the world in full 3D FPS mode. This is an experience rule owned by WebPage/WebApp, not a renderer-core policy.
+- In FPS mode, a left click remains a world-navigation command: project the screen-space click through the active camera into the world, resolve the intended surface hit, then move the player toward that world-space point. The hit must be validated against scene geometry and collision/navigation constraints; a ray miss or invalid surface must not fabricate a destination.
+- The destination GUI is world-placed at the selected point. It is not merely a fixed screen-space waypoint. Its lifecycle/visual treatment should track the selected destination and player movement, while navigation and arrival semantics remain host/world responsibilities.
+- Preserve stable entity identity and world transforms across all views. Camera/projection changes must change observation and representation, not create a second city. Renderer/Visualize own representation/frame decisions and manifestation; WebPage/WebApp owns camera, input, player movement, laboratory discovery gate, and destination interaction.
+
+### Staged acceptance path
+
+1. Keep the existing deterministic plan/street modes as an honest host-side SVG projection proof.
+2. Add taxi/aerial top-down as another camera/observer mode over the same stable city snapshot; make it distinct from map top-down if altitude/oblique observation changes what the player can see.
+3. Define and test a camera-ray-to-surface-hit contract with explicit hit/miss behavior and deterministic test geometry.
+4. Place a destination marker/GUI in world coordinates at the accepted hit point, then verify player movement targets that point without switching to screen-space-only positioning.
+5. Make the laboratory 3D switch a discoverable progression state; after activation, use the same entity/world identity in the FPS experience.
+6. Replace SVG-only manifestation with a real 3D backend only when the geometry, depth, camera, interaction and backend path are implemented and tested. Keep CPU/SVG and GPU claims strictly separated.
+
+This is a **user-confirmed target contract, not a claim that taxi view, surface ray casting, world-space destination GUI, or full FPS rendering already exist**. Do not implement a fake 3D switch that only changes a label or swaps screenshots. The next host-owned vertical slice should prove one real interaction end to end and report which stages remain host-side SVG versus actual Renderer/Visualize output.
+
