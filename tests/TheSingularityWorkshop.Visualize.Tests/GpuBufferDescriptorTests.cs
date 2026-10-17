@@ -13,6 +13,22 @@ public sealed class GpuBufferDescriptorTests
         descriptor.Validate();
     }
 
+    [Fact]
+    public void Validate_AcceptsEveryDeclaredUsageFlag()
+    {
+        var descriptor = new GpuBufferDescriptor(
+            4096,
+            GpuBufferUsage.Vertex |
+            GpuBufferUsage.Index |
+            GpuBufferUsage.ShaderRead |
+            GpuBufferUsage.ShaderWrite |
+            GpuBufferUsage.TransferDestination |
+            GpuBufferUsage.TransferSource |
+            GpuBufferUsage.Indirect);
+
+        descriptor.Validate();
+    }
+
     [Theory]
     [InlineData(0)]
     public void Validate_RejectsZeroSize(ulong sizeInBytes)
