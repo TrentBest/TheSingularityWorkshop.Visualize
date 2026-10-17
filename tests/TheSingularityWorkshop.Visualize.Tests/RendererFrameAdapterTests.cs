@@ -27,7 +27,8 @@ public sealed class RendererFrameAdapterTests
                     RendererRepresentation.Interactive,
                     new RenderResourceId(303),
                     instanceCount: 8,
-                    firstInstance: 2),
+                    firstInstance: 2,
+                    entity: new RenderEntityId(777)),
                 new RenderDrawCommand(
                     new RenderResourceId(104),
                     new RenderResourceId(205),
@@ -56,6 +57,8 @@ public sealed class RendererFrameAdapterTests
         Assert.Equal(303UL, first.Instances.Value);
         Assert.Equal(8, first.InstanceCount);
         Assert.Equal(2, first.FirstInstance);
+        Assert.Equal(777UL, first.Entity.Value);
+        Assert.True(first.Entity.IsValid);
 
         var second = actual.Commands[1];
         Assert.Equal(104UL, second.Geometry.Value);
@@ -64,6 +67,7 @@ public sealed class RendererFrameAdapterTests
         Assert.False(second.Instances.IsValid);
         Assert.Equal(1, second.InstanceCount);
         Assert.Equal(0, second.FirstInstance);
+        Assert.False(second.Entity.IsValid);
     }
 
     [Fact]
