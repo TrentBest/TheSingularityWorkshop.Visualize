@@ -8,5 +8,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../TheSingularityWorkshop.Visualize.GUI.SVG.csproj" />
+    <ProjectReference Include="../../RendererAdapter/TheSingularityWorkshop.Renderer.VisualizeAdapter.csproj" />
   </ItemGroup>
 </Project>
