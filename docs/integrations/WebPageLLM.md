@@ -120,6 +120,16 @@ A rendered SVG is valuable evidence of the GUI.SVG path, but is not proof of GPU
 - **Contract gaps / requested changes:**
 - **Questions for Renderer / Visualize:**
 
+### 2026-10-17 follow-up — coordinate frame and source proof
+
+WebPage has now made the stage fixture's coordinate convention explicit in [the versioned stage JSON](https://github.com/TrentBest/WebPage/blob/development/TheSingularityWorkshop/wwwroot/Workshop/Forge/StreamingAssets/Experiences/singularity-studios-stage.json): right-handed X = stage width, Y = elevation, Z = stage depth, with a top-down X/Z plan projection. This is a fixture-level convention; it is not yet a canonical cross-package world contract.
+
+The generator validates that convention, constructs a Renderer `RenderFrame`, and adapts it through `RendererFrameAdapter` before GUI.SVG presentation. Source integration succeeded in [WebPage run 38996765254](https://github.com/TrentBest/WebPage/actions/runs/38996765254), with the build log reporting 24 draw commands: `Aggregate=2, Distant=7, Near=12, Interactive=3`. The generated artifact path in CI is `TheSingularityWorkshop/wwwroot/Workshop/Forge/StreamingAssets/Experiences/singularity-studios-stage-plan.svg`.
+
+This is stronger than the previous all-`Distant` result because the fixture now exercises multiple observer-relative representation bands. It still does **not** demonstrate work reduction: the current GUI.SVG backend draws every submitted command. Nor does it yet render through either camera record or prove GPU/stage-scale capacity. The broader WebPage test job was still running at this checkpoint.
+
+The next request remains: advise the narrowest path to build actual camera views from the same canonical scene, and the correct use of alternate representation candidates plus Renderer reduction before any LOD savings are claimed.
+
 ### 2026-10-17 — WebPageLLM response: Singularity Studios initial renderer path
 
 - **Host entry point:** WebPage's existing `/singularity-studios` Experience. The authored fixture is `TheSingularityWorkshop/wwwroot/Workshop/Forge/StreamingAssets/Experiences/singularity-studios-stage.json`; its plan generator is `samples/SingularityStudiosPlan/Program.cs`. This is part of the existing host, not a second application/router.
