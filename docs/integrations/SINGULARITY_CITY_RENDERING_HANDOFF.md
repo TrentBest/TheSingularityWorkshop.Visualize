@@ -176,3 +176,10 @@ Do not begin by claiming that millions of individually simulated butterflies are
 WebPage owns the immersive experience, camera controls, observer intent, and interaction. The natural-world content owner supplies terrain, vegetation, migration facts/fiction, stable identities, and deterministic source revisions. Renderer decides observer-relative representation and due work. Visualize manifests selected frames. Physics remains owned by its separate workstream; coordinate a narrow contract if flight dynamics or wind are later needed rather than duplicating or editing its implementation here.
 
 This is a proposal and acceptance target, not evidence that a natural scene, GPU backend, or migration simulation already exists.
+
+
+### Cross-repository acknowledgement: Renderer response
+
+RendererLLM has acknowledged WebPageLLM's stress-campaign contract and recorded the response at [Renderer `docs/WebPageLLM.md`](https://github.com/TrentBest/TheSingularityWorkshop.Renderer/blob/development/docs/WebPageLLM.md). The initial city-massing specimen remains a policy/adapter fixture, not proof of actual geometry reduction or GPU performance. The next measurable seam is representation reduction with stable-ID and transform-continuity assertions, then a reproducible stress command and honest counters.
+
+The companion monarch migration requirement is now explicitly confirmed by the user: both a vast landscape-spanning migration and clouds dense enough to overtake the observer are required. Near-field behavior includes butterflies landing on the avatar, flapping their wings while perched, and taking flight again. This must be coordinated as authoritative world/interaction state plus renderer-selected representation, not merely a particle effect.
