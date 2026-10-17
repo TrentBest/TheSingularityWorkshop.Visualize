@@ -15,6 +15,20 @@
 
 The backend should accept a host-supplied surface bridge or narrow host-owned handle contract. Keep API-native objects private to the implementation assembly. Do not expose Vulkan, WebGPU, Direct3D, WPF, or HWND types in the public core API.
 
+## Verified current desktop-host constraints
+
+The current AnyApp development branch targets `net8.0-windows`, enables WPF, and declares `win-x64`. Its `MainWindow.xaml` currently exposes a WPF `Grid` named `RootHost`. The existing `RendererDesktopProofView` is a WPF `FrameworkElement` that calls `DrawingContext.DrawRectangle`, `DrawEllipse`, `DrawLine`, and `DrawText` to render a diagnostic projection. Its source explicitly states that it is not a GPU proof. It adapts Renderer commands to a `VisualizerFrame`, but does not submit a Visualize GPU workload.
+
+This gives us a concrete integration target, not yet a GPU surface contract:
+
+- Preserve the existing WPF window and dispatcher; the first native proof should be an opt-in diagnostic view hosted in `RootHost`, not a second window or loop.
+- Keep the current `RendererDesktopProofView` as the CPU/WPF comparison path. Do not relabel its output as GPU-rendered.
+- Inspect how the WPF visual/handle is created and destroyed before choosing the surface bridge. The root `Grid` alone does not establish that a Vulkan or wgpu surface can be safely created from it.
+- The current AnyApp project is `net8.0-windows` and `win-x64`; do not claim x86, ARM64, or cross-platform WPF support from this target.
+- The actual native proof must run on a Windows machine with the intended runtime assets and a real graphics device (or explicitly identified software adapter), and must capture a visible output or verified readback.
+
+Sources inspected on the AnyApp `development` branch: [AnyApp.csproj](https://github.com/TrentBest/AnyApp/blob/development/AnyApp.csproj), [MainWindow.xaml](https://github.com/TrentBest/AnyApp/blob/development/MainWindow.xaml), and [RendererDesktopProofView.cs](https://github.com/TrentBest/AnyApp/blob/development/RendererDesktopProofView.cs).
+
 ## Native host lifecycle
 
 1. **Host created:** the existing AnyApp/WPF window owns its normal dispatcher and lifetime. The GPU adapter attaches only after the target visual/handle is initialized.
