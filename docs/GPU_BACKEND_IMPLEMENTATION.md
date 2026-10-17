@@ -10,6 +10,28 @@ Visualize already defines geometry, materials, resource IDs, draw commands, view
 
 These are valuable contract and projection proofs. They are not a GPU backend: the current SVG path is CPU-side, the perspective sample uses painter ordering, and neither establishes depth-buffer correctness, general clipping, GPU resource lifetime, or interactive presentation.
 
+## Graphics API strategy: own the renderer, not a hardware driver
+
+**Decision:** Visualize owns the rendering model and backend contract. DirectX is not a required dependency of Visualize core and is not allowed to leak into Renderer resource, scene, or observer contracts. We will write and own the Workshop's GPU execution backend; we will not attempt to replace vendor kernel drivers or write a hardware driver from scratch.
+
+These are different levels of the stack:
+
+- **Ours:** frame interpretation, resource revision tracking, upload policy, batch construction, shader/pipeline definitions, render passes, diagnostics, lifetime rules, and the Renderer-to-Visualize handoff.
+- **Platform adapter:** the narrow API binding that creates a device/surface and submits commands. It stays behind the backend boundary and can be replaced.
+- **Hardware driver:** supplied by the device/platform vendor. Reimplementing this is not a sensible first milestone for an independent renderer.
+
+For a native backend that does not require DirectX, evaluate **Vulkan** first. For the browser host, evaluate **WebGPU** separately. They are not the same API and should not be forced into a lowest-common-denominator abstraction that hides capabilities. Instead, Visualize defines the work and resource semantics; each backend reports capabilities and implements them explicitly. A browser may use an implementation whose internal platform layer selects a native graphics API, but that does not make DirectX a Visualize dependency.
+
+The first proof must answer these questions with a tiny running sample before we commit to a large API surface:
+
+1. Can the native backend create a real surface on our supported desktop host without requiring a DirectX-specific Visualize contract?
+2. Can it consume the existing `VisualizerFrame` and `VisualizerResourceCatalog`, including indexed geometry, materials, transforms, and `BaseVertex` semantics?
+3. Can it draw to a depth-tested surface, report its backend/device, and release every owned resource on disposal?
+4. Can the browser implementation consume the same frame/resource concepts without adding browser APIs to the core assembly?
+5. Can CI test resource preparation, batching, transforms, and lifetime without pretending that a headless test produced GPU pixels?
+
+Do not choose an API because it is familiar, and do not add a second backend merely to make a diagram look cross-platform. Build the smallest real native proof, measure the integration and maintenance cost, and keep the browser path as a separate host adapter. If Vulkan surface integration proves disproportionately expensive for the intended host, record the measured obstacle and compare alternatives before changing this decision.
+
 ## First vertical slice: one triangle, one real surface
 
 Implement the smallest end-to-end GPU path before expanding the scene vocabulary.
