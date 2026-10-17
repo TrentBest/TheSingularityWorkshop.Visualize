@@ -1,0 +1,55 @@
+# GPU Backend — First Vertical Slice
+
+**Owner:** Visualize  
+**Branch:** `development`  
+**Purpose:** Turn the existing frame/resource contracts into a verifiable, interactive GPU presentation path without confusing CPU/SVG proofs with GPU rendering.
+
+## Current baseline
+
+Visualize already defines geometry, materials, resource IDs, draw commands, views, frames, a public `Visualizer.RenderAsync(frame)` entry point, and a GUI.SVG integration. The repository also generates a perspective-projected 3D mesh proof from C#.
+
+These are valuable contract and projection proofs. They are not a GPU backend: the current SVG path is CPU-side, the perspective sample uses painter ordering, and neither establishes depth-buffer correctness, general clipping, GPU resource lifetime, or interactive presentation.
+
+## First vertical slice: one triangle, one real surface
+
+Implement the smallest end-to-end GPU path before expanding the scene vocabulary.
+
+1. **Choose the first host deliberately.** Start with the existing .NET desktop host path (AnyApp/WPF) if its integration can be verified locally; retain a browser/WebGPU adapter as a separate host implementation. Do not add WPF or browser dependencies to Visualize core.
+2. **Define a narrow backend boundary.** The core accepts a frame and logical resource descriptions; the backend owns device creation, buffers, pipelines, submission, presentation, and device-resource disposal. Keep native handles private to the backend.
+3. **Resolve logical resources explicitly.** Geometry/material IDs must resolve through the Visualize resource catalog. Track resource revisions so unchanged geometry is not uploaded every frame. Never treat a logical ID as a native GPU pointer.
+4. **Render one indexed triangle.** Use a real GPU surface and shader pipeline. Demonstrate vertex/index upload, transform handling, color/material input, and a successful frame submission.
+5. **Add depth and clipping next.** Extend the proof to overlapping triangles at different depths and a triangle crossing the near plane. Assert the nearer surface wins regardless of submission order; verify clipped geometry does not explode or disappear incorrectly.
+6. **Prove lifetime.** Dispose the backend and its GPU allocations deterministically. Test repeated create/render/dispose cycles and ensure resources are not retained by a static cache. If device loss/recreation is supported, make it an explicit follow-up test.
+7. **Keep SVG as a diagnostic backend.** It remains useful for inspectable generated documentation, deterministic regression fixtures, and environments without a GPU. It is not the acceptance test for GPU execution.
+
+## Required evidence
+
+- A CI build/test job compiles the backend and runs all host-independent tests.
+- A generated artifact or screenshot shows pixels produced by the GPU path, with backend/device information recorded.
+- Tests cover indexed geometry, world/view/projection transforms, depth ordering, near-plane clipping, resource revision/reuse, and disposal.
+- Diagnostics report submitted primitives, buffer uploads/bytes, pipeline or draw batches, frame duration, and backend identity. CPU and GPU work must both be measured; the architecture should exploit both where appropriate.
+- The sample can be run from a documented command, with no Unity dependency and no Unity types in Visualize core.
+- Any unavailable hardware-dependent test is reported as skipped/not-run, never described as passed.
+
+## Second vertical slice: a world, not a triangle
+
+Once the triangle proof is real and repeatable:
+
+1. Render a lit, indexed 3D mesh with a camera that can orbit and move.
+2. Add a small deterministic city block with stable entity IDs and multiple building representations.
+3. Drive representation selection through Renderer observer/Event Horizon policy; do not duplicate world state for plan, aerial, and first-person views.
+4. Show plan, aerial, and street/FPS observation of the same world, with explicit camera/view state.
+5. Demonstrate that distant detail reduction changes submitted work while preserving stable identity and that moving closer promotes the same entity to richer geometry.
+6. Use the same scene model in the AnyApp desktop host and the WebPage browser host; each host owns its surface and input integration.
+
+## Resource and composition ownership
+
+FSM_COS may select a rendering capability, but it is not the renderer or the graphics loop. The host/adapter owns the backend instance and its cleanup. MicroBundleDomain's current contract does not itself guarantee an unload/dispose callback, so a selected rendering bundle must not silently imply GPU-resource teardown. The composition proof and the manifestation proof are separate acceptance criteria.
+
+## Scope discipline
+
+- Work on `development`; do not publish packages or change `master` as part of this milestone.
+- Do not introduce Unity types or a graphics API into Visualize core.
+- Do not claim GPU output from SVG, software projection, or a passing compile.
+- Do not optimize around hypothetical city-scale performance before a real surface and measurements exist.
+- Keep Renderer responsible for observer-relative work selection, Visualize responsible for presentation execution, and the host responsible for window/surface lifecycle.
