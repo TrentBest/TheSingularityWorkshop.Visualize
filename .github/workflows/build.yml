@@ -217,6 +217,14 @@ jobs:
           --configuration Release
           -- ./samples/CityMassing/generated
 
+      - name: Generate deterministic Extremus crowd instance SVG proof
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/GuiSvg/ExtremusCrowdProof/ExtremusCrowdProof.csproj
+          --configuration Release
+          -- ./samples/ExtremusCrowd/generated
+
       - name: Generate GUI.SVG feature gallery in the combined proof set
         run: >
           dotnet run --project integrations/GuiSvg/GuiSource/samples/SvgGallery/SvgGallery.csproj
@@ -270,6 +278,13 @@ jobs:
           report="./samples/CityMassing/generated/city-massing-report.json"
           test -s "$report" || { echo "Missing machine-readable city proof report."; exit 1; }
           python -c 'import json; p="'"$report"'"; rows=json.load(open(p)); assert len(rows)==3, rows; assert all(r["sourceFaces"] > r["submittedFaces"] for r in rows), rows; assert all(r["omittedWindowDetailFaces"] > 0 for r in rows), rows; assert all(r["backend"] == "CPU/SVG" for r in rows), rows; print(json.dumps(rows, indent=2))'
+          crowd_dir="./samples/ExtremusCrowd/generated"
+          crowd_svg="$crowd_dir/extremus-crowd.svg"
+          crowd_manifest="$crowd_dir/extremus-crowd-manifest.json"
+          test -s "$crowd_svg" || { echo "Missing Extremus crowd SVG."; exit 1; }
+          test -s "$crowd_manifest" || { echo "Missing Extremus crowd manifest."; exit 1; }
+          grep -q 'Extremus deterministic crowd layout' "$crowd_svg"
+          python -c 'import json, pathlib; p=pathlib.Path("'"$crowd_manifest"'"); r=json.loads(p.read_text()); assert r["source"]["consumesGesturesBake"] is False, r; assert r["backend"]["execution"] == "CPU" and r["backend"]["hardwareGpuInstancing"] is False, r; assert r["counts"]["representedPopulation"] == 24 and r["counts"]["instanceRecords"] == 24, r; assert r["counts"]["drawCommands"] == 1 and r["repeatability"]["identicalInputProducedIdenticalSvg"] is True, r; assert r["repeatability"]["missingInstanceResourceRejected"] is True, r; assert len(r["records"]) == 24, r; assert r["output"]["svgBytes"] == len(pathlib.Path("'"$crowd_svg"'").read_bytes()), r; print(json.dumps({"counts": r["counts"], "output": r["output"]}, indent=2))'
 
       - name: Upload Visualizer SVG proof images
         uses: actions/upload-artifact@v7
@@ -285,6 +300,15 @@ jobs:
           path: |
             ./samples/CityMassing/generated/*.svg
             ./samples/CityMassing/generated/city-massing-report.json
+          if-no-files-found: error
+      
+      - name: Upload deterministic Extremus crowd SVG and manifest
+        uses: actions/upload-artifact@v7
+        with:
+          name: visualize-extremus-crowd-proof
+          path: |
+            ./samples/ExtremusCrowd/generated/extremus-crowd.svg
+            ./samples/ExtremusCrowd/generated/extremus-crowd-manifest.json
           if-no-files-found: error
 
       - name: Test with coverage
