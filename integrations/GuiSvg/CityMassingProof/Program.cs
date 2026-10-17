@@ -1,6 +1,8 @@
 using System.Numerics;
 using TheSingularityWorkshop.Visualize;
-using TheSingularityWorkshop.Visualize.GuiSvg;\nusing TheSingularityWorkshop.Renderer;\nusing TheSingularityWorkshop.Renderer.VisualizeAdapter;
+using TheSingularityWorkshop.Visualize.GuiSvg;
+using TheSingularityWorkshop.Renderer;
+using TheSingularityWorkshop.Renderer.VisualizeAdapter;
 
 var outputDirectory = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.GetFullPath("artifacts/city-massing");
 Directory.CreateDirectory(outputDirectory);
