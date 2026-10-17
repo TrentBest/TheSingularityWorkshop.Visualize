@@ -12,6 +12,19 @@ Build Singularity City from an inspectable plan / map-like view toward district 
 
 The north star is not a collection of disconnected illustrations. It is one world with many observer-relative representations, whose detail and computational cost change with the observer and the experience.
 
+
+## Observer choice: plan view, first-person view, and the hidden Magic switch
+
+The user should be able to choose how to observe the same city. The top-down plan/map is one observer mode, not the entire product. The long-term target includes a progressively realistic first-person/FPS view of the same world, with stable place/entity identity and no duplicated city database or disconnected game level.
+
+A deliberately hidden **Magic switch** belongs in the laboratory as a physical 3D interactable for inquisitive visitors. Flip once to switch to FPS observation; flip again to return to the top-down plan. Keep it a discoverable secret rather than a prominent global UI control. WebPage owns the lab interaction and camera/mode transition; the world model owns the switch's stable identity and placement; Renderer handles observer-relative representation/work decisions; Visualize manifests the selected frame. Mode switching must preserve world identity and relevant state. If a fully developed FPS scene is not ready, expose the contract and shared-scene prototype honestly rather than faking a finished realistic experience.
+
+This changes the integration questions and acceptance gate:
+- What existing WebPage camera/navigation state can support switching observer mode while retaining world coordinates and selection?
+- Can the same stable city entities be represented in plan view and in a first-person scene, and what geometry/content is missing for street-level use?
+- Where can the laboratory and its hidden switch be authored within the composed WebPage experience/microbundle model?
+- The vertical slice should prove real Renderer decisions for a city scene and Visualize output; the next gate should prove a reversible plan ↔ FPS observer transition over shared world identity. Do not require the hidden surprise to be revealed in ordinary UI.
+
 ## Current ownership boundaries
 
 - **WebPage:** host experience, camera/navigation input, user interaction, selection, overlays, and experience-level orchestration. It should consume rendering capabilities rather than duplicate Renderer policy or Visualize backends.
