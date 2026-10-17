@@ -25,18 +25,25 @@ The core contract should stay dependency-light. Optional API adapters may carry 
 
 ## Renderer integration boundary
 
-The Renderer-to-Visualize adapter is a command bridge, not a resource-content bridge. Preserving numeric geometry, material, or instance identifiers does not mean the corresponding bytes, revisions, or lifetimes have been transferred.
+The Renderer-to-Visualize adapter is a command bridge, not a resource-content bridge. Both models use numeric IDs, but `RenderResourceId` and `VisualizerResourceId` are different contracts: the adapter must map them deliberately, not assume equal numbers prove equal ownership or content.
 
-Before native submission, the host/integration layer must resolve each referenced identifier to an explicit Visualize-side resource description and its current revision. An unresolved identifier must fail with a useful diagnostic; it must not silently allocate an empty placeholder or assume matching numeric IDs imply matching resources.
+Visualize already defines the resource-resolution seam:
 
-Keep these responsibilities separate:
+- `IVisualizerResourceProvider` resolves geometry, material, and optional instance data.
+- `VisualizerResourceCatalog` is the current thread-safe bootstrap implementation.
+- `VisualizerGeometry`, `VisualizerMaterial`, and `VisualizerInstanceBuffer` expose immutable CPU-side snapshots with caller-managed content revisions.
+- `IVisualizerFrameAdapter<TSourceFrame>` is the renderer-package boundary; it must preserve command ordering, transforms, index/instance ranges, resource identity mapping, and the representation decision.
+
+Before native submission, the frame consumer must resolve each command's geometry and material, and resolve its instance resource whenever `Instances.IsValid`. It must validate requested index and instance ranges against the resolved snapshots. A missing resource or invalid range must produce a useful diagnostic; it must not silently allocate an empty placeholder.
+
+Keep responsibilities separate:
 
 - **Renderer** selects observer-relative representations and emits platform-neutral draw commands.
-- **Renderer.VisualizeAdapter** maps command fields and resource identities without owning native GPU handles.
-- **Visualize resource bridge / host** resolves identifiers to authoritative CPU-side descriptions, tracks content revisions, and owns resource-provider lifetime.
-- **Visualize.GPU adapter** owns native allocations, uploads, synchronization, and submission. It may cache derived GPU resources by stable identity plus revision, but GPU copies are disposable and never authoritative world state.
+- **Renderer.VisualizeAdapter** maps source command fields and logical identities without owning native GPU handles.
+- **Visualize resource provider / host** owns the CPU-side descriptions, revisions, and provider lifetime.
+- **Visualize.GPU adapter** owns native allocations, uploads, synchronization, and submission. GPU copies are derived cache entries, keyed by stable resource identity plus revision, and never authoritative world state.
 
-The native proof must exercise geometry, material, and instance resolution, including a deliberately missing resource. Numeric ID coincidence alone is not an acceptance test.
+The native proof must exercise geometry, material, and instanced draws; verify resource revision changes trigger the required upload/update; and deliberately test missing resources and out-of-range index/instance ranges. Numeric ID coincidence alone is not an acceptance test.
 
 ## First proof
 
