@@ -35,7 +35,8 @@ public sealed class RendererFrameAdapter : IVisualizerFrameAdapter<RenderFrame>
                     ? new VisualizerResourceId(source.Instances.Value)
                     : default,
                 source.InstanceCount,
-                source.FirstInstance);
+                source.FirstInstance,
+                new VisualizerEntityId(source.Entity.Value));
         }
 
         return new VisualizerFrame(
