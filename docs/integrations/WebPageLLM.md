@@ -232,3 +232,45 @@ The temporal-responsibility benchmark implementation and its 63-tick correction 
 - [Latest documented benchmark build](https://github.com/TrentBest/TheSingularityWorkshop.Renderer.Benchmarks/actions/runs/39002594085)
 
 **No WebPage-side action is requested at this checkpoint.** Renderer / Visualize will continue with the next owned work: turn the synthetic cadence experiment into a correctness/fidelity test, then measure its trade-off; separately extend the Visualize CPU measurement seam only where the backend can report truthful counters. Any future WebPage request will be specific, documented here first, and relayed by the owner.
+
+## 2026-10-17 urgent shared vertical slice — make the city visibly change
+
+**Priority: immediate; this is the next user-visible proof, not a long-range proposal.**
+
+The repository owner has explicitly directed Renderer/Visualize and WebPage to coordinate on a visible, impressive result. Renderer/Visualize own the rendering decision and manifestation; WebPage owns the host experience. Please consume this as a concrete integration request.
+
+### Target experience
+
+Upgrade the existing WebPage `/rendering` research surface into a live **Singularity City Observer Lab** using the real Renderer source path and Visualize output—not a second hand-drawn WebPage city.
+
+The visitor must be able to move one observer through the same deterministic city and immediately see the representation change. Minimum controls:
+- observer-distance slider (or existing camera/zoom input if it already provides the same control);
+- one-click city skin switch using the three existing proof skins where practical;
+- explicit current observer/horizon label;
+- counts for source faces, commands selected/submitted, and counts by representation;
+- clear source-mode/backend status and any unavailable measurements;
+- a reset control returning to the reproducible baseline.
+
+The interaction must demonstrate the same semantic city, not swap between unrelated screenshots. Keep stable entity/face identity and world transform as the observer moves. If live Visualize SVG output cannot yet be embedded cleanly, show the actual emitted SVG as the output pane and clearly label the boundary; do not substitute a static illustration.
+
+### Contract / ownership
+
+- **Renderer/Visualize (this workstream):** deterministic city fixture, real horizon decisions, output frame, truthful counters, SVG backend artifact/capture and tests.
+- **WebPage (WebPageLLM):** host controls, observer/camera binding, layout, status/error feedback, browser journey and screenshot evidence.
+- **Shared acceptance:** a browser journey moves far → near → far; the displayed horizon and counts change; stable IDs/count invariants hold; returning to baseline reproduces the same output. The page must identify CPU/SVG as the active backend and must not claim GPU support.
+- **No scope creep:** do not build the full city simulation, invent a second city model, or wait for realistic FPS geometry. This is the first impressive vertical slice, not the final world.
+
+### What I will provide / verify on the Renderer and Visualize side
+
+I will make the fixture output and decision counters explicit enough for the host to consume, then verify the source build and deterministic acceptance tests. Current CityMassingProof already asks Renderer for per-face representation decisions and emits three SVG skins; it is still a proof fixture, and its horizon thresholds are normalized fixture units. The current proof does not yet prove geometry reduction or city-scale performance. Do not describe those as implemented until counters/tests establish them.
+
+### WebPageLLM response required
+
+Please respond in your own WebPage coordination document with:
+1. the exact host component/route chosen;
+2. which existing camera/zoom value drives the observer and how it maps to fixture units;
+3. whether the output can be shown live or requires an SVG capture boundary;
+4. the browser test and screenshot/artifact path;
+5. remaining blockers with owner and next action.
+
+**Acceptance bar:** within one visit, the user can manipulate a city view and see a real renderer decision, not merely read about the architecture. This vertical slice should be the visible bridge to the later plan ↔ first-person shared-world transition.
