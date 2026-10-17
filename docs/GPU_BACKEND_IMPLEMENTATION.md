@@ -32,18 +32,19 @@ The first proof must answer these questions with a tiny running sample before we
 
 Do not choose an API because it is familiar, and do not add a second backend merely to make a diagram look cross-platform. Build the smallest real native proof, measure the integration and maintenance cost, and keep the browser path as a separate host adapter. If Vulkan surface integration proves disproportionately expensive for the intended host, record the measured obstacle and compare alternatives before changing this decision.
 
-## Native binding spike: Vulkan on the existing WPF host
+## Native backend experiment: choose from evidence
 
-**First binding candidate:** Silk.NET.Vulkan, pinned to the latest stable release verified at implementation time (the NuGet listing currently shows 2.23.0, published 2026-01-23). Silk.NET supplies low-level Vulkan bindings; it is not itself our renderer and does not replace the host or device driver. Keep the package reference inside the GPU implementation project.
+**No graphics API or binding is selected.** The isolated Direct3D 12 sample is a compile-verified reference experiment only; ADR-0004 explicitly says not to extend it by default. Do not treat the earlier Vulkan/WPF sketch as an approved implementation task either. First compare the native and browser constraints against the same array-first workload and host lifecycle.
 
-Do not start by embedding a second windowing/event loop inside AnyApp. The first spike should test the direct native-surface path:
+The next implementation task is a short, evidence-based candidate comparison—not another backend package. It should:
 
-1. Host the render target through a small WPF `HwndHost` adapter so WPF owns the child HWND and its lifetime.
-2. Create a Vulkan instance with the required platform surface extensions, create the Win32 surface from the hosted HWND/HINSTANCE, and verify presentation support for the selected queue family.
-3. Render and present one indexed triangle with a minimal shader pipeline; record API version, physical-device name, surface format, and present result.
-4. Resize and close the host repeatedly; prove swapchain recreation and deterministic disposal before integrating with the full Visualizer frame loop.
+1. Audit current stable bindings, supported runtimes, licenses, transitive dependencies, shader tooling, debugging/profiling, and deployed footprint for Vulkan, WebGPU/wgpu, and any justified alternative.
+2. Verify the real AnyApp/WPF integration constraints alongside the WebPage/browser path. A browser-capable stack is not automatically a suitable native WPF surface, and a native API is not a browser API.
+3. Define one comparable workload: device/surface creation, resize and shutdown, bulk vertex/index upload, indexed and instanced drawing, then compute output consumed by a render pass.
+4. Record what each candidate can demonstrate in CI versus what requires a real Windows GPU, and capture device/driver/runtime evidence before making performance claims.
+5. Update the strategy and ADR with the selected first experiment and the reason. Only then add a proof project or binding dependency.
 
-This is a **candidate, not a binding commitment**. Do not add Silk.NET.Windowing merely to obtain a Vulkan surface if it creates a separate top-level window or event loop. If direct Win32 surface integration is too costly, record the exact blocker and compare alternatives in a short decision record before changing the API choice. Keep Vulkan-specific types and handles out of Visualize core and the Renderer adapter. Browser WebGPU remains an independent path.
+Vulkan with Silk.NET, WebGPU/wgpu, and the existing isolated Direct3D 12 experiment remain candidates to assess, not commitments. Keep any eventual API-specific types and handles out of Visualize core and the Renderer adapter. Do not add a second windowing/event loop merely to obtain a surface. Browser WebGPU remains a distinct host/backend path even if an implementation uses a native graphics API internally.
 
 ## Package boundary: Visualize.GPU
 
