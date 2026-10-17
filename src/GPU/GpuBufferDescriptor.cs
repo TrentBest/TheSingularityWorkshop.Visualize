@@ -39,4 +39,35 @@ public readonly record struct GpuBufferDescriptor(
                 nameof(Usage), Usage, "GPU buffer usage contains unsupported flag bits.");
         }
     }
+
+    /// <summary>
+    /// Validates a contiguous upload range against this buffer's declared size.
+    /// </summary>
+    /// <remarks>
+    /// The subtraction-based bounds check avoids overflow when offsets or lengths approach
+    /// <see cref="ulong.MaxValue"/>. A zero-byte upload is allowed at any offset from zero
+    /// through the end of the buffer.
+    /// </remarks>
+    /// <param name="destinationOffset">Byte offset in the destination buffer.</param>
+    /// <param name="uploadSizeInBytes">Number of bytes to upload.</param>
+    public void ValidateUploadRange(ulong destinationOffset, ulong uploadSizeInBytes)
+    {
+        Validate();
+
+        if (destinationOffset > SizeInBytes)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(destinationOffset),
+                destinationOffset,
+                "GPU upload offset exceeds the destination buffer size.");
+        }
+
+        if (uploadSizeInBytes > SizeInBytes - destinationOffset)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(uploadSizeInBytes),
+                uploadSizeInBytes,
+                "GPU upload range exceeds the destination buffer size.");
+        }
+    }
 }
