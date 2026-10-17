@@ -25,7 +25,7 @@ The core contract should stay dependency-light. Optional API adapters may carry 
 
 ## Renderer integration boundary
 
-The Renderer-to-Visualize adapter is a command bridge, not a resource-content bridge. Both models use numeric IDs, but `RenderResourceId` and `VisualizerResourceId` are different contracts: the adapter must map them deliberately, not assume equal numbers prove equal ownership or content.
+The Renderer-to-Visualize adapter is a command bridge, not a resource-content bridge. Both models use numeric IDs, but `RenderResourceId` and `VisualizerResourceId` are different contracts. The adapter now exposes `IRendererResourceIdMapper`, so a host with independent catalogs can supply a non-identity mapping. Its parameterless compatibility path uses `IdentityRendererResourceIdMapper`: that is an explicit shared-numbering convention, not proof that the same resource content exists in both catalogs. The adapter rejects a mapper result with an invalid Visualize ID.
 
 Visualize already defines the resource-resolution seam:
 
@@ -39,7 +39,7 @@ Before native submission, the frame consumer must resolve each command's geometr
 Keep responsibilities separate:
 
 - **Renderer** selects observer-relative representations and emits platform-neutral draw commands.
-- **Renderer.VisualizeAdapter** maps source command fields and logical identities without owning native GPU handles.
+- **Renderer.VisualizeAdapter** maps source command fields and logical identities through `IRendererResourceIdMapper` without owning native GPU handles. Its identity mapper is only for hosts that intentionally share numeric allocation.
 - **Visualize resource provider / host** owns the CPU-side descriptions, revisions, and provider lifetime.
 - **Visualize.GPU adapter** owns native allocations, uploads, synchronization, and submission. GPU copies are derived cache entries, keyed by stable resource identity plus revision, and never authoritative world state.
 
