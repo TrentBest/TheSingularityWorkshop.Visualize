@@ -142,7 +142,7 @@ The next request remains: advise the narrowest path to build actual camera views
 - **Contract gaps / requested changes:** no new Visualize API is requested at this stage. The host should explicitly record the stage coordinate frame, distinguish world-space coordinates from plan-projection coordinates, and preserve camera/scene/asset identities. A generated plan is evidence of the adapter/backend path only. Any future GPU or scale claim needs an actual backend and reproducible measurements.
 - **Questions for Renderer / Visualize:** Renderer: what is the narrowest supported way to feed canonical stage transforms plus the active camera observer into the existing representation/reducer path with real alternate representations per entity? Visualize: for a follow-on camera view, which current backend/view-projection settings are supported and what result/metrics can be asserted without implying GPU output?
 
-**Ownership note:** WebPage owns the host, navigation, user controls, scene composition, and evidence labels; Renderer owns observer-relative representation/reduction decisions; Visualize owns backend-neutral frame manifestation and backend capability reporting. Gestures owns reusable procedures; Physics owns physical outcomes and acoustic observations. No peer-repository implementation was edited as part of this response.
+**Ownership note:** WebPage owns the host, navigation, user controls, scene composition, and evidence labels; Renderer owns observer-relative representation/reduction decisions; Visualize owns backend-neutral frame manifestation; Gestures owns reusable procedures; Physics owns physical outcomes and acoustic observations. No peer-repository implementation was edited as part of this response.
 
 ## Additional scene candidate: impossible-scale monarch migration
 
@@ -214,6 +214,21 @@ Suggested acceptance ladder:
 2. CPU profiling identifies the actual bottlenecks; optimize only with before/after measurements.
 3. Backend capability contract allows CPU-only and GPU-enabled configurations without changing entity identity or world semantics.
 4. GPU backend manifests the same fixture and reports device work plus transfer/synchronization cost.
-5. Hybrid policy assigns work based on measured workload/device capability, while preserving a functional CPU route and providing an apples-to-apples comparison.
+5. Hybrid policy assigns work based on measured workload/device capability, while preserving a functional CPU-only mode and providing an apples-to-apples comparison.
 
 No GPU performance claim follows from this plan; it is the architectural and measurement contract for proving the claim later.
+
+
+## 2026-10-17 ownership correction and current CI checkpoint
+
+The repository owner has clarified the work split: **this workstream owns Renderer and Visualize. WebPage is owned by a separate LLM.** Do not make direct WebPage source, test, or workflow changes from this workstream. If WebPage-side implementation is needed, place a precise request in this handoff and tell the owner so it can be relayed to WebPageLLM. Continue implementation, testing, and documentation in Renderer / Visualize without waiting on WebPage unless a concrete host contract is genuinely blocking.
+
+The latest City Lab pipeline instrumentation was corrected after CI caught an invalid assumption about `VisualizerFrameResult.Elapsed`. The Visualize result contract exposes optional `CpuSubmissionTime` and `GpuExecutionTime`, not a generic elapsed field. WebPage now reports the optional CPU submission value only when the backend supplies it and separately times the full host invocation. **WebPage CI run [39002565586](https://github.com/TrentBest/WebPage/actions/runs/39002565586) passed**, including the browser journey, browser-host build, test suites, and repository-source integration/smoke test. This is verification of the host-side instrumentation and source integration; it is not evidence of GPU execution or benchmark performance.
+
+The temporal-responsibility benchmark implementation and its 63-tick correction also build successfully:
+- [Benchmark implementation](https://github.com/TrentBest/TheSingularityWorkshop.Renderer.Benchmarks/commit/7476390ab9cf6d4441c295c361796f98d5cdf843)
+- [63-tick correction](https://github.com/TrentBest/TheSingularityWorkshop.Renderer.Benchmarks/commit/95bf25bbf969604532458a7cfd3f5d960c75369a)
+- [Methodology](https://github.com/TrentBest/TheSingularityWorkshop.Renderer.Benchmarks/blob/development/docs/TEMPORAL_RESPONSIBILITY.md)
+- [Latest documented benchmark build](https://github.com/TrentBest/TheSingularityWorkshop.Renderer.Benchmarks/actions/runs/39002594085)
+
+**No WebPage-side action is requested at this checkpoint.** Renderer / Visualize will continue with the next owned work: turn the synthetic cadence experiment into a correctness/fidelity test, then measure its trade-off; separately extend the Visualize CPU measurement seam only where the backend can report truthful counters. Any future WebPage request will be specific, documented here first, and relayed by the owner.
