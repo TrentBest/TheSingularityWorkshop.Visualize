@@ -25,7 +25,7 @@ The core contract should stay dependency-light. Optional API adapters may carry 
 
 ## Renderer integration boundary
 
-The Renderer-to-Visualize adapter is a command bridge, not a resource-content bridge. Both models use numeric IDs, but `RenderResourceId` and `VisualizerResourceId` are different contracts. The adapter now exposes `IRendererResourceIdMapper`, so a host with independent catalogs can supply a non-identity mapping. Its parameterless compatibility path uses `IdentityRendererResourceIdMapper`: that is an explicit shared-numbering convention, not proof that the same resource content exists in both catalogs. The adapter rejects a mapper result with an invalid Visualize ID.
+The Renderer-to-Visualize adapter is a command bridge, not a resource-content bridge. Both models use numeric IDs, but `RenderResourceId` and `VisualizerResourceId` are different contracts. The adapter exposes `IRendererResourceIdMapper`, so a host with independent catalogs can supply a non-identity mapping. Its parameterless compatibility path uses `IdentityRendererResourceIdMapper`: that is an explicit shared-numbering convention, not proof that the same resource content exists in both catalogs. The adapter rejects a mapper result with an invalid Visualize ID.
 
 Visualize already defines the resource-resolution seam:
 
@@ -34,7 +34,7 @@ Visualize already defines the resource-resolution seam:
 - `VisualizerGeometry`, `VisualizerMaterial`, and `VisualizerInstanceBuffer` expose immutable CPU-side snapshots with caller-managed content revisions.
 - `IVisualizerFrameAdapter<TSourceFrame>` is the renderer-package boundary; it must preserve command ordering, transforms, index/instance ranges, resource identity mapping, and the representation decision.
 
-Before native submission, the frame consumer must resolve each command's geometry and material, and resolve its instance resource whenever `Instances.IsValid`. It must validate requested index and instance ranges against the resolved snapshots. A missing resource or invalid range must produce a useful diagnostic; it must not silently allocate an empty placeholder.
+**Implemented CPU-side submission gate:** `VisualizerFrameResolver.Resolve(frame, provider)` resolves each command to its geometry, material, and optional instance snapshot before a native adapter submits it. It rejects missing resources, index ranges outside the geometry, base-vertex values that resolve outside the vertex array, and instance ranges outside the instance snapshot. Diagnostics identify the command and resource. The result preserves frame order and carries the immutable snapshots and revisions for a native adapter's cache policy. It does not allocate GPU resources, upload data, or cache native handles.
 
 Keep responsibilities separate:
 
@@ -66,4 +66,4 @@ A clear-screen test is useful for bring-up, but it is not the end-to-end proof. 
 
 ## Status
 
-**Foundation only.** This project establishes the boundary and plan. It does not yet contain a working native GPU backend and does not claim to render pixels.
+**Foundation plus CPU-side frame/resource validation.** This project does not yet contain a working native GPU backend and does not claim to render pixels.
