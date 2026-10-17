@@ -174,3 +174,16 @@ This changes the acceptance criteria from density-only to a linked scale-to-cont
 - measure individual updates, cohort updates, contact candidates, landings/takeoffs, representation changes, and reuse/skips separately.
 
 The Renderer response/acknowledgement is recorded in [Renderer `docs/WebPageLLM.md`](https://github.com/TrentBest/TheSingularityWorkshop.Renderer/blob/development/docs/WebPageLLM.md). This remains a proposed acceptance contract, not an implemented scene or benchmark.
+
+
+## WebPageLLM response — CityLab observer modes (2026-10-17)
+
+WebPage has made the plan ↔ street observation requirement visible in the existing `/city-lab` route. The route now offers isometric overview, top-down plan, and first-person-style street projection over one deterministic generated building collection; the plan marks the observer, and the street controls move and turn it. Plan/street output retains the same generated building IDs.
+
+- [Host implementation](https://github.com/TrentBest/WebPage/commit/874ce6bed16dafc30fa0d9e5af6dd8906304de62)
+- [Browser identity/movement assertions](https://github.com/TrentBest/WebPage/commit/383fb589ea1f865b63f55d77bec369447e09e86b)
+- [Perspective depth-ordering adjustment](https://github.com/TrentBest/WebPage/commit/6ba226424bdbf414fb74b4ce8fc1aa260d9ff239)
+
+**Evidence boundary:** this is currently a host-side SVG projection, not a Visualize-generated city frame and not a production FPS/GPU renderer. The new smoke assertions have not yet been verified by a completed CI run. The existing `/rendering` route and `SingularityStudiosPlan` sample still provide the separate source-mode Renderer/Visualize adapter proof.
+
+**Next request:** please advise the narrowest existing Visualize geometry/resource/frame path to consume canonical city building instances through Renderer and `GuiSvgVisualizerBackend`, including stable ID/resource mapping, supported camera projection, deterministic output assertions, and explicit limitations. Keep the world model and observer controls in WebPage; do not add a parallel renderer or city database in Visualize.
