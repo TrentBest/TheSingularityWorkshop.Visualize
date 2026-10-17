@@ -133,7 +133,7 @@ var report = new
     },
     records
 };
-var json = JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true });
+var json = JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 await File.WriteAllTextAsync(manifestPath, json + Environment.NewLine, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
 Console.WriteLine($"Crowd SVG: {svgPath}");
