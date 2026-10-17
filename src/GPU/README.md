@@ -36,6 +36,8 @@ Visualize already defines the resource-resolution seam:
 
 **Implemented CPU-side submission gate:** `VisualizerFrameResolver.Resolve(frame, provider)` resolves each command to its geometry, material, and optional instance snapshot before a native adapter submits it. It rejects missing resources, index ranges outside the geometry, base-vertex values that resolve outside the vertex array, and instance ranges outside the instance snapshot. Diagnostics identify the command and resource. The result preserves frame order and carries the immutable snapshots and revisions for a native adapter's cache policy. It does not allocate GPU resources, upload data, or cache native handles.
 
+**Implemented first workload conversion:** `VisualizerWorkloadEncoder.Encode(resolvedDraw)` emits little-endian contiguous arrays from the actual resolved snapshots, rather than regenerating a synthetic triangle. Layout v1 is explicit: XYZ float32 positions (12-byte stride), uint32 indices (4-byte stride), and 80-byte instances (16 row-major float32 transform values followed by RGBA float32). For a non-instanced command, the single record uses the command transform and material base color; for an instanced command, it encodes the selected instance range's transforms and colors. The initial position-only vertex layout intentionally omits normals, texture coordinates, and per-vertex color; that is a scoped workload layout, not a claim that those attributes are represented. Non-finite encoded values are rejected. The encoder returns fresh CPU byte arrays only; it does not upload, hash, cache, or submit them.
+
 Keep responsibilities separate:
 
 - **Renderer** selects observer-relative representations and emits platform-neutral draw commands.
@@ -49,10 +51,11 @@ The native proof must exercise geometry, material, and instanced draws; verify r
 
 1. Enumerate the selected physical/logical device and report its capabilities.
 2. Allocate and dispose a GPU buffer with explicit size, usage, and lifetime.
-3. Upload one contiguous array and submit one indexed draw through the existing Visualize resource/frame contracts.
-4. Present actual pixels to a real host surface.
-5. Verify resize, repeated submission, device/resource teardown, and diagnostics.
-6. Record the backend, adapter/device, driver/runtime versions, build configuration, and measurements.
+3. Encode actual resolved Visualize geometry, material, and instance data; verify byte layout and bounds before upload.
+4. Upload one contiguous array and submit one indexed draw through the existing Visualize resource/frame contracts.
+5. Present actual pixels to a real host surface.
+6. Verify resize, repeated submission, device/resource teardown, and diagnostics.
+7. Record the backend, adapter/device, driver/runtime versions, build configuration, and measurements.
 
 A clear-screen test is useful for bring-up, but it is not the end-to-end proof. A successful milestone must resolve real Visualize geometry, material, and instance data into GPU resources and render a frame.
 
@@ -66,4 +69,4 @@ A clear-screen test is useful for bring-up, but it is not the end-to-end proof. 
 
 ## Status
 
-**Foundation plus CPU-side frame/resource validation.** This project does not yet contain a working native GPU backend and does not claim to render pixels.
+**Foundation plus CPU-side frame/resource validation and first array encoder.** This project does not yet contain a working native GPU backend and does not claim to render pixels.
