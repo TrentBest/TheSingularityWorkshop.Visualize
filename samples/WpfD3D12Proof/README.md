@@ -1,3 +1,5 @@
+![The Singularity Workshop animated moniker](https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.Renderer/development/docs/assets/moniker.svg)
+
 # Isolated WPF / Direct3D 12 Surface Experiment
 
 **Status: exploratory only. Direct3D 12 has not been selected as Visualize's graphics backend.**
@@ -29,3 +31,14 @@ The sample uses Vortice.Direct3D12 3.8.3 inside this proof-only project. The pac
 Do not extend this experiment with an indexed triangle or connect it to VisualizerFrame, Renderer, Gestures, or AnyApp by default. First evaluate the GPU backend candidates against Visualize's array-first workload and choose based on portability, data movement, compute-to-render flow, synchronization, host integration, measured performance, and footprint.
 
 See [GPU Backend Strategy](../../docs/GPU_BACKEND_STRATEGY.md) and [ADR-0004](../../docs/decisions/ADR-0004-native-gpu-prototype.md).
+
+---
+
+<p align="center">
+  <a href="https://github.com/TrentBest/TheSingularityWorkshop" aria-label="The Singularity Workshop living avatar">
+    <img src="https://raw.githubusercontent.com/TrentBest/WebPage/development/TheSingularityWorkshop/wwwroot/Images/TheSingularityWorkshopLivingAvatar.svg" alt="The Singularity Workshop living avatar — a digital vortex converging on its central eye" width="112" />
+  </a><br />
+  <strong>The Singularity Workshop</strong><br />
+  <em>If a picture is worth a thousand words, what is a living picture worth?</em><br />
+  <a href="https://github.com/TrentBest">GitHub</a> · <a href="https://www.patreon.com/TheSingularityWorkshop">Support the Workshop</a>
+</p>
