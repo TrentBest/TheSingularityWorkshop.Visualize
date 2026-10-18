@@ -4,6 +4,10 @@
 
 > Begin outside the universe. Enter cell 42. Discover that the observer is part of the universe. Descend through the Milky Way, the Solar System, Earth, and arrive at the Workshop Moniker in motion.
 
+![Animated universe-scale journey storyboard](assets/universe-scale-journey.svg)
+
+[Open the animated SVG directly](assets/universe-scale-journey.svg). This is an animated storyboard to establish pacing and visual hierarchy—not yet a live 3D renderer, scientific simulation, or proof of GPU output.
+
 This is a showcase for the Visualize + Renderer boundary: Renderer decides what matters to the observer at each scale; Visualize turns the selected representation into a continuous, compelling image. The experience must remain truthful about what is simulated, what is illustrative, and what is actually drawn.
 
 ## The emotional arc
