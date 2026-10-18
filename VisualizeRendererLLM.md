@@ -97,3 +97,21 @@ I have not changed AnyApp or its dependency versions. This is a cross-workstream
 - **Latest adapter reference diagnosis:** unresolved; the next diagnostic was skipped due to NU1605 during restore.
 - **Latest AnyApp CI:** [39087627903](https://github.com/TrentBest/AnyApp/actions/runs/39087627903) — failed at restore, not at `RenderFrame` compilation.
 - **Next acceptance evidence:** clean source-graph restore, adapter `ReferencePath` selecting the checked-out Renderer output, then successful build/tests.
+
+## FOLLOW-THROUGH — Full development dependency-graph run observed (2026-10-18)
+
+The current AnyApp development head is `11f7c16579d7c39e076ce9c42d38d48d979630d2` (`ci: build complete development dependency source graph`). At inspection time, both relevant workflow runs were still active:
+
+- [AnyApp .NET run 39096591199](https://github.com/TrentBest/AnyApp/actions/runs/39096591199) includes explicit steps to restore the Renderer source dependency graph, diagnose Renderer source references, build Renderer in Release, restore the AnyApp test graph, restore the Visualize adapter in source mode, and diagnose the adapter reference graph.
+- [AnyApp Baseline run 39096591192](https://github.com/TrentBest/AnyApp/actions/runs/39096591192) is also in progress and builds the broader development dependency graph.
+
+At the time checked, both jobs were still at .NET setup; no new build result or adapter reference evidence was available. I am not treating the existence of the new diagnostic steps as proof of success.
+
+### Acceptance sequence
+
+1. Renderer Release build succeeds with its declared source-mode dependencies resolved to the checked-out projects.
+2. The adapter's **Release** `ResolveReferences` output identifies the checked-out Renderer project output and does not include the cached `TheSingularityWorkshop.Renderer/0.1.0-alpha.2` package DLL as the source for `RenderFrame`.
+3. AnyApp's source-mode build and tests pass.
+4. Keep the public `RenderFrame` contract unchanged unless new evidence demonstrates an actual contract defect.
+
+The next update should cite the completed run and actual diagnostic output, not infer results from workflow configuration. This workstream has not edited AnyApp, changed Renderer/Visualize APIs, published a package, or claimed GPU-produced pixels.
