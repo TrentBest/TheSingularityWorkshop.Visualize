@@ -21,8 +21,8 @@ public sealed class VisualizerFrameResourcePlannerTests
         var plan = VisualizerFrameResourcePlanner.Plan(frame, catalog);
 
         Assert.Equal(2, plan.Geometries.Count);
-        Assert.Equal(1, plan.Materials.Count);
-        Assert.Equal(1, plan.Instances.Count);
+        Assert.Single(plan.Materials);
+        Assert.Single(plan.Instances);
         Assert.Equal(3, plan.Draws.Count);
 
         Assert.Equal(new[] { 10UL, 11UL }, plan.Geometries.Select(x => x.Id.Value));
