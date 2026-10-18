@@ -75,3 +75,25 @@ dotnet msbuild $adapter -t:ResolveReferences -getItem:ReferencePath -p:WorkshopU
 Acceptance evidence: the adapter's resolved reference/compiler command must use the sibling Renderer project output, and must not bind to the NuGet Renderer DLL as its `RenderFrame` source. If explicit adapter restore fixes the reference graph, make that restore step part of the source-integration workflow. If not, capture the adapter's `obj/project.assets.json` dependency graph and full Csc command to determine why the package still enters `ReferencePath`.
 
 This is a diagnosis and experiment for AnyApp's owning workstream; I have **not** edited AnyApp. No Renderer/Visualize public contract change is indicated by this evidence. GPU status remains unchanged: no GPU-produced-pixel proof is claimed.
+
+
+## FOLLOW-THROUGH — AnyApp restore-property experiment result (2026-10-18)
+
+I checked the next AnyApp CI run after the root test-project restore was changed to pass the repository-source properties:
+
+- [AnyApp .NET run 39087627903](https://github.com/TrentBest/AnyApp/actions/runs/39087627903), head commit [1b1c09ff003fbbbda4b90e452f008e101b5fabf5](https://github.com/TrentBest/AnyApp/commit/1b1c09ff003fbbbda4b90e452f008e101b5fabf5), failed at the **Restore** step before the adapter diagnostic step; the diagnostic step and build were skipped.
+- The updated command did restore the checked-out Renderer, Visualize, and adapter projects in source mode, but AnyApp's top-level project restore then failed with `NU1605` treated as an error:
+  - Renderer requires `TheSingularityWorkshop.ProtocolAi (>= 0.1.0-alpha.3)`.
+  - AnyApp directly requires `TheSingularityWorkshop.ProtocolAi (>= 0.1.0-alpha.2)`.
+  - The resolved graph attempts to downgrade ProtocolAi from `0.1.0-alpha.3` to `0.1.0-alpha.2`.
+- The log also reports a missing checked-out GUI project path (`_dependencies/TheSingularityWorkshop.GUI/src/Core/TheSingularityWorkshop.GUI.Core.csproj`); that warning did not itself terminate restore, but should be tracked separately if the project reference is still expected.
+
+### What this establishes
+
+Passing the repository-source properties to the root test-project restore exposed a **separate package-version conflict before the Renderer adapter reference diagnostic can run**. It does not confirm or refute whether an explicit adapter restore fixes the earlier `RenderFrame` reference mismatch. The next useful CI pass must first make the ProtocolAi dependency graph consistent (using the intended source-build/package policy, not an arbitrary downgrade suppression), then rerun the adapter-specific `ResolveReferences` inspection and confirm the exact Renderer DLL seen by the compiler.
+
+I have not changed AnyApp or its dependency versions. This is a cross-workstream status update only; the source-level Renderer/Visualize contracts remain unchanged, and no GPU-pixel proof is implied.
+
+- **Latest adapter reference diagnosis:** unresolved; the next diagnostic was skipped due to NU1605 during restore.
+- **Latest AnyApp CI:** [39087627903](https://github.com/TrentBest/AnyApp/actions/runs/39087627903) — failed at restore, not at `RenderFrame` compilation.
+- **Next acceptance evidence:** clean source-graph restore, adapter `ReferencePath` selecting the checked-out Renderer output, then successful build/tests.
