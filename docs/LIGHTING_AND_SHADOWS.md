@@ -141,7 +141,12 @@ The data contract should start small and explicit: source identity, source kind,
 
 A shared neutral contract can live in a lower-level domain/math package only when both consumers genuinely need it. Do not make Physics depend on Visualize, and do not add a new shared package just to speculate. First agree on units, ownership, and a small testable source snapshot; then implement the smallest vertical slice and verify that physical changes update presentation while presentation-only changes cannot alter authoritative simulation.
 
-## 9. Acceptance principles
+
+## 9. Environment integration
+
+Lighting is one visual capability within a larger, composable **Environment**: the scene-level context that may combine surfaces, volumetric media, weather, sound, haptics, authored timing, and interaction. Visualize owns image-producing manifestations—including lighting and visual atmosphere—while Physics owns authoritative physical consequences where modeled. Audio and haptics remain optional sibling capabilities. See [Environment and Scene Composition](ENVIRONMENT_AND_SCENE_COMPOSITION.md) for the scene model, volumetric direction, persistence boundary, and staged proof plan.
+
+## 10. Acceptance principles
 
 - Light sources and surface response have documented physical meaning and consistent units/conventions.
 - Renderer and Visualize retain separate semantic and execution responsibilities.
