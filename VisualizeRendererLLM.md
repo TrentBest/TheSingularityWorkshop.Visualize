@@ -141,3 +141,15 @@ The latest completed AnyApp source-integration run changes the adapter diagnosis
 5. **GPU proof:** unchanged. No claim of indexed geometry or GPU-produced pixels; the current Visualize PR is a project-build boundary correction, not a rendering backend implementation.
 
 No AnyApp files were changed, no PR was merged, and no package was published.
+
+
+## FOLLOW-THROUGH — latest Visualize PR validation (2026-10-18 03:53Z)
+
+After the AnyApp source-integration status note above, Visualize CI ran again:
+
+- [Visualize run 39095034034](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39095034034) completed successfully.
+- `build-and-test` passed, including generation and verification of the Visualizer-backed SVG primitives, perspective-projected mesh, three city-material skins, deterministic crowd proof, coverage tests, and the Visualize/GUI.SVG integration proof.
+- `gui-svg-package-proof` passed, including the package-only consumer restore/build/run.
+- `publish_nuget` was skipped as expected. This validates the branch's CI, not a release or package publication.
+
+**Current boundary:** PR #19 remains the proposed Visualize-owned fix for excluding sample WPF XAML from the core library build. The source-mode AnyApp adapter had built successfully in run 39094600969, but AnyApp's subsequent `MicroBundleAssemblyPayload` host compile error remains outside this repository's ownership. The package/baseline `RenderFrame` issue remains a distinct path. Do not mark AnyApp fully green, merge the PR, publish a package, or claim GPU-produced pixels from these results.
