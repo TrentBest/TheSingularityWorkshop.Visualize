@@ -23,6 +23,9 @@
     <Compile Remove="tests/**/*.cs" />
     <Compile Remove="samples/**/*.cs" />
     <Compile Remove="integrations/**/*.cs" />
+    <!-- A referencing WPF host can propagate UseWPF globally. Keep standalone WPF proof/sample XAML out of the Visualize library build; each sample is built by its own project. -->
+    <Page Remove="samples/**/*.xaml" />
+    <ApplicationDefinition Remove="samples/**/*.xaml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="" />
