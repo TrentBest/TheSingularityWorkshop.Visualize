@@ -115,7 +115,33 @@ Each needs provenance and versioning appropriate to its type. Scene-specific bak
 
 Do not start by implementing a universal math library, every lighting algorithm, or every MicroBundle. Preserve the extension points, make the first slice correct and measurable, then add complexity in response to evidence.
 
-## 8. Acceptance principles
+## 8. Physics integration: one phenomenon, two responsibilities
+
+Lighting should be a shared physical concept across the Workshop, but **Physics and Visualize must not become the same subsystem**.
+
+Physics should own physical consequences where the simulation needs them: energy emitted or absorbed, radiative heating/cooling when modeled, material/medium interactions, and any light-related quantities that affect authoritative world state. It should expose those results as backend-neutral data with explicit units, coordinate conventions, and revisions. A light that heats a surface, an arc that deposits energy, or hot material that radiates should be representable as physical cause-and-effect—not merely as a color chosen by a shader.
+
+Visualize owns the image-producing approximation: how relevant sources illuminate visible surfaces, how material response is shaded, how shadows and occlusion are approximated, and how atmosphere, dust, and smoke affect the displayed image. It may consume source and medium data from Physics, but it must not be the authority for gameplay heat, damage, or other simulated outcomes.
+
+The distinction matters because visual and physical fidelity have different budgets. A far-away lamp may be represented by a cheap visual aggregate while the physical simulation uses its own valid energy-transfer model; conversely, a visual shadow may be refreshed less often without slowing collision, thermal, or other authoritative simulation. **Never use the lighting shader as the thermal solver, and never require Physics to reference Visualize or a graphics API.**
+
+Suggested neutral handoff:
+
+~~~text
+Experience / world state
+   ├── Physics: source energy, absorption/emission, physical consequences
+   │       └── neutral source / medium / energy snapshots + revisions
+   └── Renderer: observer relevance, representation, horizon and cadence policy
+                   |
+                   v
+             Visualize: shading, shadows, atmosphere, GPU execution
+~~~
+
+The data contract should start small and explicit: source identity, source kind, position/direction, emitted intensity or radiometric quantity with documented units, spectrum/color representation, range or attenuation model where applicable, enabled state, and a content revision. Physics should publish only the quantities it actually models; Visualize may derive display color, artistic grading, and backend-specific parameters without rewriting physical state. Surface material data should likewise distinguish physical properties (where modeled) from presentation controls (such as a deliberately stylized tint).
+
+A shared neutral contract can live in a lower-level domain/math package only when both consumers genuinely need it. Do not make Physics depend on Visualize, and do not add a new shared package just to speculate. First agree on units, ownership, and a small testable source snapshot; then implement the smallest vertical slice and verify that physical changes update presentation while presentation-only changes cannot alter authoritative simulation.
+
+## 9. Acceptance principles
 
 - Light sources and surface response have documented physical meaning and consistent units/conventions.
 - Renderer and Visualize retain separate semantic and execution responsibilities.
