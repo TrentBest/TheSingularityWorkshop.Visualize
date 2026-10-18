@@ -36,6 +36,8 @@ Visualize already defines the resource-resolution seam:
 
 **Implemented CPU-side submission gate:** `VisualizerFrameResolver.Resolve(frame, provider)` resolves each command to its geometry, material, and optional instance snapshot before a native adapter submits it. It rejects missing resources, index ranges outside the geometry, base-vertex values that resolve outside the vertex array, and instance ranges outside the instance snapshot. Diagnostics identify the command and resource. The result preserves frame order and carries the immutable snapshots and revisions for a native adapter's cache policy. It does not allocate GPU resources, upload data, or cache native handles.
 
+**Implemented frame resource plan:** `VisualizerFrameResourcePlanner.Plan(frame, provider)` turns a resolved frame into unique geometry, material, and instance-resource lists plus ordered draw references. Repeated use of the same logical resource is represented once in the plan, so a future backend can upload/cache it once and draw it many times. Each draw points to the appropriate unique resource index; draw order remains unchanged. If the same resource ID resolves to different revisions while a frame is being resolved, planning fails with a diagnostic rather than silently mixing snapshots. This is a CPU-side planning contract—not an upload cache, synchronization mechanism, or GPU proof.
+
 **Implemented first workload conversion:** `VisualizerWorkloadEncoder.Encode(resolvedDraw)` emits little-endian contiguous arrays from the actual resolved snapshots, rather than regenerating a synthetic triangle. Layout v1 is explicit: XYZ float32 positions (12-byte stride), uint32 indices (4-byte stride), and 80-byte instances (16 row-major float32 transform values followed by RGBA float32). For a non-instanced command, the single record uses the command transform and material base color; for an instanced command, it encodes the selected instance range's transforms and colors. The initial position-only vertex layout intentionally omits normals, texture coordinates, and per-vertex color; that is a scoped workload layout, not a claim that those attributes are represented. Non-finite encoded values are rejected. The encoder returns fresh CPU byte arrays only; it does not upload, hash, cache, or submit them.
 
 Keep responsibilities separate:
@@ -69,4 +71,4 @@ A clear-screen test is useful for bring-up, but it is not the end-to-end proof. 
 
 ## Status
 
-**Foundation plus CPU-side frame/resource validation and first array encoder.** This project does not yet contain a working native GPU backend and does not claim to render pixels.
+**Foundation plus CPU-side frame/resource validation, frame-level resource planning, and first array encoder.** This project does not yet contain a working native GPU backend and does not claim to render pixels.
