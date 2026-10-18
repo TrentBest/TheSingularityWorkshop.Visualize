@@ -48,3 +48,30 @@ AnyApp remains owner of WPF/HWND surface lifetime and dispatcher behavior. Rende
 - **GPU backend and host-surface status:** No verified GPU-pixel proof claimed.
 - **Questions for AnyApp:** Please provide the diagnostic run URL/output for the resolved references and compiler command.
 - **Acknowledgment / follow-through:** This response is recorded in the Visualize repository; no peer-repository source edit, merge, or package publication was performed.
+
+
+## FOLLOW-THROUGH — AnyApp diagnostic CI evidence (2026-10-18)
+
+I inspected AnyApp's completed diagnostic run after the earlier handoff:
+
+- [AnyApp .NET run 39087080094](https://github.com/TrentBest/AnyApp/actions/runs/39087080094), head commit [bcc35d1855f751953e42ceeedbfcab1c7731f415](https://github.com/TrentBest/AnyApp/commit/bcc35d1855f751953e42ceeedbfcab1c7731f415), failed in the adapter build. The diagnostic step itself completed successfully.
+- Evaluated properties are correct: `WorkshopUseRepositorySources=true`; `WorkshopSourceRoot=D:\\a\\AnyApp\\AnyApp/_dependencies`; and `WorkshopRendererProjectPath=D:\\a\\AnyApp\\AnyApp/_dependencies/TheSingularityWorkshop.Renderer/TheSingularityWorkshop.Renderer.csproj`.
+- Evaluated `ProjectReference` items include both the Visualize core project and the sibling Renderer project. Evaluated `PackageReference` items are empty.
+- **But the resolved `ReferencePath` still contains the cached NuGet assembly** `C:\\Users\\runneradmin\\.nuget\\packages\\thesingularityworkshop.renderer\\0.1.0-alpha.2\\lib\\net8.0\\TheSingularityWorkshop.Renderer.dll`, not just the checked-out project's output. The adapter then fails with CS0246 for `RenderFrame`. This is the first concrete evidence of the mismatch.
+
+### Diagnosis and smallest next step
+
+The evaluated project graph points at the correct source project, while the resolved compiler-reference graph retains the package DLL. The strongest explanation is stale/inconsistent restore assets: the workflow restores the outer AnyApp test project, while the adapter receives source-mode properties as `AdditionalProperties` on a project reference. Those properties are visible during the diagnostic evaluation, but the restore graph appears not to have regenerated the adapter's assets in that same source-mode configuration. This is a **restore/reference-graph mismatch**, not evidence that Renderer lacks `RenderFrame`.
+
+The smallest focused experiment for the AnyApp owner is to explicitly restore the adapter with the same source-mode properties before `ResolveReferences` and the no-restore build:
+
+```powershell
+$adapter = "_dependencies/TheSingularityWorkshop.Visualize/integrations/RendererAdapter/TheSingularityWorkshop.Renderer.VisualizeAdapter.csproj"
+$sourceRoot = "$env:GITHUB_WORKSPACE/_dependencies"
+dotnet restore $adapter -p:WorkshopUseRepositorySources=true -p:WorkshopSourceRoot="$sourceRoot"
+dotnet msbuild $adapter -t:ResolveReferences -getItem:ReferencePath -p:WorkshopUseRepositorySources=true -p:WorkshopSourceRoot="$sourceRoot"
+```
+
+Acceptance evidence: the adapter's resolved reference/compiler command must use the sibling Renderer project output, and must not bind to the NuGet Renderer DLL as its `RenderFrame` source. If explicit adapter restore fixes the reference graph, make that restore step part of the source-integration workflow. If not, capture the adapter's `obj/project.assets.json` dependency graph and full Csc command to determine why the package still enters `ReferencePath`.
+
+This is a diagnosis and experiment for AnyApp's owning workstream; I have **not** edited AnyApp. No Renderer/Visualize public contract change is indicated by this evidence. GPU status remains unchanged: no GPU-produced-pixel proof is claimed.
