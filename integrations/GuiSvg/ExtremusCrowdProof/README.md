@@ -1,3 +1,5 @@
+![The Singularity Workshop animated moniker](https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.Renderer/development/docs/assets/moniker.svg)
+
 # Extremus Crowd SVG Proof
 
 This small integration fixture validates the current Visualize instance-buffer contract with a deterministic, hand-authored population. It is deliberately a consumer-side specimen, not an imported Gestures bake.
@@ -16,3 +18,14 @@ Outputs:
 The executable verifies that two independent backend instances produce identical SVG for the same snapshot and that a missing instance resource is rejected. The output describes a **CPU/SVG manifestation**. One instance-range command is expanded by the current backend into per-instance SVG paths; this is not evidence of hardware instancing, pose animation, GPU execution, or population-scale performance.
 
 Once this fixture is green in CI, the next cross-repository step is to request a pinned golden bake from the Gestures owner and add a consumer test against that exact version. Gestures and Physics are not dependencies of this fixture.
+
+---
+
+<p align="center">
+  <a href="https://github.com/TrentBest/TheSingularityWorkshop" aria-label="The Singularity Workshop living avatar">
+    <img src="https://raw.githubusercontent.com/TrentBest/WebPage/development/TheSingularityWorkshop/wwwroot/Images/TheSingularityWorkshopLivingAvatar.svg" alt="The Singularity Workshop living avatar — a digital vortex converging on its central eye" width="112" />
+  </a><br />
+  <strong>The Singularity Workshop</strong><br />
+  <em>If a picture is worth a thousand words, what is a living picture worth?</em><br />
+  <a href="https://github.com/TrentBest">GitHub</a> · <a href="https://www.patreon.com/TheSingularityWorkshop">Support the Workshop</a>
+</p>
