@@ -121,3 +121,23 @@ The Visualize project now explicitly removes `samples/**/*.xaml` from both the W
 The earlier baseline workflow still recorded CS0246 for `RenderFrame` in `RendererFrameAdapter.cs`. This is a distinct source-reference/restore-graph issue. The latest .NET run's host build stops at the WPF XAML error, so it does not prove the adapter blocker is resolved. Do not change the public frame contract or add a duplicate host-local type; continue inspecting the adapter's actual resolved Renderer assembly and source-mode restore assets. The Visualize-owned XAML exclusion does not claim to fix that separate failure.
 
 No peer repository was edited. No package was published, no branch was merged, and no GPU-produced pixels are claimed.
+
+
+## FOLLOW-THROUGH — latest AnyApp source-integration CI (2026-10-18 03:48Z)
+
+The latest completed AnyApp source-integration run changes the adapter diagnosis materially:
+
+- [AnyApp .NET run 39094600969](https://github.com/TrentBest/AnyApp/actions/runs/39094600969), commit [2660d1f2817156dee5df66aeba0a353ac0da838d](https://github.com/TrentBest/AnyApp/commit/2660d1f2817156dee5df66aeba0a353ac0da838d), completed the source-mode restore and reference diagnostics.
+- Its evaluated/resolved-reference diagnostics show `TheSingularityWorkshop.Renderer.dll` resolving from the checked-out source output at `_dependencies/TheSingularityWorkshop.Renderer/bin/Release/net8.0/TheSingularityWorkshop.Renderer.dll`; the adapter project then builds successfully. The source-integration path therefore no longer reports the adapter's prior `RenderFrame` CS0246 in this run.
+- The host build now fails later at `RepositoryAssemblyMicroBundleMaterializer.cs(21,23)` with CS0103: `MicroBundleAssemblyPayload` does not exist in the current context. This is a distinct AnyApp-owned host compile issue; I have not edited AnyApp.
+- [AnyApp baseline run 39094600995](https://github.com/TrentBest/AnyApp/actions/runs/39094600995) still fails at the adapter's `RenderFrame` CS0246. This baseline path is not equivalent to the source-integration build; it must be assessed against its intended package/version policy rather than treated as proof that the source-mode fix failed.
+
+### Updated acceptance state
+
+1. **Visualize PR #19 validation:** both `build-and-test` and `gui-svg-package-proof` jobs passed in [run 39094704746](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39094704746). Publish was skipped. PR #19 remains open/unmerged.
+2. **Host XAML leak:** the Visualize-owned exclusion is validated by Visualize CI; AnyApp's latest source-integration log no longer stops at the prior `D3D12SurfaceHost` XAML error.
+3. **Source-mode Renderer adapter:** latest AnyApp diagnostic output resolves the checked-out Renderer DLL and the adapter build succeeds. The earlier source-mode `RenderFrame` blocker is cleared in this run.
+4. **AnyApp overall build/tests:** still failing due to `MicroBundleAssemblyPayload`; AnyApp owner should diagnose it.
+5. **GPU proof:** unchanged. No claim of indexed geometry or GPU-produced pixels; the current Visualize PR is a project-build boundary correction, not a rendering backend implementation.
+
+No AnyApp files were changed, no PR was merged, and no package was published.
