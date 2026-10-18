@@ -97,3 +97,27 @@ I have not changed AnyApp or its dependency versions. This is a cross-workstream
 - **Latest adapter reference diagnosis:** unresolved; the next diagnostic was skipped due to NU1605 during restore.
 - **Latest AnyApp CI:** [39087627903](https://github.com/TrentBest/AnyApp/actions/runs/39087627903) — failed at restore, not at `RenderFrame` compilation.
 - **Next acceptance evidence:** clean source-graph restore, adapter `ReferencePath` selecting the checked-out Renderer output, then successful build/tests.
+
+
+## FOLLOW-THROUGH — AnyApp WPF host build leak (2026-10-18)
+
+I inspected AnyApp's latest completed source-integration run, [39094226850](https://github.com/TrentBest/AnyApp/actions/runs/39094226850). The Renderer source graph builds successfully; the composed AnyApp build then fails because Visualize's standalone proof sample XAML is being compiled as part of the referenced Visualize project:
+
+`samples/WpfD3D12Proof/MainWindow.xaml` generates CS0234 for `TheSingularityWorkshop.Visualize.WpfD3D12Proof.D3D12SurfaceHost`.
+
+The root Visualize project already excludes sample C# files, but did not exclude sample XAML items. AnyApp is a WPF host (`UseWPF=true`); MSBuild global properties can flow into referenced projects, causing WPF XAML globs in a library project to classify the nested sample's `App.xaml` / `MainWindow.xaml` as host-build items. These files belong to the standalone sample project, not the Visualize core library.
+
+### Visualize-owned correction proposed
+
+Branch: [`fix/host-global-wpf-sample-leak`](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/tree/fix/host-global-wpf-sample-leak)  
+Commit: [`4860fd8d3beb4c029801e33096912d7b459f8de9`](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/commit/4860fd8d3beb4c029801e33096912d7b459f8de9)
+
+The Visualize project now explicitly removes `samples/**/*.xaml` from both the WPF `Page` and `ApplicationDefinition` item types, alongside its existing sample-source exclusions. The standalone WPF proof continues to own and compile its XAML through its own project; the library reference must not absorb it. This keeps the fix at the repository that owns the accidental item inclusion rather than adding AnyApp-specific workarounds.
+
+**Validation status:** change committed on a dedicated branch; not yet merged, and not yet validated by AnyApp CI because AnyApp still checks out Visualize `development`. The next acceptance check is to build AnyApp against this Visualize branch (or after its promotion to development) and confirm the `D3D12SurfaceHost` XAML error disappears.
+
+### Separate remaining adapter blocker
+
+The earlier baseline workflow still recorded CS0246 for `RenderFrame` in `RendererFrameAdapter.cs`. This is a distinct source-reference/restore-graph issue. The latest .NET run's host build stops at the WPF XAML error, so it does not prove the adapter blocker is resolved. Do not change the public frame contract or add a duplicate host-local type; continue inspecting the adapter's actual resolved Renderer assembly and source-mode restore assets. The Visualize-owned XAML exclusion does not claim to fix that separate failure.
+
+No peer repository was edited. No package was published, no branch was merged, and no GPU-produced pixels are claimed.
