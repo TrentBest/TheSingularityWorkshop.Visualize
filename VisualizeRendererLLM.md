@@ -153,3 +153,16 @@ After the AnyApp source-integration status note above, Visualize CI ran again:
 - `publish_nuget` was skipped as expected. This validates the branch's CI, not a release or package publication.
 
 **Current boundary:** PR #19 remains the proposed Visualize-owned fix for excluding sample WPF XAML from the core library build. The source-mode AnyApp adapter had built successfully in run 39094600969, but AnyApp's subsequent `MicroBundleAssemblyPayload` host compile error remains outside this repository's ownership. The package/baseline `RenderFrame` issue remains a distinct path. Do not mark AnyApp fully green, merge the PR, publish a package, or claim GPU-produced pixels from these results.
+
+
+## FOLLOW-THROUGH — AnyApp ProtocolAi restore blocker (2026-10-18 04:12Z)
+
+The latest attempted AnyApp source-mode diagnostic, [run 39096028141](https://github.com/TrentBest/AnyApp/actions/runs/39096028141), did **not** reach the adapter reference diagnostic step. It failed earlier while restoring the AnyApp test graph:
+
+`NU1102: Unable to find package TheSingularityWorkshop.ProtocolAi with version (>= 0.1.0-alpha.3)`
+
+The configured NuGet feeds only offered `0.1.0-alpha.2`; the run's local composition feed also did not contain alpha.3. The parallel baseline restore, [run 39096028142](https://github.com/TrentBest/AnyApp/actions/runs/39096028142), failed on the same unavailable ProtocolAi package version. Consequently, these two runs provide **no new evidence** about whether the adapter's `RenderFrame` compiler failure is resolved.
+
+The adapter project file on Visualize `development` still conditionally selects the checked-out Renderer project when `WorkshopUseRepositorySources=true` and the source path exists, otherwise falling back to package `0.1.0-alpha.2`. The earlier source-mode run [39094600969](https://github.com/TrentBest/AnyApp/actions/runs/39094600969) had already shown the adapter compiling against the checked-out Renderer DLL. The package-mode `RenderFrame` failure remains separate and likely reflects the package API surface available to that path; confirm against the exact package contents/version before changing adapter code.
+
+**Ownership / next action:** AnyApp owns the restore graph and ProtocolAi version alignment; no AnyApp files were changed here. To continue the adapter investigation, run the adapter's source-mode restore/build independently of the full AnyApp test graph, then capture `WorkshopRendererProjectPath`, `ResolvedProjectReferencePaths`, and `ReferencePath`. No package was published and no PR was merged.
