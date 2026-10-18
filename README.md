@@ -14,6 +14,7 @@ This README follows the Workshop's shared [Documentation Standard](https://githu
 Visualize is designed to be the image-producing capability within a larger, composable scene—not a monolithic owner of every modality. The Environment architecture describes how authored scene state can bring together surfaces, volumetric media, weather, sound, haptics, persistence, and staged proofs while keeping Physics, Renderer, Visualize, and optional sensory capabilities independently bounded.
 
 - [Environment and Scene Composition](docs/ENVIRONMENT_AND_SCENE_COMPOSITION.md) — ownership boundaries, volumetric direction, persistent authored inputs, and first vertical proofs.
+- [Visual Effects and GPU Domain](docs/VISUAL_EFFECTS_AND_GPU_DOMAIN.md) — visual capability inventory, event-versus-field contracts, scalable environmental effects, GPU/CPU responsibilities, and proof ladder.
 - [Physics-Based Lighting, Shadows, and Extensible Math](docs/LIGHTING_AND_SHADOWS.md) — the relationship between physical light meaning, observer relevance, visual execution, independent work cadence, and invalidation.
 
 **Implementation status:** architecture direction and documentation. This does not claim production volumetric rendering, a selected GPU backend, or working audio/haptic integration.
