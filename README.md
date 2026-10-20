@@ -146,6 +146,7 @@ The tests verify the current contracts. To explore the first visible SVG sequenc
 - [Environment and scene composition](docs/ENVIRONMENT_AND_SCENE_COMPOSITION.md) — define the composable scene across surfaces, volumetric media, weather, sound, haptics, persistence, and staged proofs.
 - [Physics-based lighting, shadows, and extensible math](docs/LIGHTING_AND_SHADOWS.md) — understand physical light-source meaning, independent horizon work buckets, MicroBundle arbitration, cache invalidation, and the staged plan for optional math optimizations.
 - [Open questions](docs/OPEN_QUESTIONS.md) — review unresolved design decisions.
+- [Rotating spacecraft armor research note](docs/RESEARCH_NOTES.md) — a concept-only trade study with explicit thermal, exposure, structural, and mass/power caveats.
 - [Visual effects and GPU domain](docs/VISUAL_EFFECTS_AND_GPU_DOMAIN.md) — distinguish image-producing responsibilities, event/field contracts, GPU suitability, and the proof ladder.
 - [Decision records](docs/decisions/README.md) — follow architectural choices and their rationale.
 
