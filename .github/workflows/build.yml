@@ -49,6 +49,7 @@ jobs:
           Path("/tmp/webgpu-runner-check.mjs").write_text(match.group(1), encoding="utf-8")
           PY
           node --check /tmp/webgpu-runner-check.mjs
+          node --test samples/ArrayFirstWorkload/WebGpuRunner/renderer-trace.test.mjs
 
       - name: Restore
         run: dotnet restore TheSingularityWorkshop.Visualize.slnx
