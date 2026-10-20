@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>TheSingularityWorkshop.Visualize.GPU</PackageId>
+    <Version>0.1.0-alpha.1</Version>
+    <Authors>TheSingularityWorkshop</Authors>
+    <Company>The Singularity Workshop</Company>
+    <Description>Low-overhead GPU device, memory, and submission contracts for Visualize, with replaceable native API adapters.</Description>
+    <PackageTags>gpu;graphics;compute;buffers;native;visualize;performance</PackageTags>
+    <RepositoryUrl>https://github.com/TrentBest/TheSingularityWorkshop.Visualize</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/TrentBest/TheSingularityWorkshop.Visualize</PackageProjectUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../TheSingularityWorkshop.Visualize.csproj" />
+  </ItemGroup>
+</Project>
