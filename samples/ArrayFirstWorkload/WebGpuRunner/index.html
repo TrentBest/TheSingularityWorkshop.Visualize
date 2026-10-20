@@ -36,6 +36,8 @@ dl{display:grid;grid-template-columns:1fr auto;gap:.35rem;margin:1rem 0}dt{color
 <aside>
 <label for="dataset">Dataset directory (served from this origin)</label>
 <input id="dataset" value="/artifacts/workload-10000" spellcheck="false">
+<label for="rendererTrace">Optional Renderer decision trace (JSON URL)</label>
+<input id="rendererTrace" value="" placeholder="/artifacts/renderer-workload-trace.json" spellcheck="false">
 <button id="load">Load dataset and render</button>
 <dl>
 <dt>Instances</dt><dd id="instances">—</dd>
@@ -58,6 +60,7 @@ dl{display:grid;grid-template-columns:1fr auto;gap:.35rem;margin:1rem 0}dt{color
 const canvas = document.querySelector("#surface");
 const status = document.querySelector("#status");
 const datasetInput = document.querySelector("#dataset");
+const rendererTraceInput = document.querySelector("#rendererTrace");
 const setText = (id, value) => document.querySelector("#" + id).textContent = String(value);
 let device;
 let context;
@@ -84,6 +87,8 @@ let farBaseX;
 let frameHandle = 0;
 let indexCount = 0;
 let depthTexture;
+let rendererTrace = null;
+let rendererTraceRow = null;
 
 const shaderCode = `
 struct Instance {
@@ -171,6 +176,8 @@ function disposeCurrentRun() {
   context = null;
   device = null;
   pipeline = null;
+  rendererTrace = null;
+  rendererTraceRow = null;
 }
 
 async function loadAndRender() {
@@ -191,6 +198,26 @@ async function loadAndRender() {
 
     const base = datasetInput.value.trim();
     if (!base) throw new Error("Enter a dataset directory path.");
+    rendererTrace = null;
+    rendererTraceRow = null;
+    const traceUrl = rendererTraceInput.value.trim();
+    if (traceUrl) {
+      status.textContent = "Loading Renderer observer/horizon decision trace…";
+      const traceResponse = await fetch(traceUrl, { cache: "no-store" });
+      if (!traceResponse.ok) throw new Error("Could not load Renderer trace (" + traceResponse.status + ").");
+      const trace = await traceResponse.json();
+      if (trace.SchemaVersion !== 1 || trace.Workload !== "array-first-observer-horizon" ||
+          !Array.isArray(trace.Frames) || trace.Frames.length === 0 ||
+          !trace.Frames.every((row, index) =>
+            row.Frame === index &&
+            typeof row.Horizon === "string" &&
+            typeof row.RefreshRequired === "boolean" &&
+            typeof row.ReusedCachedRepresentation === "boolean" &&
+            typeof row.RefreshAccepted === "boolean")) {
+        throw new Error("Unsupported Renderer trace: expected schema v1 with ordered frame, horizon, refresh, reuse, and acceptance fields.");
+      }
+      rendererTrace = trace;
+    }
     status.textContent = "Loading generated manifest and binary arrays…";
     const manifestResponse = await fetch(base.replace(/\/$/, "") + "/dataset-manifest.json", { cache: "no-store" });
     if (!manifestResponse.ok) throw new Error("Could not load dataset-manifest.json (" + manifestResponse.status + ").");
@@ -263,16 +290,15 @@ async function loadAndRender() {
     previousFrameTime = 0;
     frameIntervals = [];
     submitDurations = [];
-    status.textContent = "Dataset loaded. Near cohort updates every frame; far cohort refreshes every 12 frames.";
+    status.textContent = rendererTrace
+      ? "Dataset and Renderer trace loaded. Cohort uploads now follow Renderer refresh/reuse decisions."
+      : "Dataset loaded. Demonstration mode: near cohort updates every frame; far cohort refreshes every 12 frames.";
     const bindGroup = device.createBindGroup({
       layout: pipeline.getBindGroupLayout(0),
       entries: [{ binding: 0, resource: { buffer: instanceBuffer } }]
     });
 
-    function updateCohorts() {
-      frameIndex++;
-      // Deterministic, bounded motion makes the near-field upload real work each frame.
-      // The far cohort is deliberately reused between 12-frame refreshes.
+    function uploadNearCohort() {
       const nearView = new DataView(nearUpload.buffer, nearUpload.byteOffset, nearUpload.byteLength);
       const nearShift = Math.sin(frameIndex * 0.02) * 1.5;
       for (let i = 0; i < nearInstanceCount; i++)
@@ -281,17 +307,40 @@ async function loadAndRender() {
         device.queue.writeBuffer(instanceBuffer, 0, nearUpload);
         nearUploadBytes += nearUpload.byteLength;
       }
+    }
 
-      if (farInstanceCount > 0 && frameIndex % 12 === 0) {
-        const farView = new DataView(farUpload.buffer, farUpload.byteOffset, farUpload.byteLength);
-        const farShift = Math.cos(frameIndex * 0.005) * 0.75;
-        for (let i = 0; i < farInstanceCount; i++)
-          farView.setFloat32(i * 80 + 48, farBaseX[i] + farShift, true);
-        device.queue.writeBuffer(instanceBuffer, nearUpload.byteLength, farUpload);
-        farRefreshCount++;
-        farUploadBytes += farUpload.byteLength;
-        setText("farRefreshes", farRefreshCount);
-        setText("farUploads", farUploadBytes.toLocaleString());
+    function uploadFarCohort() {
+      if (farInstanceCount <= 0) return;
+      const farView = new DataView(farUpload.buffer, farUpload.byteOffset, farUpload.byteLength);
+      const farShift = Math.cos(frameIndex * 0.005) * 0.75;
+      for (let i = 0; i < farInstanceCount; i++)
+        farView.setFloat32(i * 80 + 48, farBaseX[i] + farShift, true);
+      device.queue.writeBuffer(instanceBuffer, nearUpload.byteLength, farUpload);
+      farRefreshCount++;
+      farUploadBytes += farUpload.byteLength;
+      setText("farRefreshes", farRefreshCount);
+      setText("farUploads", farUploadBytes.toLocaleString());
+    }
+
+    function updateCohorts() {
+      frameIndex++;
+      if (rendererTrace) {
+        rendererTraceRow = rendererTrace.Frames[(frameIndex - 1) % rendererTrace.Frames.length];
+        // The trace's selected horizon identifies the bucket whose refresh/reuse decision
+        // applies on this frame. Only accepted refreshes are uploaded to the corresponding cohort.
+        if (rendererTraceRow.RefreshRequired && rendererTraceRow.RefreshAccepted) {
+          if (rendererTraceRow.Horizon === "Near") {
+            uploadNearCohort();
+          } else if (rendererTraceRow.Horizon === "Far") {
+            uploadFarCohort();
+          } else {
+            throw new Error("Renderer trace selected unsupported horizon: " + rendererTraceRow.Horizon);
+          }
+        }
+      } else {
+        // Standalone demonstration policy retained for comparison when no Renderer trace is supplied.
+        uploadNearCohort();
+        if (farInstanceCount > 0 && frameIndex % 12 === 0) uploadFarCohort();
       }
       fullUpdateBaselineBytes += instanceCount * 80;
       if (frameIndex % 12 === 0) {
