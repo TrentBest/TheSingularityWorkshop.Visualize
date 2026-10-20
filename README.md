@@ -10,6 +10,8 @@
 
 > **Make the living world visible. Keep the world independent of its display.**
 
+**[Gallery](docs/GALLERY.md)** — short visual index · [Detailed SVG proof guide](docs/SVG_LIVING_DOCUMENTATION.md)
+
 ## Living visual showcase
 
 [![Animated connected geometry emitted through Visualizer → GUI.SVG](samples/PrimitiveGallery/generated/07-gui-svg-connected-points.svg)](samples/PrimitiveGallery/README.md)
