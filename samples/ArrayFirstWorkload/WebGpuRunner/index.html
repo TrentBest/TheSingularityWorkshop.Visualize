@@ -50,6 +50,7 @@ dl{display:grid;grid-template-columns:1fr auto;gap:.35rem;margin:1rem 0}dt{color
 <dt>Near bytes uploaded</dt><dd id="nearUploads">0</dd>
 <dt>Far refreshes</dt><dd id="farRefreshes">0</dd>
 <dt>Far bytes uploaded</dt><dd id="farUploads">0</dd>
+<dt>Renderer policy</dt><dd id="rendererPolicy">standalone</dd>
 <dt>Upload avoided vs full update</dt><dd id="uploadAvoided">0</dd>
 <dt>Adapter</dt><dd id="adapter">—</dd>
 </dl>
@@ -208,13 +209,17 @@ async function loadAndRender() {
       const trace = await traceResponse.json();
       if (trace.SchemaVersion !== 1 || trace.Workload !== "array-first-observer-horizon" ||
           !Array.isArray(trace.Frames) || trace.Frames.length === 0 ||
+          trace.FrameCount !== trace.Frames.length ||
           !trace.Frames.every((row, index) =>
             row.Frame === index &&
-            typeof row.Horizon === "string" &&
+            Number.isFinite(row.TimeMilliseconds) && row.TimeMilliseconds >= 0 &&
+            (row.Horizon === "Near" || row.Horizon === "Far") &&
             typeof row.RefreshRequired === "boolean" &&
             typeof row.ReusedCachedRepresentation === "boolean" &&
-            typeof row.RefreshAccepted === "boolean")) {
-        throw new Error("Unsupported Renderer trace: expected schema v1 with ordered frame, horizon, refresh, reuse, and acceptance fields.");
+            typeof row.RefreshAccepted === "boolean" &&
+            (!row.RefreshAccepted || row.RefreshRequired) &&
+            typeof row.Bucket === "string" && row.Bucket.length > 0)) {
+        throw new Error("Unsupported Renderer trace: expected schema v1, a matching FrameCount, ordered non-negative timestamps, Near/Far horizons, bucket names, and consistent refresh/acceptance fields.");
       }
       rendererTrace = trace;
     }
@@ -290,6 +295,7 @@ async function loadAndRender() {
     previousFrameTime = 0;
     frameIntervals = [];
     submitDurations = [];
+    setText("rendererPolicy", rendererTrace ? "trace loaded" : "standalone");
     status.textContent = rendererTrace
       ? "Dataset and Renderer trace loaded. Cohort uploads now follow Renderer refresh/reuse decisions."
       : "Dataset loaded. Demonstration mode: near cohort updates every frame; far cohort refreshes every 12 frames.";
@@ -326,6 +332,7 @@ async function loadAndRender() {
       frameIndex++;
       if (rendererTrace) {
         rendererTraceRow = rendererTrace.Frames[(frameIndex - 1) % rendererTrace.Frames.length];
+        setText("rendererPolicy", rendererTraceRow.Horizon + (rendererTraceRow.RefreshAccepted ? " · refreshed" : rendererTraceRow.ReusedCachedRepresentation ? " · reused" : rendererTraceRow.RefreshRequired ? " · pending" : " · unchanged"));
         // The trace's selected horizon identifies the bucket whose refresh/reuse decision
         // applies on this frame. Only accepted refreshes are uploaded to the corresponding cohort.
         if (rendererTraceRow.RefreshRequired && rendererTraceRow.RefreshAccepted) {
