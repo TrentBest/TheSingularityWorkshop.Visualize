@@ -2,6 +2,8 @@
 
 **Status: evaluation plan only. No backend is selected.**
 
+See the [dated candidate comparison](GPU_BACKEND_CANDIDATE_COMPARISON.md) for current binding/package evidence and the rationale for the proposed first experiment.
+
 The first GPU path must prove correctness before speed. A surface-clearing demo is a useful host/device smoke test, but it is not enough to validate Visualize's array-first architecture or make performance claims.
 
 ## Candidate shortlist
