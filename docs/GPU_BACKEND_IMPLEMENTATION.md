@@ -34,7 +34,7 @@ Do not choose an API because it is familiar, and do not add a second backend mer
 
 ## Native backend experiment: choose from evidence
 
-**No graphics API or binding is selected.** The isolated Direct3D 12 sample is a compile-verified reference experiment only; ADR-0004 explicitly says not to extend it by default. Do not treat the earlier Vulkan/WPF sketch as an approved implementation task either. First compare the native and browser constraints against the same array-first workload and host lifecycle.
+**No graphics API or binding is selected.** The isolated Direct3D 12 sample is a compile-verified reference experiment only; ADR-0004 explicitly says not to extend it by default. Do not treat the earlier Vulkan/WPF sketch as an approved implementation task either. First compare the native and browser constraints against the same array-first workload and host lifecycle. The [2026-10-20 candidate comparison](GPU_BACKEND_CANDIDATE_COMPARISON.md) records current binding evidence and recommends Vulkan only as the first disposable native experiment, with WebGPU assessed separately for the browser host.
 
 The next implementation task is a short, evidence-based candidate comparison—not another backend package. It should:
 
