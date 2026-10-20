@@ -16,7 +16,7 @@ Research starting points:
 - [Official Vulkan documentation](https://docs.vulkan.org/) describes Vulkan as a cross-platform graphics and compute API.
 - [Silk.NET](https://github.com/dotnet/Silk.NET) exposes Vulkan and WebGPU bindings. Its project notes that 2.x maintenance investment is limited while 3.0 development proceeds, so package/version and native-runtime maintenance must be an explicit dependency gate.
 - [Silk.NET.WebGPU on NuGet](https://www.nuget.org/packages/Silk.NET.WebGPU/) is a concrete native .NET binding candidate, not a backend decision.
-- [wgpu-native](https://github.com/gfx-rs/wgpu-native) provides a native WebGPU implementation and lists .NET bindings, including Silk.NET.
+- [wgpu-native](https://github.com/gfx-rs/wgpu) provides a native WebGPU implementation and lists .NET bindings, including Silk.NET.
 
 ## Required proof ladder
 
@@ -27,6 +27,12 @@ Research starting points:
 5. **Observer-driven workload:** feed the same deterministic scene and observer transitions used by Renderer proofs. Keep representation decisions upstream and compare equivalent visible work.
 6. **Repeatable benchmark:** warm up separately, repeat enough frames to report median/p95/p99 CPU submission and GPU pass times, allocations, transfer volume, synchronization stalls, resource churn, output correctness, and cold-start cost.
 7. **Hardware confirmation:** run the same tagged workload on a named physical GPU/device/driver and preserve raw measurements and screenshots/readback. CI success on a software adapter is useful correctness evidence, not physical-GPU performance evidence.
+
+## Current bulk-data boundary
+
+`VisualizerGeometry` and `VisualizerInstanceBuffer` now expose `ReadOnlyMemory<T>` views (`VertexMemory`, `IndexMemory`, and `InstanceMemory`) over the same private snapshots as their existing read-only list properties. This gives a backend a contiguous bulk-data path without requiring it to enumerate the list API or make another copy just to obtain memory.
+
+This is an API boundary improvement, **not yet a GPU upload implementation or a zero-copy guarantee**. Construction still snapshots caller data; the GPU backend must validate byte layout and alignment, decide when revision changes require uploads, measure conversion and transfer costs, and prove that unchanged revisions do not trigger redundant resource creation or upload. Do not assume `Memory<T>` means the data can be used directly by a device or pinned safely for arbitrary GPU lifetime.
 
 ## Acceptance rules
 
