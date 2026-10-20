@@ -93,7 +93,11 @@ The isolated [WPF Direct3D 12 proof](../samples/WpfD3D12Proof/README.md) creates
 
 Keep this sample isolated. Do not add indexed drawing, connect it to VisualizerFrame, or integrate it with Renderer/AnyApp until the backend strategy is deliberately revisited. Its current value is as a reference experiment and a reminder to demand real runtime evidence.
 
-## 9. Research references
+## 9. Evaluation gate
+
+Use the [GPU backend evaluation gate](GPU_BACKEND_EVALUATION.md) before selecting or integrating a backend. It defines the device, pixel-readback, array-upload, compute-to-render, observer-workload, benchmark, and physical-hardware evidence required for a defensible decision.
+
+## 10. Research references
 
 - [Vulkan](https://www.vulkan.org/)
 - [WebGPU specification](https://www.w3.org/TR/webgpu/)
