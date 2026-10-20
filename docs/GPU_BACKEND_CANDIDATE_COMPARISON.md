@@ -24,18 +24,20 @@ Package archive size is not deployed runtime footprint. These package metadata s
 
 ## Decision for the next experiment
 
-**Do not add a graphics dependency to Visualize core and do not create or publish the `Visualize.GPU` package yet.**
+**Do not add a graphics dependency to Visualize core and do not publish `Visualize.GPU` yet.** There are already two relevant open draft workstreams: [Visualize.GPU foundation PR #15](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/pull/15) and [shared array-first workload PR #6](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/pull/6). Treat them as coordinated parts of one GPU program, not competing architectures.
 
-Run a small, disposable, opt-in comparison harness before choosing the long-lived backend:
+The next experiment should reuse the existing deterministic array-first workload rather than start with an unrelated triangle demo:
 
-1. Pin the candidate package version and capture the resolved dependency graph and license notices.
-2. First prove adapter/device identity and render a deterministic indexed triangle into a GPU-owned offscreen texture; copy the texture to a readback buffer and assert known pixels. This isolates GPU execution and readback from WPF surface complexity.
-3. Label the adapter as hardware or software where the API/runtime exposes enough information; retain all raw device/runtime metadata.
-4. Only after the offscreen proof passes, add the AnyApp/WPF surface adapter and test resize, presentation, shutdown and repeated create/dispose.
-5. Extend the same backend to revision-aware vertex/index/instance uploads, then indexed + instanced drawing, then compute-to-render. Keep browser WebGPU as a separate host validation.
-6. Compare implementation effort, reproducibility, device availability, deployment footprint and correctness before choosing a backend. Performance comparison starts only when equivalent workloads run on named hardware.
+1. Revalidate the shared workload generator, byte layout, manifest counts/hashes, index bounds, and the browser WebGPU runner in PR #6. Capture the exact source revision and runtime/browser/device metadata for any manual run; CI syntax/build success alone is not runtime GPU evidence.
+2. Replace the sample-owned near/far refresh heuristic with actual Renderer observer/horizon/bucket invalidation and reuse decisions, preserving the same workload arrays and deterministic observer trace. Keep Renderer core independent of Visualize and graphics APIs.
+3. Feed the resulting platform-neutral frame/resource descriptions through Visualize's existing resource planner and GPU foundation. Resolve logical geometry/material/instance IDs to actual data; never treat ID preservation as resource transfer.
+4. Use the browser WebGPU path as the first shared-workload GPU execution target where runtime support exists, with known-output checks/readback where the implementation supports it. Record unavailable hardware-dependent checks as skipped/not-run, not passed.
+5. Only after this end-to-end path is reproducible, implement an equivalent native consumer of the exact same arrays and observer trace. Compare Vulkan, native WebGPU/wgpu, or another suitable native option against host compatibility, runtime capability, integration cost, correctness, packaging, and measured performance—not familiarity or vendor identity.
+6. Keep offscreen pixel readback, actual host presentation, compute-to-render, device-loss/resource recreation, and physical-GPU benchmarks as separate evidence gates.
 
-The first candidate to implement in the harness should be **Vulkan with a stable Silk.NET package**, because it directly tests the required native graphics/compute control without committing Visualize to Direct3D. This is a choice of *first experiment only*, not a permanent backend selection. WebGPU remains the leading browser candidate and should be evaluated independently for WebPage/browser hosting. If the Vulkan offscreen and WPF host costs are disproportionate, record that evidence and evaluate WebGPU/wgpu-native next rather than forcing the initial candidate into the architecture.
+This ordering gives **both Renderer and Visualize** an immediate common workload: Renderer owns which work is due, invalidated, reused, or omitted; Visualize owns resource resolution, GPU execution, and presentation; the host owns surface lifecycle. The GPU can later accelerate eligible data-parallel Renderer workloads through an explicit neutral compute boundary, without making Renderer depend on Visualize or forcing semantic policy onto the GPU. That extension should follow a measured workload and a concrete contract, not a premature API expansion.
+
+No permanent backend is selected. Browser WebGPU and native graphics APIs are distinct host execution paths over the same logical workload. A software adapter can establish limited correctness evidence but cannot establish physical-GPU performance.
 
 ## Explicit non-claims
 
