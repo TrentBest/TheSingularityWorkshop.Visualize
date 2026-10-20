@@ -36,15 +36,16 @@ Do not choose an API because it is familiar, and do not add a second backend mer
 
 **No permanent graphics API or binding is selected.** The isolated Direct3D 12 sample is a compile-verified reference experiment only; ADR-0004 explicitly says not to extend it by default. Coordinate [Visualize.GPU foundation PR #15](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/pull/15) with [shared array-first workload PR #6](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/pull/6); neither is complete by itself.
 
-The next proof should make the *same workload* benefit both repositories: Renderer supplies actual observer/horizon/bucket decisions; Visualize resolves logical resources and submits GPU work; the host owns presentation and lifecycle. Do not keep a sample-owned near/far timer as a substitute for Renderer policy, and do not confuse numeric ID preservation with resource contents or revision/lifetime transfer.
+The first policy-to-upload bridge is now drafted across [Renderer trace PR #21](https://github.com/TrentBest/TheSingularityWorkshop.Renderer/pull/21) and [the shared array-first workload PR #6](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/pull/6). Renderer exports a deterministic trace from its actual observer coordinator and bucket policy; the WebGPU runner can optionally replay that trace to decide which near/far cohort to upload or reuse. The trace generator simulates refresh completion immediately, so this is not yet a live Renderer instance, resource revision handoff, or GPU correctness proof. Do not confuse numeric ID preservation with resource contents or revision/lifetime transfer.
 
 Use this sequence to validate the [capability-driven architecture](GPU_BACKEND_ARCHITECTURE.md):
-1. Revalidate the array-first generator, byte layout, manifest counts/hashes, and index bounds; record the exact workload/source revision.
-2. Connect real Renderer invalidation/reuse/cadence decisions to that workload while keeping Renderer independent of Visualize and graphics APIs.
+1. Revalidate the array-first generator, byte layout, manifest counts/hashes, index bounds, and Renderer trace schema; record exact workload/source revisions.
+2. Verify that trace replay maps each Renderer refresh/acceptance/reuse decision to the intended cohort update, while preserving unchanged GPU data and keeping Renderer independent of Visualize and graphics APIs.
 3. Run the shared workload through Visualize's resource planner and browser WebGPU path where supported; assert known output/readback when available and report unrun hardware-dependent checks honestly.
-4. Add explicit device/runtime/capability diagnostics and verify resource revision changes, upload accounting, disposal, and repeated initialization.
-5. Implement an equivalent native consumer only after the browser workload is reproducible, comparing suitable native candidates by host compatibility, actual capabilities, correctness, deployment, and measured integration cost—not by defaulting to Vulkan or Direct3D.
-6. Test offscreen readback, host presentation/resize/shutdown, compute-to-render, device loss/recreation, and physical-GPU performance as separate gates.
+4. Replace synthetic trace replay with a live/shared host integration that connects actual Renderer output to Visualize resource resolution and revision tracking.
+5. Add explicit device/runtime/capability diagnostics and verify resource revision changes, upload accounting, disposal, and repeated initialization.
+6. Implement an equivalent native consumer only after the browser workload is reproducible, comparing suitable native candidates by host compatibility, actual capabilities, correctness, deployment, and measured integration cost—not by defaulting to Vulkan or Direct3D.
+7. Test offscreen readback, host presentation/resize/shutdown, compute-to-render, device loss/recreation, and physical-GPU performance as separate gates.
 
 Keep API-specific types and handles out of Visualize core and Renderer contracts. Do not add a second windowing/event loop merely to obtain a surface. An offscreen readback proof establishes GPU rendering correctness only; it does not establish host presentation or physical-GPU performance.
 
