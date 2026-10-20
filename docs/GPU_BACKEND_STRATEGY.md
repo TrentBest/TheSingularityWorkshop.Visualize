@@ -28,7 +28,7 @@ The backend should support bulk uploads and stable resource revisions. Avoid per
 
 This does **not** mean blindly uploading every CPU array every frame. Compare persistent GPU residency, incremental updates, mapped/upload buffers, storage buffers, packed formats, textures, and hybrid approaches against actual update patterns. The GPU copy is disposable derived state; authoritative state remains outside the backend.
 
-### 2.1 Event-Horizon-first execution
+### 3.1 Event-Horizon-first execution
 
 The Renderer’s Event Horizons are the first optimization boundary—not a graphics API's LOD feature. Perception determines which representation is required, how much work is justified, and how frequently that representation needs evaluation. Visualize should consume those decisions rather than independently reconstructing world semantics.
 
@@ -114,7 +114,7 @@ Use the [GPU backend evaluation gate](GPU_BACKEND_EVALUATION.md) before selectin
 
 These are research starting points, not endorsements. Verify current binding support, package versions, license compatibility, maintenance status, runtime footprint, and actual performance before selecting a dependency.
 
-## 2.2 Cached horizons are presentation inputs, not merely draw lists
+## 3.2 Cached horizons are presentation inputs, not merely draw lists
 
 The frame-oriented VisualizerFrame contract is a useful first boundary, but by itself it does not define a persistent Event Horizon cache or guarantee that unchanged distant content avoids reconstruction. The backend strategy must evolve beyond assuming that every display frame is a wholly new list of draws.
 
