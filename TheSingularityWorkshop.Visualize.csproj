@@ -23,6 +23,9 @@
     <Compile Remove="tests/**/*.cs" />
     <Compile Remove="samples/**/*.cs" />
     <Compile Remove="integrations/**/*.cs" />
+    <!-- Keep standalone WPF sample XAML in its own project even when UseWPF flows from a referencing host. -->
+    <Page Remove="samples/**/*.xaml" />
+    <ApplicationDefinition Remove="samples/**/*.xaml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="" />
