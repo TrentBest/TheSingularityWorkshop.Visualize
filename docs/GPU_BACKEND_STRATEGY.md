@@ -2,6 +2,8 @@
 
 **Status:** Investigation framework. No graphics API or binding has been selected.
 
+The dated [GPU backend candidate comparison](GPU_BACKEND_CANDIDATE_COMPARISON.md) records the current package evidence and defines the next isolated experiment; it does not select a permanent backend.
+
 ## 1. The objective
 
 Visualize should exploit the Workshop's data-oriented design instead of inheriting the architecture of a graphics API, windowing toolkit, or game engine. The aim is direct, efficient control over GPU resources, parallel compute, graphics pipelines, synchronization, and presentation—while keeping world meaning and observer-relative detail decisions outside the graphics backend.
