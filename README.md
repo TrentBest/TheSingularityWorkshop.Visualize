@@ -118,7 +118,7 @@ An isolated WPF/Direct3D 12 clear-and-present experiment exists under `samples/W
 ![](docs/assets/dividers/green.svg)
 
 The illustration above is the no-launch overview. For deeper inspection, the documentation links below take you directly to the implementation and the current visual experiments. GitHub displays this README and its SVG artwork in place; the browser labs are separate HTML/WebGPU or SVG experiments, not embedded executions of the C# assembly.
-
+\n- **[Array-first GPU workload contract](samples/ArrayFirstWorkload/README.md)** — deterministic shared inputs and evidence limits for native/browser comparisons.\n- **[Array-first dataset generator](samples/ArrayFirstWorkload/Generator/README.md)** — create contiguous vertex, index, and instance arrays with a SHA-256 manifest.\n- **[Shared-data WebGPU runner](samples/ArrayFirstWorkload/WebGpuRunner/README.md)** — browser indexed-instancing proof that consumes the generated arrays and optional Renderer trace.\n- **[Soldier Field WebGPU research lab](samples/SoldierField/WebGpuRunner/README.md)** — a 38-part procedural soldier with part-level damage and research experiments; browser-side evidence only, not a hardware-validated production renderer.
 - **[Primitive Gallery source and guide](samples/PrimitiveGallery/README.md)** — the interactive point/line progression and what each step demonstrates.
 - **[Primitive Gallery page](samples/PrimitiveGallery/index.html)** — inspect the experiment's actual HTML, SVG, and JavaScript.
 - **[Surface Normals & Light lab](samples/NormalLightingLab/index.html)** — change light direction, ambient contribution, diffuse strength, sample density, and normal overlays in a live SVG study.
