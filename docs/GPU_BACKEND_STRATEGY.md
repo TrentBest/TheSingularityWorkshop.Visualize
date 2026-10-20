@@ -2,13 +2,19 @@
 
 **Status:** Investigation framework. No graphics API or binding has been selected.
 
+The dated [GPU backend candidate comparison](GPU_BACKEND_CANDIDATE_COMPARISON.md) records the current package evidence and defines the next isolated experiment; it does not select a permanent backend.
+
 ## 1. The objective
 
 Visualize should exploit the Workshop's data-oriented design instead of inheriting the architecture of a graphics API, windowing toolkit, or game engine. The aim is direct, efficient control over GPU resources, parallel compute, graphics pipelines, synchronization, and presentation—while keeping world meaning and observer-relative detail decisions outside the graphics backend.
 
 The optimization target is the whole path: select only the detail an observer needs, express the remaining work in compact arrays, transfer data efficiently, batch submission, execute parallel GPU work, and present with minimal stalls. Low-level APIs can expose control, but control alone is not proof of speed.
 
-## 2. Array-first is a design constraint
+## 2. Backend-neutral architecture comes first
+
+The architecture is defined in [GPU Backend Architecture](GPU_BACKEND_ARCHITECTURE.md): select by host compatibility and actual device capabilities, not GPU vendor or browser brand. Keep a shared workload/resource contract above backend adapters, while exposing advanced features explicitly rather than flattening every API to a lowest common denominator. The current candidate comparison chooses only what to investigate first; it is not a permanent backend choice.
+
+## 3. Array-first is a design constraint
 
 The core workload should prefer contiguous, explicitly laid-out data over a forest of per-object runtime wrappers. Candidate arrays/streams include:
 
@@ -22,7 +28,7 @@ The backend should support bulk uploads and stable resource revisions. Avoid per
 
 This does **not** mean blindly uploading every CPU array every frame. Compare persistent GPU residency, incremental updates, mapped/upload buffers, storage buffers, packed formats, textures, and hybrid approaches against actual update patterns. The GPU copy is disposable derived state; authoritative state remains outside the backend.
 
-### 2.1 Event-Horizon-first execution
+### 3.1 Event-Horizon-first execution
 
 The Renderer’s Event Horizons are the first optimization boundary—not a graphics API's LOD feature. Perception determines which representation is required, how much work is justified, and how frequently that representation needs evaluation. Visualize should consume those decisions rather than independently reconstructing world semantics.
 
@@ -41,11 +47,11 @@ An unchanged horizon must not be regenerated simply because a new display frame 
 
 The benchmark must therefore measure the whole perception-to-presentation pipeline, including horizon invalidation, cache reuse, CPU scheduling/submission, data movement, GPU execution, and final composition. A raw triangle benchmark cannot validate this architecture.
 
-## 3. CUDA is not the whole rendering stack
+## 4. CUDA is not the whole rendering stack
 
 CUDA is NVIDIA's general-purpose GPU compute platform. It can be valuable for measured NVIDIA-specific workloads, but it is not a universal cross-vendor graphics and display API. A CUDA kernel does not by itself create a WPF surface, rasterize a scene, or present a frame. Consider it only when measured benefit justifies vendor-specific code and interoperability complexity.
 
-## 4. Backend candidates
+## 5. Backend candidates
 
 | Candidate | Why investigate it | Risks / limits |
 | --- | --- | --- |
@@ -57,7 +63,7 @@ CUDA is NVIDIA's general-purpose GPU compute platform. It can be valuable for me
 
 The existence of code for a candidate is not a selection criterion. **Do not continue the Direct3D 12 sample by default.** See [ADR-0004](decisions/ADR-0004-native-gpu-prototype.md): it records an isolated experiment, not the chosen direction.
 
-## 5. Compare candidates using the same workload
+## 6. Compare candidates using the same workload
 
 Build a repeatable evaluation that covers:
 
@@ -71,7 +77,7 @@ Build a repeatable evaluation that covers:
 
 The first benchmark is a correctness gate, not a performance victory. Compare the same scene, visible detail, resolution, hardware, and interaction workload. Include the host integration in the comparison: a fast GPU path with costly or fragile presentation integration is not a successful Visualizer.
 
-## 6. Shader and data strategy
+## 7. Shader and data strategy
 
 No shader language or GPU data layout is selected. Evaluate toolchains for native and browser targets, compilation/reflection, debugging/profiling, reproducible build output, shader asset packaging, hot reload, licensing, and redistribution.
 
@@ -79,7 +85,7 @@ The compact four-channel 8-bit state-texture concept from raWWar is a hypothesis
 
 Backend-neutral does not mean lowest-common-denominator. Expose capabilities and limits explicitly, permit backend-specific shaders and advanced operations, and do not silently emulate unsupported features in ways that change correctness or performance.
 
-## 7. Host boundaries
+## 8. Host boundaries
 
 - Visualize core contracts describe work and resources without WPF controls, HWNDs, or native graphics handles.
 - AnyApp/WPF owns the desktop host lifecycle.
@@ -87,13 +93,17 @@ Backend-neutral does not mean lowest-common-denominator. Expose capabilities and
 - Backend implementations own device resources, uploads, command submission, synchronization, and presentation.
 - Renderer decides observer-relative representation and detail; Visualize should not redo those semantic decisions.
 
-## 8. Existing Direct3D 12 experiment
+## 9. Existing Direct3D 12 experiment
 
 The isolated [WPF Direct3D 12 proof](../samples/WpfD3D12Proof/README.md) creates a native child HWND, Direct3D 12 device/queue, DXGI swap chain, and clear/present loop. It is compile-verified in Windows CI, but a real hardware/runtime capture has not been recorded. It draws no geometry and deliberately waits for GPU completion each frame.
 
 Keep this sample isolated. Do not add indexed drawing, connect it to VisualizerFrame, or integrate it with Renderer/AnyApp until the backend strategy is deliberately revisited. Its current value is as a reference experiment and a reminder to demand real runtime evidence.
 
-## 9. Research references
+## 10. Evaluation gate
+
+Use the [GPU backend evaluation gate](GPU_BACKEND_EVALUATION.md) before selecting or integrating a backend. It defines the device, pixel-readback, array-upload, compute-to-render, observer-workload, benchmark, and physical-hardware evidence required for a defensible decision.
+
+## 11. Research references
 
 - [Vulkan](https://www.vulkan.org/)
 - [WebGPU specification](https://www.w3.org/TR/webgpu/)
@@ -104,7 +114,7 @@ Keep this sample isolated. Do not add indexed drawing, connect it to VisualizerF
 
 These are research starting points, not endorsements. Verify current binding support, package versions, license compatibility, maintenance status, runtime footprint, and actual performance before selecting a dependency.
 
-## 2.2 Cached horizons are presentation inputs, not merely draw lists
+## 3.2 Cached horizons are presentation inputs, not merely draw lists
 
 The frame-oriented VisualizerFrame contract is a useful first boundary, but by itself it does not define a persistent Event Horizon cache or guarantee that unchanged distant content avoids reconstruction. The backend strategy must evolve beyond assuming that every display frame is a wholly new list of draws.
 

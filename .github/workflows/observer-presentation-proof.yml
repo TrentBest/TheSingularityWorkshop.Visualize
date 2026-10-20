@@ -1,0 +1,77 @@
+name: Observer-driven Renderer to Visualize presentation proof
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - master
+      - development
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  observer-presentation-proof:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Visualize
+        uses: actions/checkout@v7
+      - name: Checkout Renderer source for actual observer policy and RenderFrame
+        uses: actions/checkout@v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.Renderer
+          ref: development
+          path: integrations/RendererAdapter/RendererSource
+      - name: Checkout GUI source for GUI.SVG
+        uses: actions/checkout@v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.GUI
+          ref: development
+          path: integrations/GuiSvg/GuiSource
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore observer presentation proof
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: dotnet restore integrations/GuiSvg/ObserverFrameProof/ObserverFrameProof.csproj
+      - name: Build observer presentation proof
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: dotnet build integrations/GuiSvg/ObserverFrameProof/ObserverFrameProof.csproj --configuration Release --no-restore
+      - name: Generate two observer-driven GUI.SVG frames
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: dotnet run --project integrations/GuiSvg/ObserverFrameProof/ObserverFrameProof.csproj --configuration Release --no-build -- ./artifacts/observer-frame
+      - name: Verify observer-driven output and report
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s ./artifacts/observer-frame/observer-x-000.svg
+          test -s ./artifacts/observer-frame/observer-x-050.svg
+          test -s ./artifacts/observer-frame/observer-frame-report.json
+          grep -q 'Observer-driven frame / X=0' ./artifacts/observer-frame/observer-x-000.svg
+          grep -q 'Observer-driven frame / X=50' ./artifacts/observer-frame/observer-x-050.svg
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("./artifacts/observer-frame/observer-frame-report.json").read_text())
+          assert report["backend"] == "CPU/SVG", report
+          assert report["gpuSubmission"] is False, report
+          assert len(report["frames"]) == 2, report
+          a, b = report["frames"]
+          assert a["commandCount"] == b["commandCount"] == report["subjects"] == 4, report
+          assert [r["representation"] for r in a["rows"]] != [r["representation"] for r in b["rows"]], report
+          assert all(row["selectedIndices"] > 0 for frame in report["frames"] for row in frame["rows"]), report
+          print(json.dumps(report, indent=2))
+          PY
+      - name: Upload observer-driven SVG frames and report
+        uses: actions/upload-artifact@v7
+        with:
+          name: visualize-observer-driven-presentation-proof
+          path: ./artifacts/observer-frame/*
+          if-no-files-found: error

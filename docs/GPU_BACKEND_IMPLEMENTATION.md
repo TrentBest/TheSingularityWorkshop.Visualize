@@ -20,7 +20,7 @@ These are different levels of the stack:
 - **Platform adapter:** the narrow API binding that creates a device/surface and submits commands. It stays behind the backend boundary and can be replaced.
 - **Hardware driver:** supplied by the device/platform vendor. Reimplementing this is not a sensible first milestone for an independent renderer.
 
-For a native backend that does not require DirectX, evaluate **Vulkan** first. For the browser host, evaluate **WebGPU** separately. They are not the same API and should not be forced into a lowest-common-denominator abstraction that hides capabilities. Instead, Visualize defines the work and resource semantics; each backend reports capabilities and implements them explicitly. A browser may use an implementation whose internal platform layer selects a native graphics API, but that does not make DirectX a Visualize dependency.
+Follow [GPU Backend Architecture](GPU_BACKEND_ARCHITECTURE.md): choose by host compatibility and actual device capabilities, never by GPU vendor or browser brand. A native host may use Vulkan or another suitable native backend; a browser host uses browser-provided WebGPU where available, with the browser/runtime handling its internal platform choice. Visualize owns the shared work/resource semantics; backend adapters report capabilities and retain access to API-specific extensions. Do not force every backend into a lowest-common-denominator contract, and do not leak API types into core.
 
 The first proof must answer these questions with a tiny running sample before we commit to a large API surface:
 
@@ -32,19 +32,22 @@ The first proof must answer these questions with a tiny running sample before we
 
 Do not choose an API because it is familiar, and do not add a second backend merely to make a diagram look cross-platform. Build the smallest real native proof, measure the integration and maintenance cost, and keep the browser path as a separate host adapter. If Vulkan surface integration proves disproportionately expensive for the intended host, record the measured obstacle and compare alternatives before changing this decision.
 
-## Native backend experiment: choose from evidence
+## Native backend experiment: validate the architecture, not a vendor
 
-**No graphics API or binding is selected.** The isolated Direct3D 12 sample is a compile-verified reference experiment only; ADR-0004 explicitly says not to extend it by default. Do not treat the earlier Vulkan/WPF sketch as an approved implementation task either. First compare the native and browser constraints against the same array-first workload and host lifecycle.
+**No permanent graphics API or binding is selected.** The isolated Direct3D 12 sample is a compile-verified reference experiment only; ADR-0004 explicitly says not to extend it by default. Coordinate [Visualize.GPU foundation PR #15](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/pull/15) with [shared array-first workload PR #6](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/pull/6); neither is complete by itself.
 
-The next implementation task is a short, evidence-based candidate comparison—not another backend package. It should:
+The first policy-to-upload bridge is now drafted across [Renderer trace PR #21](https://github.com/TrentBest/TheSingularityWorkshop.Renderer/pull/21) and [the shared array-first workload PR #6](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/pull/6). Renderer exports a deterministic trace from its actual observer coordinator and bucket policy; the WebGPU runner can optionally replay that trace to decide which near/far cohort to upload or reuse. The trace generator simulates refresh completion immediately, so this is not yet a live Renderer instance, resource revision handoff, or GPU correctness proof. Do not confuse numeric ID preservation with resource contents or revision/lifetime transfer.
 
-1. Audit current stable bindings, supported runtimes, licenses, transitive dependencies, shader tooling, debugging/profiling, and deployed footprint for Vulkan, WebGPU/wgpu, and any justified alternative.
-2. Verify the real AnyApp/WPF integration constraints alongside the WebPage/browser path. A browser-capable stack is not automatically a suitable native WPF surface, and a native API is not a browser API.
-3. Define one comparable workload: device/surface creation, resize and shutdown, bulk vertex/index upload, indexed and instanced drawing, then compute output consumed by a render pass.
-4. Record what each candidate can demonstrate in CI versus what requires a real Windows GPU, and capture device/driver/runtime evidence before making performance claims.
-5. Update the strategy and ADR with the selected first experiment and the reason. Only then add a proof project or binding dependency.
+Use this sequence to validate the [capability-driven architecture](GPU_BACKEND_ARCHITECTURE.md):
+1. Revalidate the array-first generator, byte layout, manifest counts/hashes, index bounds, and Renderer trace schema; record exact workload/source revisions.
+2. Verify that trace replay maps each Renderer refresh/acceptance/reuse decision to the intended cohort update, while preserving unchanged GPU data and keeping Renderer independent of Visualize and graphics APIs.
+3. Run the shared workload through Visualize's resource planner and browser WebGPU path where supported; assert known output/readback when available and report unrun hardware-dependent checks honestly.
+4. Replace synthetic trace replay with a live/shared host integration that connects actual Renderer output to Visualize resource resolution and revision tracking.
+5. Add explicit device/runtime/capability diagnostics and verify resource revision changes, upload accounting, disposal, and repeated initialization.
+6. Implement an equivalent native consumer only after the browser workload is reproducible, comparing suitable native candidates by host compatibility, actual capabilities, correctness, deployment, and measured integration cost—not by defaulting to Vulkan or Direct3D.
+7. Test offscreen readback, host presentation/resize/shutdown, compute-to-render, device loss/recreation, and physical-GPU performance as separate gates.
 
-Vulkan with Silk.NET, WebGPU/wgpu, and the existing isolated Direct3D 12 experiment remain candidates to assess, not commitments. Keep any eventual API-specific types and handles out of Visualize core and the Renderer adapter. Do not add a second windowing/event loop merely to obtain a surface. Browser WebGPU remains a distinct host/backend path even if an implementation uses a native graphics API internally.
+Keep API-specific types and handles out of Visualize core and Renderer contracts. Do not add a second windowing/event loop merely to obtain a surface. An offscreen readback proof establishes GPU rendering correctness only; it does not establish host presentation or physical-GPU performance.
 
 ## Package boundary: Visualize.GPU
 
@@ -81,7 +84,7 @@ Implement the smallest end-to-end GPU path before expanding the scene vocabulary
 - A CI build/test job compiles the backend and runs all host-independent tests.
 - A generated artifact or screenshot shows pixels produced by the GPU path, with backend/device information recorded.
 - Tests cover indexed geometry, world/view/projection transforms, depth ordering, near-plane clipping, resource revision/reuse, and disposal.
-- Diagnostics report submitted primitives, buffer uploads/bytes, pipeline or draw batches, frame duration, and backend identity. CPU and GPU work must both be measured; the architecture should exploit both where appropriate.
+- Diagnostics report submitted primitives, buffer uploads/bytes, pipeline or draw batches, frame duration, and backend identity. CPU and GPU work must both be measured; the architecture should exploit both where appropriate. Renderer remains a first-class beneficiary: its CPU-side policy reduces unnecessary work before submission, and future measured data-parallel policy/visibility/aggregation tasks may use a neutral compute-provider boundary without a Renderer → Visualize dependency.
 - The sample can be run from a documented command, with no Unity dependency and no Unity types in Visualize core.
 - Any unavailable hardware-dependent test is reported as skipped/not-run, never described as passed.
 

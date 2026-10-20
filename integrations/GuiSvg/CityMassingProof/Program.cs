@@ -62,20 +62,22 @@ foreach (var skin in skins)
             $"The {skin.Name} proof failed to reduce distant detail: source={scene.Faces.Count}, " +
             $"submitted={submittedFaces.Length}, omittedWindowFaces={omittedWindowFaces}.");
 
-    var renderCommands = submittedFaces.Select(item => new RenderDrawCommand(
+    var renderCommands = submittedFaces.Select((item, commandIndex) => new RenderDrawCommand(
         new RenderResourceId(geometryId.Value),
         new RenderResourceId(materialIds[item.Face.MaterialSlot].Value),
         Matrix4x4.Identity,
         item.Face.IndexCount,
         item.Face.FirstIndex,
         0,
-        ToRendererRepresentation(item.Target)))
+        ToRendererRepresentation(item.Target),
+        entity: new RenderEntityId((ulong)(commandIndex + 1))))
         .ToArray();
 
     var renderFrame = new RenderFrame(
         new RenderView(observer, Matrix4x4.Identity, Matrix4x4.Identity),
         renderCommands);
     var frame = new RendererFrameAdapter().Adapt(renderFrame);
+    AssertAdapterPreservation(renderFrame, frame);
 
     var output = Path.Combine(outputDirectory, $"singularity-city-{skin.Name}.svg");
     await using var visualizer = new Visualizer(
@@ -101,6 +103,7 @@ foreach (var skin in skins)
         submittedFaces = submittedFaces.Length,
         omittedWindowDetailFaces = omittedWindowFaces,
         backendSubmittedDraws = result.SubmittedDrawCount,
+        adapterCommandOrderAndIdentityPreserved = true,
         representationCounts,
         outputFile = Path.GetFileName(output),
         backend = "CPU/SVG"
@@ -114,6 +117,31 @@ var reportPath = Path.Combine(outputDirectory, "city-massing-report.json");
 await File.WriteAllTextAsync(reportPath, System.Text.Json.JsonSerializer.Serialize(
     proofReport, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
 Console.WriteLine($"Machine-readable proof report -> {reportPath}");
+
+static void AssertAdapterPreservation(RenderFrame source, VisualizerFrame adapted)
+{
+    if (source.Commands.Count != adapted.Commands.Count)
+        throw new InvalidOperationException(
+            $"Renderer adapter changed command count: {source.Commands.Count} -> {adapted.Commands.Count}.");
+
+    for (var i = 0; i < source.Commands.Count; i++)
+    {
+        var before = source.Commands[i];
+        var after = adapted.Commands[i];
+        if (before.Geometry.Value != after.Geometry.Value ||
+            before.Material.Value != after.Material.Value ||
+            before.WorldTransform != after.WorldTransform ||
+            before.IndexCount != after.IndexCount ||
+            before.FirstIndex != after.FirstIndex ||
+            before.BaseVertex != after.BaseVertex ||
+            before.Representation.ToString() != after.Representation.ToString() ||
+            before.Entity.Value != after.Entity.Value)
+        {
+            throw new InvalidOperationException(
+                $"RendererFrameAdapter changed command order or identity at index {i}.");
+        }
+    }
+}
 
 static bool ShouldSubmitFace(CityFace face, RepresentationTarget target) =>
     face.MaterialSlot != "window" ||
