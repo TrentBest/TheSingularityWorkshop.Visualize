@@ -2,7 +2,7 @@
 
 **Make the living world visible. Keep the world independent of its display.**
 
-This is the short visual index. Each entry tells you what to look at and links to a focused document for the implementation, recipe, and evidence. The [SVG living-documentation guide](SVG_LIVING_DOCUMENTATION.md) collects the current proofs and explains the boundaries between SVG output, CPU-side projection, and GPU execution.
+This is the short visual index. Each entry tells you what to look at and links to a focused document for the implementation, recipe, and evidence. The [SVG living-documentation guide](SVG_LIVING_DOCUMENTATION.md) collects the current proofs and explains the boundaries between SVG output, CPU-side projection, and GPU execution. The [per-file UML source index](UML/README.md) tracks audited C# types and explicitly lists coverage still pending.
 
 ## 01 — Geometry and connectivity
 
