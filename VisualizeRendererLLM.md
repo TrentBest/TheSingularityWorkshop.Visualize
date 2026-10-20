@@ -115,3 +115,35 @@ At the time checked, both jobs were still at .NET setup; no new build result or 
 4. Keep the public `RenderFrame` contract unchanged unless new evidence demonstrates an actual contract defect.
 
 The next update should cite the completed run and actual diagnostic output, not infer results from workflow configuration. This workstream has not edited AnyApp, changed Renderer/Visualize APIs, published a package, or claimed GPU-produced pixels.
+
+
+## FOLLOW-THROUGH — host XAML exclusion and subsequent AnyApp diagnostics (2026-10-18)
+
+This follow-through is preserved from the earlier Visualize fix branch and consolidated here on current development history.
+
+- AnyApp source-integration run [39094226850](https://github.com/TrentBest/AnyApp/actions/runs/39094226850) showed the referenced Visualize project accidentally compiling `samples/WpfD3D12Proof/MainWindow.xaml` when the WPF host's `UseWPF` property flowed into the library build. The Visualize-owned correction excludes `samples/**/*.xaml` from both `Page` and `ApplicationDefinition`; the standalone sample still compiles its own XAML.
+- Visualize run [39094704746](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39094704746) passed `build-and-test` and `gui-svg-package-proof` for the earlier fix branch; NuGet publishing was skipped. This validates that branch at that commit, not this refreshed branch until its own CI passes.
+- AnyApp source-integration run [39094600969](https://github.com/TrentBest/AnyApp/actions/runs/39094600969) later resolved Renderer from the checked-out source output and built the adapter successfully. The composed host then failed on AnyApp-owned `MicroBundleAssemblyPayload` (CS0103). The separate baseline/package path [39094600995](https://github.com/TrentBest/AnyApp/actions/runs/39094600995) still reported the adapter's `RenderFrame` CS0246; source-mode and package-mode results are not interchangeable.
+- A later AnyApp attempt [39096028141](https://github.com/TrentBest/AnyApp/actions/runs/39096028141) failed before adapter diagnostics because ProtocolAi alpha.3 was unavailable on the configured feeds. It provides no new evidence about the adapter reference. AnyApp owns that restore/version alignment.
+- No Visualize/Renderer API change is justified by these observations. Do not add a duplicate host-local `RenderFrame`, infer GPU execution, or treat AnyApp as green. The next cross-repository acceptance evidence is a clean current AnyApp source-mode run, with its host-owned compile blocker resolved separately.
+
+No peer repository was edited, no package was published, and no GPU-produced pixels are claimed.
+
+## Archived diagnostic detail retained from the original WPF-exclusion branch
+
+This section keeps the precise evidence that led to the Visualize-owned XAML exclusion. The consolidated follow-through above is the current summary; these records are historical observations and must not be read as proof that the current AnyApp dependency graph is green.
+
+### Original host XAML failure
+
+AnyApp source-integration run [39094226850](https://github.com/TrentBest/AnyApp/actions/runs/39094226850) built the Renderer source graph, then failed because the referenced Visualize library compiled the standalone sample file `samples/WpfD3D12Proof/MainWindow.xaml`. The generated compiler error was CS0234 for `TheSingularityWorkshop.Visualize.WpfD3D12Proof.D3D12SurfaceHost`.
+
+The Visualize project already excluded sample C# files, but not WPF `Page` and `ApplicationDefinition` items. With the AnyApp host using `UseWPF=true`, global MSBuild properties could flow into the referenced library and cause the sample XAML to be included in the wrong project. The fix belongs at Visualize: exclude `samples/**/*.xaml` from both item types while leaving the standalone sample project responsible for compiling its own XAML.
+
+### Distinct adapter and restore observations
+
+- [AnyApp source-mode run 39094600969](https://github.com/TrentBest/AnyApp/actions/runs/39094600969) resolved `TheSingularityWorkshop.Renderer.dll` from the checked-out source output and built the adapter. The host then failed on AnyApp-owned `MicroBundleAssemblyPayload` (CS0103).
+- [AnyApp baseline run 39094600995](https://github.com/TrentBest/AnyApp/actions/runs/39094600995) still reported `RenderFrame` CS0246 in the package/baseline path. Do not conflate that path with the source-mode result.
+- [Visualize run 39095034034](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39095034034) passed `build-and-test` and `gui-svg-package-proof`; NuGet publishing was skipped. This is historical validation of that commit, not validation of a later branch head.
+- [AnyApp runs 39096028141 and 39096028142](https://github.com/TrentBest/AnyApp/actions/runs/39096028141) failed restore with NU1102 because ProtocolAi alpha.3 was unavailable on the configured feeds. They did not reach the adapter diagnostic and therefore add no evidence about the `RenderFrame` reference.
+
+The current acceptance gate remains a fresh, clean source-mode AnyApp build with dependency versions aligned, the adapter resolving the checked-out Renderer output, and AnyApp-owned compile errors handled separately. No package publication or GPU execution is implied.
