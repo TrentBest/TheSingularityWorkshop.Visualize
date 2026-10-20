@@ -13,6 +13,14 @@
 | 09 GUI.SVG feature gallery | GUI.SVG C# scene builder in the optional integration | Generated gradients, clipping, patterns, markers, symbols, animation, filter graphs, and lighting definitions. |
 | City massing | `integrations/GuiSvg/CityMassingProof/Program.cs` | Renderer representation policy → actual `RenderFrame` → Renderer adapter → Visualizer → GUI.SVG; three skins plus machine-readable counts. Detail reduction is command-level, not buffer compaction. |
 
+## See an executable output
+
+The connected-points proof below is the checked-in output of the C# Visualizer → GuiSvgVisualizerBackend → GUI.SVG path described above—not a separately drawn illustration.
+
+![Generated GUI.SVG connected-points proof](../samples/PrimitiveGallery/generated/07-gui-svg-connected-points.svg)
+
+Source: [integrations/GuiSvg/Proof/Program.cs](../integrations/GuiSvg/Proof/Program.cs). The moving markers are authored SVG presentation; they do not imply a running simulation or GPU execution.
+
 ## Run the proofs
 
 From the Visualize repository root:
@@ -36,4 +44,4 @@ The optional GUI.SVG integrations use the GUI repository's source project in dev
 
 ## Cross-repository boundary
 
-Renderer decides which representation and draw commands are appropriate; Visualize consumes presentation contracts and resources; GUI.SVG serializes a neutral GUI scene to SVG. Renderer remains independent of both downstream packages. The [Renderer SVG guide](https://github.com/TrentBest/TheSingularityWorkshop.Renderer/blob/development/docs/SVG_LIVING_DOCUMENTATION.md) documents the Renderer-owned state snapshot and the next frame-inspector proof.
+Renderer decides which representation and draw commands are appropriate; Visualize consumes presentation contracts and resources; GUI.SVG serializes a neutral GUI scene to SVG. Renderer remains independent of both downstream packages. The [Renderer SVG guide](https://github.com/TrentBest/TheSingularityWorkshop.Renderer/blob/development/docs/SVG_LIVING_DOCUMENTATION.md) documents the Renderer-owned state snapshot and an executable RenderFrame inspector SVG.
