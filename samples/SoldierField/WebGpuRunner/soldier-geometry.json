@@ -1,0 +1,40 @@
+{
+  "assetId": "workshop.soldier.exoskeleton.trooper",
+  "assetVersion": "0.1.0",
+  "status": "silhouette-blockout",
+  "coordinateSystem": {
+    "up": "+Y",
+    "forward": "+Z",
+    "soldierRight": "+X",
+    "units": "metres",
+    "nominalHeightMetres": 1.9
+  },
+  "vertexFormat": {
+    "name": "float32-position3-colour3-nonindexed-triangles",
+    "floatsPerVertex": 6,
+    "bytesPerVertex": 24,
+    "primitive": "triangle-list"
+  },
+  "geometrySource": "soldier-geometry.js",
+  "partInventorySource": "soldier-geometry.js#SOLDIER_PARTS",
+  "dossier": "SOLDIER_DOSSIER.md",
+  "shuntEndpointIds": [
+    "shunt.ocular.left",
+    "shunt.ocular.right",
+    "shunt.auditory.left",
+    "shunt.auditory.right",
+    "shunt.olfactory",
+    "shunt.cortical-stem"
+  ],
+  "notes": [
+    "Deterministic, dependency-free procedural geometry.",
+    "Stable part IDs are intended for materials, animation, damage, detail tiers, and lore links.",
+    "The mesh is a renderable silhouette blockout, not production-quality sculpted geometry.",
+    "The narrative currently specifies six physical endpoints; bilateral assembly grouping remains an open canon decision."
+  ],
+  "partDataSchema": "soldier-part.schema.json",
+  "partDataRecords": "soldier-part-records.json",
+  "cutSheetDeriver": "soldier-cut-sheet.mjs",
+  "cutSheetStatus": "preliminary; unknown engineering values remain unresolved",
+  "partCount": 38
+}

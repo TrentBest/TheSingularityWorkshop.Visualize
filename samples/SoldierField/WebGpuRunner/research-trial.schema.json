@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thesingularityworkshop.dev/schemas/research-trial.schema.json",
+  "title": "Workshop Research Trial Record",
+  "description": "An immutable fictional simulation record tying a quoted experiment to stable part identity, damage events, and thermal observations. Values are gameplay outputs, not certified engineering measurements.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "trialId", "trialNumber", "demonstrationId", "catalogVersion",
+    "partId", "costPaid", "setupMinutes", "creditsRemaining", "coolingTier",
+    "impact", "penetration", "damageEventId", "damageEvent", "partCondition",
+    "barrelHeatC", "chassisHeatC", "heatTransfer", "valuesAreFictional"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "trialId": { "type": "string", "pattern": "^trial-[0-9]{4,}$" },
+    "trialNumber": { "type": "integer", "minimum": 1 },
+    "demonstrationId": { "type": "string", "minLength": 1 },
+    "catalogVersion": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "partId": { "type": "string", "minLength": 1 },
+    "costPaid": { "type": "integer", "minimum": 0 },
+    "setupMinutes": { "type": "integer", "minimum": 1 },
+    "creditsRemaining": { "type": "integer", "minimum": 0 },
+    "coolingTier": { "type": "integer", "minimum": 0, "maximum": 3 },
+    "impact": { "type": "boolean" },
+    "penetration": { "type": "boolean" },
+    "damageEventId": { "type": ["string", "null"] },
+    "damageEvent": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["schemaVersion", "eventId", "trialId", "partId", "hitNumber", "positionNormalized", "radiusFraction", "integrityLossFraction", "penetration", "impactHeatIndex", "valuesAreFictional"],
+          "properties": {
+            "schemaVersion": { "const": "1.0.0" },
+            "eventId": { "type": "string", "minLength": 1 },
+            "trialId": { "type": "string", "minLength": 1 },
+            "partId": { "type": "string", "minLength": 1 },
+            "hitNumber": { "type": "integer", "minimum": 1 },
+            "positionNormalized": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number", "minimum": -1, "maximum": 1 } },
+            "radiusFraction": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+            "integrityLossFraction": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+            "penetration": { "type": "boolean" },
+            "impactHeatIndex": { "type": "number", "minimum": 0 },
+            "valuesAreFictional": { "const": true }
+          }
+        }
+      ]
+    },
+    "partCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["partId", "hitCount", "integrityRemaining", "accumulatedDamageDepthFraction", "latestDamageEventId", "thermalCycleCount", "peakTemperatureC", "residualTemperatureC"],
+      "properties": {
+        "partId": { "type": "string", "minLength": 1 },
+        "hitCount": { "type": "integer", "minimum": 0 },
+        "integrityRemaining": { "type": "number", "minimum": 0, "maximum": 1 },
+        "accumulatedDamageDepthFraction": { "type": "number", "minimum": 0, "maximum": 0.8 },
+        "latestDamageEventId": { "type": ["string", "null"] },
+        "thermalCycleCount": { "type": "integer", "minimum": 0 },
+        "peakTemperatureC": { "type": "number", "minimum": 0 },
+        "residualTemperatureC": { "type": "number", "minimum": 0 }
+      }
+    },
+    "barrelHeatC": { "type": "number", "minimum": 0 },
+    "chassisHeatC": { "type": "number", "minimum": 0 },
+    "heatTransfer": { "type": "number", "minimum": 0, "maximum": 1 },
+    "valuesAreFictional": { "const": true }
+  }
+}
