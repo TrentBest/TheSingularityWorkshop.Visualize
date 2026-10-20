@@ -10,6 +10,8 @@ public readonly record struct VisualizerInstance(Matrix4x4 WorldTransform, Vecto
 /// <remarks>The revision lets a backend avoid re-uploading unchanged instance data.</remarks>
 public sealed class VisualizerInstanceBuffer
 {
+    private readonly VisualizerInstance[] _instances;
+
     /// <summary>Creates an instance-buffer snapshot.</summary>
     public VisualizerInstanceBuffer(ulong revision, IReadOnlyList<VisualizerInstance> instances)
     {
@@ -18,12 +20,17 @@ public sealed class VisualizerInstanceBuffer
             throw new ArgumentException("At least one instance is required.", nameof(instances));
 
         Revision = revision;
-        Instances = Array.AsReadOnly(instances.ToArray());
+        _instances = instances.ToArray();
+        Instances = Array.AsReadOnly(_instances);
     }
 
-    /// <summary>Gets the caller-managed content revision used for cache invalidation.</summary>
+    /// <summary>Gets the caller-managed content revision used for backend cache invalidation.</summary>
     public ulong Revision { get; }
 
     /// <summary>Gets the immutable contiguous instance snapshot.</summary>
     public IReadOnlyList<VisualizerInstance> Instances { get; }
+
+    /// <summary>Gets contiguous read-only instance memory for bulk backend uploads.</summary>
+    /// <remarks>The memory is backed by the same private snapshot exposed through <see cref="Instances"/>.</remarks>
+    public ReadOnlyMemory<VisualizerInstance> InstanceMemory => _instances;
 }
