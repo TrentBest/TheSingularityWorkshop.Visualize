@@ -20,7 +20,7 @@ These are different levels of the stack:
 - **Platform adapter:** the narrow API binding that creates a device/surface and submits commands. It stays behind the backend boundary and can be replaced.
 - **Hardware driver:** supplied by the device/platform vendor. Reimplementing this is not a sensible first milestone for an independent renderer.
 
-For a native backend that does not require DirectX, evaluate **Vulkan** first. For the browser host, evaluate **WebGPU** separately. They are not the same API and should not be forced into a lowest-common-denominator abstraction that hides capabilities. Instead, Visualize defines the work and resource semantics; each backend reports capabilities and implements them explicitly. A browser may use an implementation whose internal platform layer selects a native graphics API, but that does not make DirectX a Visualize dependency.
+Follow [GPU Backend Architecture](GPU_BACKEND_ARCHITECTURE.md): choose by host compatibility and actual device capabilities, never by GPU vendor or browser brand. A native host may use Vulkan or another suitable native backend; a browser host uses browser-provided WebGPU where available, with the browser/runtime handling its internal platform choice. Visualize owns the shared work/resource semantics; backend adapters report capabilities and retain access to API-specific extensions. Do not force every backend into a lowest-common-denominator contract, and do not leak API types into core.
 
 The first proof must answer these questions with a tiny running sample before we commit to a large API surface:
 
@@ -32,19 +32,19 @@ The first proof must answer these questions with a tiny running sample before we
 
 Do not choose an API because it is familiar, and do not add a second backend merely to make a diagram look cross-platform. Build the smallest real native proof, measure the integration and maintenance cost, and keep the browser path as a separate host adapter. If Vulkan surface integration proves disproportionately expensive for the intended host, record the measured obstacle and compare alternatives before changing this decision.
 
-## Native backend experiment: choose from evidence
+## Native backend experiment: validate the architecture, not a vendor
 
-**No graphics API or binding is selected.** The isolated Direct3D 12 sample is a compile-verified reference experiment only; ADR-0004 explicitly says not to extend it by default. Do not treat the earlier Vulkan/WPF sketch as an approved implementation task either. First compare the native and browser constraints against the same array-first workload and host lifecycle. The [2026-10-20 candidate comparison](GPU_BACKEND_CANDIDATE_COMPARISON.md) records current binding evidence and recommends Vulkan only as the first disposable native experiment, with WebGPU assessed separately for the browser host.
+**No permanent graphics API or binding is selected.** The isolated Direct3D 12 sample is a compile-verified reference experiment only; ADR-0004 explicitly says not to extend it by default. The [2026-10-20 candidate comparison](GPU_BACKEND_CANDIDATE_COMPARISON.md) recommends Vulkan with a stable Silk.NET binding only as the first disposable native experiment, while browser WebGPU remains a separate host path.
 
-The next implementation task is a short, evidence-based candidate comparison—not another backend package. It should:
+Before adding a long-lived backend package, use the isolated experiment to validate the [capability-driven architecture](GPU_BACKEND_ARCHITECTURE.md):
+1. Report the actual adapter/device/runtime and supported capabilities; don't infer them from GPU vendor, OS, or browser brand.
+2. Render a deterministic indexed triangle into a GPU-owned offscreen target, read back pixels, and assert known output.
+3. Extend the same logical workload to array uploads, indexed/instanced drawing, and revision-aware resource reuse.
+4. Validate host integration separately: AnyApp/WPF surface lifecycle for the native path, and browser lifecycle/WebGPU for WebPage.
+5. Preserve explicit capability reporting, required-feature failures, optional extensions, device-loss behavior, and fallback diagnostics in the architecture; do not silently emulate unsupported features.
+6. Only then compare equivalent workloads and decide whether the experimental backend merits a maintained adapter.
 
-1. Audit current stable bindings, supported runtimes, licenses, transitive dependencies, shader tooling, debugging/profiling, and deployed footprint for Vulkan, WebGPU/wgpu, and any justified alternative.
-2. Verify the real AnyApp/WPF integration constraints alongside the WebPage/browser path. A browser-capable stack is not automatically a suitable native WPF surface, and a native API is not a browser API.
-3. Define one comparable workload: device/surface creation, resize and shutdown, bulk vertex/index upload, indexed and instanced drawing, then compute output consumed by a render pass.
-4. Record what each candidate can demonstrate in CI versus what requires a real Windows GPU, and capture device/driver/runtime evidence before making performance claims.
-5. Update the strategy and ADR with the selected first experiment and the reason. Only then add a proof project or binding dependency.
-
-Vulkan with Silk.NET, WebGPU/wgpu, and the existing isolated Direct3D 12 experiment remain candidates to assess, not commitments. Keep any eventual API-specific types and handles out of Visualize core and the Renderer adapter. Do not add a second windowing/event loop merely to obtain a surface. Browser WebGPU remains a distinct host/backend path even if an implementation uses a native graphics API internally.
+Keep API-specific types and handles out of Visualize core and Renderer contracts. Do not add a second windowing/event loop merely to obtain a surface. An offscreen readback proof establishes GPU rendering correctness only; it does not establish host presentation or physical-GPU performance.
 
 ## Package boundary: Visualize.GPU
 
