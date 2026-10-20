@@ -10,6 +10,18 @@ public sealed class VisualizerFrame
     public VisualizerFrame(VisualizerView view, IEnumerable<VisualizerDrawCommand> commands)
     {
         ArgumentNullException.ThrowIfNull(commands);
+        if (!float.IsFinite(view.ObserverPosition.X) ||
+            !float.IsFinite(view.ObserverPosition.Y) ||
+            !float.IsFinite(view.ObserverPosition.Z))
+        {
+            throw new ArgumentOutOfRangeException(nameof(view), "Observer position components must be finite.");
+        }
+
+        if (!VisualizerMatrixValidation.IsFinite(view.View))
+            throw new ArgumentOutOfRangeException(nameof(view), "View matrix components must be finite.");
+        if (!VisualizerMatrixValidation.IsFinite(view.Projection))
+            throw new ArgumentOutOfRangeException(nameof(view), "Projection matrix components must be finite.");
+
         View = view;
         Commands = Array.AsReadOnly(commands.ToArray());
     }
@@ -71,6 +83,8 @@ public readonly record struct VisualizerDrawCommand
             throw new ArgumentException("A valid geometry resource is required.", nameof(geometry));
         if (!material.IsValid)
             throw new ArgumentException("A valid material resource is required.", nameof(material));
+        if (!VisualizerMatrixValidation.IsFinite(worldTransform))
+            throw new ArgumentOutOfRangeException(nameof(worldTransform), "World transform components must be finite.");
         if (indexCount <= 0)
             throw new ArgumentOutOfRangeException(nameof(indexCount));
         if (firstIndex < 0)
@@ -117,4 +131,17 @@ public readonly record struct VisualizerDrawCommand
     public int InstanceCount { get; }
     /// <summary>Gets the first instance in the instance-data resource.</summary>
     public int FirstInstance { get; }
+}
+
+internal static class VisualizerMatrixValidation
+{
+    public static bool IsFinite(Matrix4x4 matrix) =>
+        float.IsFinite(matrix.M11) && float.IsFinite(matrix.M12) &&
+        float.IsFinite(matrix.M13) && float.IsFinite(matrix.M14) &&
+        float.IsFinite(matrix.M21) && float.IsFinite(matrix.M22) &&
+        float.IsFinite(matrix.M23) && float.IsFinite(matrix.M24) &&
+        float.IsFinite(matrix.M31) && float.IsFinite(matrix.M32) &&
+        float.IsFinite(matrix.M33) && float.IsFinite(matrix.M34) &&
+        float.IsFinite(matrix.M41) && float.IsFinite(matrix.M42) &&
+        float.IsFinite(matrix.M43) && float.IsFinite(matrix.M44);
 }
