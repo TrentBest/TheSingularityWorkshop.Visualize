@@ -58,6 +58,7 @@ dl{display:grid;grid-template-columns:1fr auto;gap:.35rem;margin:1rem 0}dt{color
 </aside>
 </main>
 <script type="module">
+import { validateRendererTrace } from "./renderer-trace.mjs";
 const canvas = document.querySelector("#surface");
 const status = document.querySelector("#status");
 const datasetInput = document.querySelector("#dataset");
@@ -207,21 +208,7 @@ async function loadAndRender() {
       const traceResponse = await fetch(traceUrl, { cache: "no-store" });
       if (!traceResponse.ok) throw new Error("Could not load Renderer trace (" + traceResponse.status + ").");
       const trace = await traceResponse.json();
-      if (trace.SchemaVersion !== 1 || trace.Workload !== "array-first-observer-horizon" ||
-          !Array.isArray(trace.Frames) || trace.Frames.length === 0 ||
-          trace.FrameCount !== trace.Frames.length ||
-          !trace.Frames.every((row, index) =>
-            row.Frame === index &&
-            Number.isFinite(row.TimeMilliseconds) && row.TimeMilliseconds >= 0 &&
-            (row.Horizon === "Near" || row.Horizon === "Far") &&
-            typeof row.RefreshRequired === "boolean" &&
-            typeof row.ReusedCachedRepresentation === "boolean" &&
-            typeof row.RefreshAccepted === "boolean" &&
-            (!row.RefreshAccepted || row.RefreshRequired) &&
-            typeof row.Bucket === "string" && row.Bucket.length > 0)) {
-        throw new Error("Unsupported Renderer trace: expected schema v1, a matching FrameCount, ordered non-negative timestamps, Near/Far horizons, bucket names, and consistent refresh/acceptance fields.");
-      }
-      rendererTrace = trace;
+      rendererTrace = validateRendererTrace(trace);
     }
     status.textContent = "Loading generated manifest and binary arrays…";
     const manifestResponse = await fetch(base.replace(/\/$/, "") + "/dataset-manifest.json", { cache: "no-store" });
