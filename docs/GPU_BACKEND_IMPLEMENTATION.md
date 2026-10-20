@@ -34,15 +34,17 @@ Do not choose an API because it is familiar, and do not add a second backend mer
 
 ## Native backend experiment: validate the architecture, not a vendor
 
-**No permanent graphics API or binding is selected.** The isolated Direct3D 12 sample is a compile-verified reference experiment only; ADR-0004 explicitly says not to extend it by default. The [2026-10-20 candidate comparison](GPU_BACKEND_CANDIDATE_COMPARISON.md) recommends Vulkan with a stable Silk.NET binding only as the first disposable native experiment, while browser WebGPU remains a separate host path.
+**No permanent graphics API or binding is selected.** The isolated Direct3D 12 sample is a compile-verified reference experiment only; ADR-0004 explicitly says not to extend it by default. Coordinate [Visualize.GPU foundation PR #15](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/pull/15) with [shared array-first workload PR #6](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/pull/6); neither is complete by itself.
 
-Before adding a long-lived backend package, use the isolated experiment to validate the [capability-driven architecture](GPU_BACKEND_ARCHITECTURE.md):
-1. Report the actual adapter/device/runtime and supported capabilities; don't infer them from GPU vendor, OS, or browser brand.
-2. Render a deterministic indexed triangle into a GPU-owned offscreen target, read back pixels, and assert known output.
-3. Extend the same logical workload to array uploads, indexed/instanced drawing, and revision-aware resource reuse.
-4. Validate host integration separately: AnyApp/WPF surface lifecycle for the native path, and browser lifecycle/WebGPU for WebPage.
-5. Preserve explicit capability reporting, required-feature failures, optional extensions, device-loss behavior, and fallback diagnostics in the architecture; do not silently emulate unsupported features.
-6. Only then compare equivalent workloads and decide whether the experimental backend merits a maintained adapter.
+The next proof should make the *same workload* benefit both repositories: Renderer supplies actual observer/horizon/bucket decisions; Visualize resolves logical resources and submits GPU work; the host owns presentation and lifecycle. Do not keep a sample-owned near/far timer as a substitute for Renderer policy, and do not confuse numeric ID preservation with resource contents or revision/lifetime transfer.
+
+Use this sequence to validate the [capability-driven architecture](GPU_BACKEND_ARCHITECTURE.md):
+1. Revalidate the array-first generator, byte layout, manifest counts/hashes, and index bounds; record the exact workload/source revision.
+2. Connect real Renderer invalidation/reuse/cadence decisions to that workload while keeping Renderer independent of Visualize and graphics APIs.
+3. Run the shared workload through Visualize's resource planner and browser WebGPU path where supported; assert known output/readback when available and report unrun hardware-dependent checks honestly.
+4. Add explicit device/runtime/capability diagnostics and verify resource revision changes, upload accounting, disposal, and repeated initialization.
+5. Implement an equivalent native consumer only after the browser workload is reproducible, comparing suitable native candidates by host compatibility, actual capabilities, correctness, deployment, and measured integration cost—not by defaulting to Vulkan or Direct3D.
+6. Test offscreen readback, host presentation/resize/shutdown, compute-to-render, device loss/recreation, and physical-GPU performance as separate gates.
 
 Keep API-specific types and handles out of Visualize core and Renderer contracts. Do not add a second windowing/event loop merely to obtain a surface. An offscreen readback proof establishes GPU rendering correctness only; it does not establish host presentation or physical-GPU performance.
 
@@ -81,7 +83,7 @@ Implement the smallest end-to-end GPU path before expanding the scene vocabulary
 - A CI build/test job compiles the backend and runs all host-independent tests.
 - A generated artifact or screenshot shows pixels produced by the GPU path, with backend/device information recorded.
 - Tests cover indexed geometry, world/view/projection transforms, depth ordering, near-plane clipping, resource revision/reuse, and disposal.
-- Diagnostics report submitted primitives, buffer uploads/bytes, pipeline or draw batches, frame duration, and backend identity. CPU and GPU work must both be measured; the architecture should exploit both where appropriate.
+- Diagnostics report submitted primitives, buffer uploads/bytes, pipeline or draw batches, frame duration, and backend identity. CPU and GPU work must both be measured; the architecture should exploit both where appropriate. Renderer remains a first-class beneficiary: its CPU-side policy reduces unnecessary work before submission, and future measured data-parallel policy/visibility/aggregation tasks may use a neutral compute-provider boundary without a Renderer → Visualize dependency.
 - The sample can be run from a documented command, with no Unity dependency and no Unity types in Visualize core.
 - Any unavailable hardware-dependent test is reported as skipped/not-run, never described as passed.
 
