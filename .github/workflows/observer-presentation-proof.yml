@@ -36,14 +36,16 @@ jobs:
         with:
           dotnet-version: 8.0.x
       - name: Restore observer presentation proof
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
         run: dotnet restore integrations/GuiSvg/ObserverFrameProof/ObserverFrameProof.csproj
       - name: Build observer presentation proof
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
         run: dotnet build integrations/GuiSvg/ObserverFrameProof/ObserverFrameProof.csproj --configuration Release --no-restore
       - name: Generate two observer-driven GUI.SVG frames
         env:
           WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
-          WorkshopUseRepositorySources: "true"
-          WorkshopSourceRoot: ${{ github.workspace }}/integrations/RendererAdapter/RendererSource/..
         run: dotnet run --project integrations/GuiSvg/ObserverFrameProof/ObserverFrameProof.csproj --configuration Release --no-build -- ./artifacts/observer-frame
       - name: Verify observer-driven output and report
         shell: bash
