@@ -190,6 +190,54 @@ jobs:
       - name: Build
         run: dotnet build TheSingularityWorkshop.Visualize.slnx --configuration Release --no-restore
 
+      - name: Generate and verify deterministic array-first workload
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet run --project samples/ArrayFirstWorkload/Generator/ArrayFirstWorkload.Generator.csproj --configuration Release -- 100 ./artifacts/array-first-workload-100
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          root = Path("artifacts/array-first-workload-100")
+          manifest = json.loads((root / "dataset-manifest.json").read_text(encoding="utf-8"))
+          assert manifest["SchemaVersion"] == 1
+          assert manifest["InstanceCount"] == 100
+          assert manifest["InstanceStrideBytes"] == 80
+          for name, record in manifest["Files"].items():
+              data = (root / name).read_bytes()
+              if len(data) != record["Bytes"]:
+                  raise SystemExit(f"Byte count mismatch for {name}")
+              if hashlib.sha256(data).hexdigest() != record["Sha256"]:
+                  raise SystemExit(f"SHA-256 mismatch for {name}")
+          PY
+
+      - name: Validate browser WebGPU modules and behavior contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          runners = {
+              "array-first": Path("samples/ArrayFirstWorkload/WebGpuRunner/index.html"),
+              "soldier-field": Path("samples/SoldierField/WebGpuRunner/index.html"),
+          }
+          for name, source in runners.items():
+              html = source.read_text(encoding="utf-8")
+              match = re.search(r'<script type="module">(.*?)</script>', html, re.S)
+              if not match:
+                  raise SystemExit(f"Could not find the inline module script in {source}")
+              Path(f"/tmp/{name}-webgpu-runner.mjs").write_text(match.group(1), encoding="utf-8")
+          PY
+          node --check /tmp/array-first-webgpu-runner.mjs
+          node --check /tmp/soldier-field-webgpu-runner.mjs
+          node --test samples/ArrayFirstWorkload/WebGpuRunner/renderer-trace.test.mjs
+          node --test samples/SoldierField/WebGpuRunner/soldier-geometry.test.mjs samples/SoldierField/WebGpuRunner/soldier-cut-sheet.test.mjs samples/SoldierField/WebGpuRunner/soldier-research-simulation.test.mjs
+
       - name: Generate Visualizer-backed SVG primitive proof
         run: dotnet run --project samples/PrimitiveGallery/VisualizeSvgProof/VisualizeSvgProof.csproj --configuration Release -- ./samples/PrimitiveGallery/generated
 
