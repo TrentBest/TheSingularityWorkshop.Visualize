@@ -106,7 +106,7 @@ async Task<FrameReport> RenderObserver(float observerX, string fileName)
     var result = await visualizer.RenderAsync(visualizerFrame);
     if (result.SubmittedDrawCount != subjects.Length)
         throw new InvalidOperationException($"Expected {subjects.Length} SVG draw submissions; got {result.SubmittedDrawCount}.");
-    return new FrameReport(observerX, output, result.SubmittedDrawCount, rows.Sum(row => row.IndexCount), rows);
+    return new FrameReport(observerX, output, result.SubmittedDrawCount, rows.Sum(row => row.SelectedIndices), rows);
 }
 
 static VisualizerGeometry MarkerMesh(bool detailed)
