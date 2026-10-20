@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Universe Scale Journey — animated visual storyboard</title>
+  <desc id="desc">An animated conceptual journey from the universe outside, through cell 42 in a ten by ten by ten grid, across the Milky Way and Solar System, to Earth and the living Workshop Moniker. This is a storyboard, not a live 3D renderer.</desc>
+  <defs>
+    <radialGradient id="space"><stop offset="0" stop-color="#13264b"/><stop offset=".55" stop-color="#080e20"/><stop offset="1" stop-color="#02040a"/></radialGradient>
+    <radialGradient id="sun"><stop offset="0" stop-color="#fff8c7"/><stop offset=".24" stop-color="#f8cb70"/><stop offset="1" stop-color="#d36d31" stop-opacity="0"/></radialGradient>
+    <linearGradient id="cell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#62e6ff" stop-opacity=".36"/><stop offset="1" stop-color="#4d7aff" stop-opacity=".08"/></linearGradient>
+    <linearGradient id="earth" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#79e7ff"/><stop offset=".45" stop-color="#197bb5"/><stop offset="1" stop-color="#081d54"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="13"/></filter>
+    <style>
+      text{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#eaf2ff}
+      .muted{fill:#9eb2d5}.tiny{font-size:13px;letter-spacing:2px}.label{font-size:20px;font-weight:650}.big{font-size:34px;font-weight:750;letter-spacing:1px}
+      .star{fill:#d9e9ff;opacity:.75}
+      .orbit{fill:none;stroke:#9bbaff;stroke-opacity:.5;stroke-width:1.5}
+      .stage{opacity:0;animation:stage 36s infinite}
+      #universe{animation:universe 36s infinite;transform-origin:600px 340px}
+      #grid{animation:grid 36s infinite;transform-origin:600px 340px}
+      #galaxy{animation:galaxy 36s infinite;transform-origin:600px 340px}
+      #system{animation:system 36s infinite;transform-origin:600px 340px}
+      #earth{animation:earth 36s infinite;transform-origin:600px 340px}
+      #moniker{animation:moniker 36s infinite;transform-origin:600px 340px}
+      .breath{animation:breath 2.8s ease-in-out infinite;transform-origin:center}
+      .trail{stroke-dasharray:7 12;animation:dash 4s linear infinite}
+      @keyframes stage{0%,4%{opacity:0}7%,15%{opacity:1}18%,100%{opacity:0}}
+      @keyframes universe{0%,4%{transform:scale(.22);opacity:.15}8%{transform:scale(1);opacity:1}16%{transform:scale(1.08);opacity:.9}24%{transform:scale(2.1);opacity:.2}25%,100%{transform:scale(3);opacity:0}}
+      @keyframes grid{0%,18%{transform:scale(.2);opacity:0}23%{transform:scale(1);opacity:1}29%{transform:scale(1.2);opacity:1}34%{transform:scale(2.2);opacity:.3}36%,100%{transform:scale(3);opacity:0}}
+      @keyframes galaxy{0%,31%{transform:scale(.12);opacity:0}37%{transform:scale(1);opacity:1}44%{transform:scale(1.12);opacity:1}50%{transform:scale(2.8);opacity:0}51%,100%{transform:scale(3);opacity:0}}
+      @keyframes system{0%,46%{transform:scale(.08);opacity:0}53%{transform:scale(1);opacity:1}60%{transform:scale(1.12);opacity:1}66%{transform:scale(3);opacity:0}67%,100%{transform:scale(3);opacity:0}}
+      @keyframes earth{0%,62%{transform:scale(.08);opacity:0}69%{transform:scale(1);opacity:1}76%{transform:scale(1.2);opacity:1}81%{transform:scale(3);opacity:0}82%,100%{transform:scale(3);opacity:0}}
+      @keyframes moniker{0%,77%{transform:scale(.05);opacity:0}84%{transform:scale(1);opacity:1}91%,97%{transform:scale(1);opacity:1}100%{transform:scale(.98);opacity:1}}
+      @keyframes breath{0%,100%{opacity:.72}50%{opacity:1}}
+      @keyframes dash{to{stroke-dashoffset:-76}}
+      @media(prefers-reduced-motion:reduce){*{animation:none!important}.stage{opacity:1}#universe{opacity:.25}#grid{opacity:.4}#galaxy{opacity:.65}#system{opacity:.8}#earth{opacity:.9}#moniker{opacity:1}}
+    </style>
+  </defs>
+  <rect width="1200" height="675" rx="24" fill="url(#space)"/>
+  <g opacity=".5">
+    <circle class="star" cx="72" cy="96" r="1.5"/><circle class="star" cx="183" cy="175" r="1"/><circle class="star" cx="292" cy="65" r="1.4"/><circle class="star" cx="390" cy="122" r="1"/><circle class="star" cx="480" cy="70" r="1.5"/><circle class="star" cx="712" cy="89" r="1.2"/><circle class="star" cx="837" cy="148" r="1.4"/><circle class="star" cx="1005" cy="80" r="1"/><circle class="star" cx="1115" cy="177" r="1.5"/><circle class="star" cx="95" cy="420" r="1"/><circle class="star" cx="217" cy="545" r="1.5"/><circle class="star" cx="360" cy="472" r="1"/><circle class="star" cx="814" cy="520" r="1.2"/><circle class="star" cx="1040" cy="455" r="1.5"/><circle class="star" cx="1130" cy="570" r="1"/>
+  </g>
+  <text x="52" y="55" class="tiny muted">THE SINGULARITY WORKSHOP · VISUALIZE × RENDERER</text>
+  <text x="52" y="94" class="big">A JOURNEY THROUGH SCALE</text>
+  <text x="1148" y="57" class="tiny muted" text-anchor="end">CONCEPT STORYBOARD · 36s LOOP</text>
+  <path d="M70 603 H1130" stroke="#6682b5" stroke-opacity=".35"/>
+  <g fill="#a6badc" font-size="13" text-anchor="middle">
+    <text x="90" y="632">UNIVERSE</text><text x="285" y="632">CELL 42</text><text x="480" y="632">MILKY WAY</text><text x="675" y="632">SOLAR SYSTEM</text><text x="870" y="632">EARTH</text><text x="1065" y="632">MONIKER</text>
+  </g>
+  <g stroke="#8db6ff" stroke-width="2" fill="none" opacity=".55">
+    <path class="trail" d="M90 581 C245 530 380 540 490 581 S720 625 850 581 S1030 532 1090 581"/>
+  </g>
+  <g id="universe">
+    <circle cx="600" cy="340" r="235" fill="#4383ff" opacity=".06"/>
+    <g fill="none" stroke="#648fff" stroke-opacity=".24">
+      <ellipse cx="600" cy="340" rx="350" ry="165"/><ellipse cx="600" cy="340" rx="290" ry="125" transform="rotate(26 600 340)"/><ellipse cx="600" cy="340" rx="240" ry="100" transform="rotate(-34 600 340)"/>
+    </g>
+    <g fill="#8edfff" filter="url(#glow)">
+      <circle cx="430" cy="280" r="3"/><circle cx="480" cy="355" r="2"/><circle cx="515" cy="250" r="2"/><circle cx="560" cy="390" r="3"/><circle cx="650" cy="270" r="2"/><circle cx="690" cy="375" r="3"/><circle cx="750" cy="315" r="2"/><circle cx="795" cy="405" r="2"/><circle cx="380" cy="405" r="2"/><circle cx="835" cy="270" r="2"/><circle cx="590" cy="210" r="2"/><circle cx="620" cy="445" r="2"/>
+    </g>
+    <g fill="#e9c5ff" opacity=".8"><circle cx="430" cy="280" r="12" opacity=".12"/><circle cx="560" cy="390" r="15" opacity=".13"/><circle cx="690" cy="375" r="14" opacity=".14"/><circle cx="750" cy="315" r="10" opacity=".15"/></g>
+    <circle cx="600" cy="340" r="8" fill="#fff2bd" filter="url(#glow)"/>
+  </g>
+  <g id="grid" opacity="0">
+    <g stroke="#5fbbe8" stroke-width="1.3" stroke-opacity=".55" fill="none">
+      <path d="M390 180 L600 95 L810 180 L600 265 Z M390 180 V400 L600 510 L810 400 V180 M600 265 V510 M460 208 V435 M530 237 V473 M670 237 V473 M740 208 V435"/>
+      <path d="M390 235 L600 320 L810 235 M390 290 L600 375 L810 290 M390 345 L600 430 L810 345 M460 152 L460 455 M530 124 L530 482 M670 124 L670 482 M740 152 L740 455" stroke-opacity=".25"/>
+    </g>
+    <g fill="url(#cell)" stroke="#7fdcff" stroke-opacity=".5">
+      <path d="M565 265 L600 250 L635 265 L600 281 Z M565 265 V303 L600 321 L635 303 V265 L600 281 Z"/>
+    </g>
+    <path class="breath" d="M565 265 L600 250 L635 265 L600 281 Z M565 265 V303 L600 321 L635 303 V265" fill="none" stroke="#fff4a1" stroke-width="3" filter="url(#glow)"/>
+    <text x="655" y="255" font-size="24" font-weight="750" fill="#fff4a1">42</text>
+    <text x="655" y="278" class="tiny">TARGET CELL</text>
+  </g>
+  <g id="galaxy" opacity="0">
+    <ellipse cx="600" cy="340" rx="245" ry="82" transform="rotate(-28 600 340)" fill="#647aff" opacity=".1" filter="url(#soft)"/>
+    <g transform="translate(600 340) rotate(-28)" fill="none" stroke-linecap="round">
+      <path d="M-225 0 C-170 -70 -80 -90 -15 -28 S110 62 220 -12" stroke="#86aaff" stroke-width="23" stroke-opacity=".16"/>
+      <path d="M-220 0 C-160 68 -65 82 0 25 S135 -70 225 10" stroke="#d6a8ff" stroke-width="18" stroke-opacity=".2"/>
+      <path d="M-220 0 C-160 -68 -70 -83 0 -22 S135 72 220 -8" stroke="#83e8ff" stroke-width="7" stroke-opacity=".8"/>
+      <path d="M-220 0 C-155 70 -70 85 0 22 S135 -72 220 8" stroke="#e5c3ff" stroke-width="5" stroke-opacity=".8"/>
+      <ellipse rx="62" ry="24" fill="#fff1c6" stroke="#ffdd99" stroke-width="4" filter="url(#glow)"/>
+    </g>
+    <text x="600" y="495" class="label" text-anchor="middle">THE MILKY WAY</text>
+  </g>
+  <g id="system" opacity="0">
+    <circle cx="600" cy="340" r="58" fill="url(#sun)" opacity=".7"/>
+    <circle cx="600" cy="340" r="15" fill="#ffe9a0" filter="url(#glow)"/>
+    <ellipse class="orbit" cx="600" cy="340" rx="100" ry="50" transform="rotate(-20 600 340)"/>
+    <ellipse class="orbit" cx="600" cy="340" rx="165" ry="82" transform="rotate(20 600 340)"/>
+    <ellipse class="orbit" cx="600" cy="340" rx="230" ry="113" transform="rotate(-8 600 340)"/>
+    <circle cx="688" cy="308" r="7" fill="#74caff" filter="url(#glow)"/><circle cx="739" cy="394" r="10" fill="#e6b47a"/><circle cx="383" cy="307" r="5" fill="#d8c8ff"/>
+    <text x="600" y="495" class="label" text-anchor="middle">OUR SOLAR SYSTEM</text>
+  </g>
+  <g id="earth" opacity="0">
+    <circle cx="600" cy="340" r="165" fill="#3bbaff" opacity=".14" filter="url(#soft)"/>
+    <circle cx="600" cy="340" r="124" fill="url(#earth)" stroke="#9be9ff" stroke-width="2"/>
+    <path d="M540 242 L575 265 L564 290 L590 310 L575 333 L546 323 L526 347 L544 374 L522 399 L493 363 L487 323 L505 287 Z M625 239 L653 260 L647 281 L674 300 L659 327 L681 344 L664 371 L637 365 L620 392 L600 366 L613 341 L596 314 L614 290 L598 267 Z M686 373 L708 384 L695 405 L674 398 Z" fill="#75d69a" opacity=".92"/>
+    <path d="M507 270 C540 225 624 211 678 258" fill="none" stroke="#e1f8ff" stroke-width="8" stroke-linecap="round" opacity=".65"/>
+    <text x="600" y="510" class="label" text-anchor="middle">EARTH · HOME</text>
+  </g>
+  <g id="moniker" opacity="0">
+    <circle cx="600" cy="332" r="160" fill="#4f7dff" opacity=".1" filter="url(#soft)"/>
+    <g class="breath" transform="translate(600 330)">
+      <circle r="114" fill="none" stroke="#83dfff" stroke-width="2" stroke-opacity=".7"/>
+      <circle r="96" fill="none" stroke="#a0a7ff" stroke-width="3" stroke-dasharray="3 9" />
+      <circle r="72" fill="none" stroke="#77e7ff" stroke-width="2" stroke-dasharray="22 9 3 9"/>
+      <path d="M-72 0 C-43 -62 43 -62 72 0 C43 62 -43 62 -72 0Z" fill="#142f66" stroke="#9aeaff" stroke-width="2"/>
+      <ellipse rx="42" ry="24" fill="#76dcff" opacity=".18" filter="url(#soft)"/>
+      <ellipse rx="37" ry="18" fill="#0b162c" stroke="#b8f1ff" stroke-width="2"/>
+      <circle r="10" fill="#e8fcff" filter="url(#glow)"/>
+      <path d="M-136 0 Q-92 -35 -52 -23 M136 0 Q92 35 52 23" fill="none" stroke="#9b83ff" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    <text x="600" y="500" text-anchor="middle" font-size="28" font-weight="750">THE SINGULARITY WORKSHOP</text>
+    <text x="600" y="532" class="tiny muted" text-anchor="middle">A SMALL DESTINATION · AN IMMENSE JOURNEY</text>
+  </g>
+  <g class="stage" style="animation-delay:0s"><text x="600" y="145" text-anchor="middle" class="label">EXTRINSIC · LOOKING IN</text><text x="600" y="171" text-anchor="middle" class="muted">The universe begins to unfold</text></g>
+  <g class="stage" style="animation-delay:7s"><text x="600" y="145" text-anchor="middle" class="label">CELL 42 · THE THRESHOLD</text><text x="600" y="171" text-anchor="middle" class="muted">Pause. Then cross from outside to inside.</text></g>
+  <g class="stage" style="animation-delay:13s"><text x="600" y="145" text-anchor="middle" class="label">INTRINSIC · WE ARE HERE</text><text x="600" y="171" text-anchor="middle" class="muted">The observer is part of the universe.</text></g>
+  <g transform="translate(50 655)"><text class="tiny muted">SCHEMATIC MOTION · NOT SCIENTIFIC SCALE</text></g>
+</svg>
