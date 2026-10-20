@@ -46,7 +46,7 @@ var report = new
     boundary = "This proves observer-driven representation selection reaches generated Visualize/GUI.SVG output. It does not measure GPU work, timing, allocations, or production renderer scheduling."
 };
 var reportPath = Path.Combine(outputDirectory, "observer-frame-report.json");
-await File.WriteAllTextAsync(reportPath, JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
+await File.WriteAllTextAsync(reportPath, JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
 Console.WriteLine($"Observer x=0: {first.CommandCount} commands, {first.IndexCount} selected indices -> {first.Output}");
 Console.WriteLine($"Observer x=50: {second.CommandCount} commands, {second.IndexCount} selected indices -> {second.Output}");
 Console.WriteLine($"Report -> {reportPath}");
