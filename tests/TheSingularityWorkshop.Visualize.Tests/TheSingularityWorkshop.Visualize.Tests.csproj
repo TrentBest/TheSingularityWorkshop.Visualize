@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../TheSingularityWorkshop.Visualize.csproj" />
+    <ProjectReference Include="../../src/GPU/TheSingularityWorkshop.Visualize.GPU.csproj" />
     <ProjectReference Include="../../integrations/RendererAdapter/TheSingularityWorkshop.Renderer.VisualizeAdapter.csproj" />
   </ItemGroup>
 </Project>

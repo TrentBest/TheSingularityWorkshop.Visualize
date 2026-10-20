@@ -10,6 +10,11 @@ Use short decision records to document why an architecture choice was made, whic
 - [ADR-0002: Keep Gesture semantics outside Visualizer](ADR-0002-gesture-boundary.md)
 - [ADR-0003: Measure before selecting the GPU backend](ADR-0003-gpu-backend-selection.md)
 - [ADR-0004: Native GPU prototype candidate](ADR-0004-native-gpu-prototype.md)
+- [ADR-0005: GPU candidate shortlist before a native proof](ADR-0005-gpu-candidate-shortlist.md)
+
+## GPU implementation plans
+
+- [GPU surface lifecycle and evidence levels](../GPU_SURFACE_LIFECYCLE_PLAN.md)
 
 ---
 

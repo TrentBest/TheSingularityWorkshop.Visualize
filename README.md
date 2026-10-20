@@ -150,6 +150,8 @@ The tests verify the current contracts. To explore the first visible SVG sequenc
 - [Open questions](docs/OPEN_QUESTIONS.md) — review unresolved design decisions.
 - [Rotating spacecraft armor research note](docs/RESEARCH_NOTES.md) — a concept-only trade study with explicit thermal, exposure, structural, and mass/power caveats.
 - [Visual effects and GPU domain](docs/VISUAL_EFFECTS_AND_GPU_DOMAIN.md) — distinguish image-producing responsibilities, event/field contracts, GPU suitability, and the proof ladder.
+- [GPU surface lifecycle plan](docs/GPU_SURFACE_LIFECYCLE_PLAN.md) — define GPU resource ownership and evidence levels without prematurely selecting a graphics API.
+- [Universe scale journey](docs/UNIVERSE_SCALE_JOURNEY.md) — a conceptual storyboard from cell 42 to the living Workshop moniker, not a live renderer.
 - [Decision records](docs/decisions/README.md) — follow architectural choices and their rationale.
 
 ## 🟢 Build and test

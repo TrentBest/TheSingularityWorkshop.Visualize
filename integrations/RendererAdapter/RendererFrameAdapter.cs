@@ -7,11 +7,28 @@ namespace TheSingularityWorkshop.Renderer.VisualizeAdapter;
 /// <remarks>
 /// This adapter belongs at the integration boundary rather than in either core package:
 /// Renderer does not depend on Visualize, and Visualize does not depend on a particular Renderer version.
-/// Resource identifiers retain their numeric identity; command order, transforms, ranges, and representation
-/// choices are preserved.
+/// Resource IDs pass through an explicit mapper. The default mapper preserves numeric identity only for
+/// hosts that intentionally share ID allocation; it does not imply that resource content is shared.
+/// Command order, transforms, ranges, entity IDs, and representation choices are preserved.
 /// </remarks>
 public sealed class RendererFrameAdapter : IVisualizerFrameAdapter<RenderFrame>
 {
+    private readonly IRendererResourceIdMapper _resourceIdMapper;
+
+    /// <summary>Creates an adapter using the explicit numeric-identity mapping convention.</summary>
+    public RendererFrameAdapter()
+        : this(new IdentityRendererResourceIdMapper())
+    {
+    }
+
+    /// <summary>Creates an adapter using a host-provided resource namespace mapping.</summary>
+    /// <param name="resourceIdMapper">Maps Renderer resource IDs to Visualize resource IDs.</param>
+    public RendererFrameAdapter(IRendererResourceIdMapper resourceIdMapper)
+    {
+        _resourceIdMapper = resourceIdMapper
+            ?? throw new ArgumentNullException(nameof(resourceIdMapper));
+    }
+
     /// <inheritdoc />
     public VisualizerFrame Adapt(RenderFrame sourceFrame)
     {
@@ -24,15 +41,15 @@ public sealed class RendererFrameAdapter : IVisualizerFrameAdapter<RenderFrame>
         {
             var source = sourceFrame.Commands[i];
             commands[i] = new VisualizerDrawCommand(
-                new VisualizerResourceId(source.Geometry.Value),
-                new VisualizerResourceId(source.Material.Value),
+                MapResource(source.Geometry, nameof(source.Geometry)),
+                MapResource(source.Material, nameof(source.Material)),
                 source.WorldTransform,
                 source.IndexCount,
                 source.FirstIndex,
                 source.BaseVertex,
                 MapRepresentation(source.Representation),
                 source.Instances.IsValid
-                    ? new VisualizerResourceId(source.Instances.Value)
+                    ? MapResource(source.Instances, nameof(source.Instances))
                     : default,
                 source.InstanceCount,
                 source.FirstInstance,
@@ -42,6 +59,18 @@ public sealed class RendererFrameAdapter : IVisualizerFrameAdapter<RenderFrame>
         return new VisualizerFrame(
             new VisualizerView(view.ObserverPosition, view.View, view.Projection),
             commands);
+    }
+
+    private VisualizerResourceId MapResource(RenderResourceId sourceId, string resourceRole)
+    {
+        var mapped = _resourceIdMapper.Map(sourceId);
+        if (!mapped.IsValid)
+        {
+            throw new InvalidOperationException(
+                $"The Renderer resource ID mapper returned an invalid Visualize ID for {resourceRole} (source ID {sourceId.Value}).");
+        }
+
+        return mapped;
     }
 
     private static VisualizerRepresentation MapRepresentation(RendererRepresentation representation) =>
