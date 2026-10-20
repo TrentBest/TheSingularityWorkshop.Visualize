@@ -35,5 +35,6 @@
   "partDataSchema": "soldier-part.schema.json",
   "partDataRecords": "soldier-part-records.json",
   "cutSheetDeriver": "soldier-cut-sheet.mjs",
-  "cutSheetStatus": "preliminary; unknown engineering values remain unresolved"
+  "cutSheetStatus": "preliminary; unknown engineering values remain unresolved",
+  "partCount": 38
 }
