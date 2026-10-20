@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="TheSingularityWorkshop.Visualize.csproj" />
+  <Project Path="src/GPU/TheSingularityWorkshop.Visualize.GPU.csproj" />
   <Project Path="integrations/RendererAdapter/TheSingularityWorkshop.Renderer.VisualizeAdapter.csproj" />
   <Project Path="tests/TheSingularityWorkshop.Visualize.Tests/TheSingularityWorkshop.Visualize.Tests.csproj" />
 </Solution>
