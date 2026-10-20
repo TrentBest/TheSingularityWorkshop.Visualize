@@ -10,7 +10,7 @@ This is the short visual index. Each entry tells you what to look at and links t
 
 **See:** how point/line geometry, materials, draw commands, and a Visualizer frame become a GUI.SVG scene.
 
-**Recipe and evidence:** [Connected geometry → SVG](SVG_LIVING_DOCUMENTATION.md#start-here-the-frame-to-svg-handoff) · [Primitive Gallery guide](../samples/PrimitiveGallery/README.md) · [C# proof source](../integrations/GuiSvg/Proof/Program.cs)
+**Recipe and evidence:** [Connected geometry → SVG](gallery/connected-geometry-svg.md) · [Primitive Gallery guide](../samples/PrimitiveGallery/README.md) · [C# proof source](../integrations/GuiSvg/Proof/Program.cs)
 
 ## 02 — Primitive scale
 
@@ -20,7 +20,7 @@ This is the short visual index. Each entry tells you what to look at and links t
 
 **See:** the same kind of primitive contract at small and larger counts. These are correctness illustrations, not throughput benchmarks.
 
-**Recipe and evidence:** [Primitive Gallery guide](../samples/PrimitiveGallery/README.md) · [Visual primitives](PRIMITIVES.md)
+**Recipe and evidence:** [Primitive-scale recipe](gallery/primitive-scale.md) · [Primitive Gallery guide](../samples/PrimitiveGallery/README.md) · [Visual primitives](PRIMITIVES.md)
 
 ## 03 — Normals and light
 
@@ -28,31 +28,31 @@ This is the short visual index. Each entry tells you what to look at and links t
 
 **See:** indexed surface geometry, normal direction, and a CPU-side lighting study. This is not a production GPU shader.
 
-**Recipe and evidence:** [Living SVG proof guide](SVG_LIVING_DOCUMENTATION.md#primitive-gallery-see-the-generated-contracts-get-more-complex) · [Lighting and shadows](LIGHTING_AND_SHADOWS.md)
+**Recipe and evidence:** [Normals and light recipe](gallery/normals-and-light.md) · [Lighting and shadows](LIGHTING_AND_SHADOWS.md)
 
 ## 04 — Perspective mesh
 
 The CI proof turns an indexed octahedron into a perspective-projected SVG using CPU transforms and painter ordering.
 
-**See:** [Perspective mesh evidence and limits](SVG_LIVING_DOCUMENTATION.md#more-advanced-proof-outputs-generated-by-ci). Download `visualize-svg-primitive-proof` from the [proof workflow](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39369513107).
+**See:** [Perspective mesh recipe and evidence limits](gallery/perspective-mesh.md). Download `visualize-svg-primitive-proof` from the [proof workflow](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39369513107).
 
 ## 05 — City massing: the cross-repository proof
 
 The city fixture sends a real Renderer `RenderFrame` through `RendererFrameAdapter`, into Visualize, and then through the optional GUI.SVG path. Three material skins make the same command stream easier to inspect.
 
-**See:** [City proof, adapter assertions, and limits](SVG_LIVING_DOCUMENTATION.md#more-advanced-proof-outputs-generated-by-ci). Download `visualize-city-massing-proof` from the [proof workflow](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39369513107).
+**See:** [City massing recipe, adapter assertions, and limits](gallery/city-massing.md). Download `visualize-city-massing-proof` from the [proof workflow](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39369513107).
 
 ## 06 — Crowd instances
 
 The deterministic crowd fixture makes instance data visible as a generated artifact. It is a contract illustration, not a measured GPU crowd renderer.
 
-**See:** [Crowd proof and evidence boundaries](SVG_LIVING_DOCUMENTATION.md#more-advanced-proof-outputs-generated-by-ci). Download `visualize-extremus-crowd-proof` from the [proof workflow](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39369513107).
+**See:** [Crowd-instance recipe and evidence boundaries](gallery/crowd-instances.md). Download `visualize-extremus-crowd-proof` from the [proof workflow](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39369513107).
 
 ## 07 — GUI.SVG feature language
 
 Gradients, clipping, patterns, markers, symbols, animation, filters, and lighting definitions demonstrate the expressiveness of the optional SVG manifestation path.
 
-**See:** download `gui-svg-feature-gallery` from the [proof workflow](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39369513107).
+**See:** [GUI.SVG feature-gallery recipe](gallery/gui-svg-features.md); download `gui-svg-feature-gallery` from the [proof workflow](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39369513107).
 
 ## What “alive” means here
 
