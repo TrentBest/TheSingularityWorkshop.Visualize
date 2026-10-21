@@ -8,6 +8,7 @@ This folder records source-backed UML for individual C# files. Each page must be
 |---|---|---|
 | `Visualizer.cs` | [Visualizer.cs.md](Visualizer.cs.md) · [VisualizerUML.md](VisualizerUML.md) | Documented |
 | `VisualizerFrame.cs` | [VisualizerFrame.cs.md](VisualizerFrame.cs.md) | Documented |
+| `src/GPU/VisualizerFrameResolver.cs` | [VisualizerFrameResolver.cs.md](VisualizerFrameResolver.cs.md) · [VisualizerFrameResolverUML.md](VisualizerFrameResolverUML.md) | Documented |
 | `IVisualizerBackend.cs` | [IVisualizerBackend.cs.md](IVisualizerBackend.cs.md) | Documented |
 | Other production, sample, and test `.cs` files | Not yet documented | Pending |
 
