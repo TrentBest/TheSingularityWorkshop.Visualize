@@ -1,65 +1,42 @@
-# UML — `Visualizer.cs`
+# Visualizer — source companion
 
-**Source:** [`Visualizer.cs`](../../Visualizer.cs)
+**Purpose:** Orchestrate frame validation and serialized submission to an injected presentation backend using an injected logical-resource provider.
 
-## Responsibility
+**Implementation source:** [`Visualizer.cs`](../../Visualizer.cs)  
+**Class diagram:** [`Visualizer.cs.svg`](Visualizer.cs.svg)  
+**Backend contract:** [`IVisualizerBackend.cs`](../../IVisualizerBackend.cs)  
+**Frame adapter contract:** [`IVisualizerFrameAdapter.cs`](../../IVisualizerFrameAdapter.cs)  
+**Tests and executable evidence:** [Visualize test suite](../../tests) · [observer-driven presentation proof](../gallery/observer-driven-presentation.md)
 
-`Visualizer` orchestrates frame submission. It validates each command's referenced geometry, material, index range, effective vertex indices, and optional instance range before forwarding the immutable frame to the configured backend. It does not itself render pixels.
+## Class card
 
-## Class diagram
-
-```mermaid
-classDiagram
-    class Visualizer {
-      -IVisualizerBackend backend
-      -IVisualizerResourceProvider resources
-      -SemaphoreSlim submissionGate
-      -Task disposeTask
-      +Capabilities VisualizerCapabilities
-      +RenderAsync~TSourceFrame~(sourceFrame, adapter) ValueTask
-      +RenderAsync(frame) ValueTask
-      +DisposeAsync() ValueTask
-    }
-    class IVisualizerBackend {
-      <<interface>>
-      +Capabilities VisualizerCapabilities
-      +RenderAsync(frame, resources, cancellationToken) ValueTask
-      +DisposeAsync()
-    }
-    class IVisualizerResourceProvider {
-      <<interface>>
-      +TryGetGeometry(id) bool
-      +TryGetMaterial(id) bool
-      +TryGetInstances(id) bool
-    }
-    class IVisualizerFrameAdapter {
-      <<interface>>
-      +Adapt(sourceFrame) VisualizerFrame
-    }
-    class VisualizerFrame
-    class VisualizerFrameResult
-    Visualizer ..> IVisualizerBackend : submits to
-    Visualizer ..> IVisualizerResourceProvider : validates against
-    Visualizer ..> IVisualizerFrameAdapter : optional adaptation
-    Visualizer --> VisualizerFrame : accepts
-    IVisualizerBackend ..> VisualizerFrameResult : returns
+```text
+Visualizer : IAsyncDisposable
+  + Visualizer(backend, resources)
+  + Capabilities : VisualizerCapabilities
+  + RenderAsync<TSourceFrame>(sourceFrame, adapter, cancellationToken)
+  + RenderAsync(frame, cancellationToken) : ValueTask<VisualizerFrameResult>
+  + DisposeAsync() : ValueTask
 ```
 
-## Observed behavior
+## Contract and lifecycle
 
-- Constructor rejects a null backend or resource provider.
-- The semaphore serializes submissions and coordinates backend disposal with active submissions.
-- A frame is rejected when a geometry/material/instance resource is missing or a requested range is invalid.
-- `BaseVertex` is applied to each index value for effective vertex-range validation; it is not treated as an index-buffer offset.
-- Disposal is idempotently represented by a cached task and disposes the backend after acquiring the submission gate.
-- Cancellation is checked before validation/submission and passed to the backend. The backend contract documents cancellation as applying to work not yet submitted to the device.
+- The constructor rejects null backend and resource-provider dependencies.
+- Generic submission adapts a source frame, then uses the same validated submission path as a `VisualizerFrame`.
+- Submission is serialized through a semaphore.
+- Before backend submission, every command's geometry, index range, effective vertex indices, material, and optional instance range are validated against the resource provider.
+- Cancellation is observed while waiting for submission and before validation/submission continues.
+- Disposal is idempotently represented by one cached task, marks the instance disposed, waits for active submission to finish, and then disposes the backend.
+- This class is orchestration. Whether real pixels or GPU work occur depends on the injected backend and its capability report.
 
-## Boundaries and non-claims
+## Use case — safely submit a frame
 
-- The class is orchestration, not a GPU implementation.
-- Capability values come from the backend and are not universal promises.
-- Correctness of backend resource lifetime and actual pixel output must be verified by the backend and its integration tests.
+1. Create a backend and resource provider that share a compatible resource namespace.
+2. Construct `Visualizer` with those dependencies.
+3. Submit a `VisualizerFrame` or adapt a source Renderer frame.
+4. On missing resources or invalid index/vertex/instance ranges, expect validation to fail before backend submission.
+5. Await `DisposeAsync` when the visualizer's work is complete; it waits for an active submission before disposing the backend.
 
-## Verification targets
+## Evidence boundary
 
-See [Visualizer contract tests](../../tests/TheSingularityWorkshop.Visualize.Tests/VisualizerContractTests.cs) and the [GUI.SVG integration backend](../../integrations/GuiSvg/GuiSvgVisualizerBackend.cs). The latter is a CPU/SVG manifestation proof, not GPU rendering.
+The observer-driven Renderer-to-Visualize proof validates a CPU/SVG manifestation path. It does not establish hardware-GPU execution unless a specific backend demonstrably submits GPU work.
