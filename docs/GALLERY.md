@@ -4,6 +4,23 @@
 
 This is the short visual index. Each entry tells you what to look at and links to a focused document for the implementation, recipe, and evidence. The [SVG living-documentation guide](SVG_LIVING_DOCUMENTATION.md) collects the current proofs and explains the boundaries between SVG output, CPU-side projection, and GPU execution. The [per-file UML source index](UML/README.md) tracks audited C# types and explicitly lists coverage still pending.
 
+## Start here — One observer, two worlds
+
+A single change of observer position has two complementary views: Renderer exposes the decision as structured, inspectable frame data; Visualize and GUI.SVG manifest that decision as a picture. Follow the input through the computation and into the output rather than treating the SVG as decoration.
+
+- **Start with the decision:** [Renderer’s observer-driven policy-to-frame proof](https://github.com/TrentBest/TheSingularityWorkshop.Renderer/blob/development/docs/gallery/observer-driven-frame.md) shows how observer position changes representation choices in a real CPU-side `RenderFrame`.
+- **See the downstream result:** this repository’s [observer-driven presentation proof](gallery/observer-driven-presentation.md) adapts two Renderer frames and generates two SVGs plus a machine-readable report.
+- **Inspect the source:** [proof program](../integrations/GuiSvg/ObserverFrameProof/Program.cs) · [proof project](../integrations/GuiSvg/ObserverFrameProof/ObserverFrameProof.csproj).
+- **Run it** from the Visualize repository root, with the sibling Renderer and GUI source repositories available:
+
+```sh
+dotnet run --project integrations/GuiSvg/ObserverFrameProof/ObserverFrameProof.csproj --configuration Release -- ./artifacts/observer-frame
+```
+
+The executable assertions require observer movement to change representation decisions, preserve one command per stable subject, and preserve command count, entity identity, and representation through the adapter. The resulting SVGs are the manifestation; the report records the comparison.
+
+**Evidence boundary:** this is a deterministic CPU/SVG integration proof. Its marker geometry and index counts are fixture values. It does not submit GPU commands, measure GPU-produced pixels, establish production scheduling/cache behavior, or benchmark timing and allocations. Renderer remains independent of Visualize and GUI.SVG; the downstream adapter is optional.
+
 ## 01 — Geometry and connectivity
 
 ![Connected points and line meshes](../samples/PrimitiveGallery/generated/07-gui-svg-connected-points.svg)
