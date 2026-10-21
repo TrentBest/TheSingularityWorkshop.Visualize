@@ -3,7 +3,7 @@
 **Purpose:** Orchestrate frame validation and serialized submission to an injected presentation backend using an injected logical-resource provider.
 
 **Implementation source:** [`Visualizer.cs`](../../Visualizer.cs)  
-**Class diagram:** [`Visualizer.cs.svg`](Visualizer.cs.svg)  
+**Class diagram:** [VisualizerUML.md](VisualizerUML.md)  
 **Backend contract:** [`IVisualizerBackend.cs`](../../IVisualizerBackend.cs)  
 **Frame adapter contract:** [`IVisualizerFrameAdapter.cs`](../../IVisualizerFrameAdapter.cs)  
 **Tests and executable evidence:** [Visualize test suite](../../tests) · [observer-driven presentation proof](../gallery/observer-driven-presentation.md)
