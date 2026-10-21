@@ -413,7 +413,20 @@ jobs:
           fi
           cp "$coverage_file" ./TestResults/coverage.cobertura.xml
 
+      - name: Check whether Codecov upload is configured
+        id: codecov-config
+        shell: bash
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          if [[ -n "$CODECOV_TOKEN" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "CODECOV_TOKEN is not configured; coverage upload will be skipped. Coverage files remain available as workflow artifacts."
+          fi
       - name: Upload coverage to Codecov
+        if: ${{ steps.codecov-config.outputs.enabled == 'true' }}
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
