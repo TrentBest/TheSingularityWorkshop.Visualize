@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../TheSingularityWorkshop.Renderer.VisualizeAdapter.csproj" />
+    <ProjectReference Include="../../GuiSvg/TheSingularityWorkshop.Visualize.GUI.SVG.csproj" />
+    <ProjectReference Include="../../../ExperiencesSource/src/DroneConstruction/TheSingularityWorkshop.Experiences.DroneConstruction.csproj"
+                      Condition="Exists('../../../ExperiencesSource/src/DroneConstruction/TheSingularityWorkshop.Experiences.DroneConstruction.csproj')" />
+  </ItemGroup>
+  <Target Name="RequireExperiencesSource" BeforeTargets="ResolveReferences"
+          Condition="!Exists('../../../ExperiencesSource/src/DroneConstruction/TheSingularityWorkshop.Experiences.DroneConstruction.csproj')">
+    <Error Text="The Drone Construction proof requires Experiences checked out at repository-root ExperiencesSource/." />
+  </Target>
+</Project>
