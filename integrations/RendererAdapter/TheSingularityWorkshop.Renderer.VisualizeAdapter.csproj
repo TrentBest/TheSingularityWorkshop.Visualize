@@ -17,6 +17,7 @@
     <!-- Renderer is built through its own project; do not compile the nested checkout into this adapter. -->
     <Compile Remove="RendererSource/**/*.cs" />
     <Compile Remove="Proof/**/*.cs" />
+    <Compile Remove="DroneConstructionProof/**/*.cs" />
     <ProjectReference Include="../../TheSingularityWorkshop.Visualize.csproj" />
   </ItemGroup>
 
