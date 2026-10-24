@@ -280,7 +280,7 @@ jobs:
           --configuration Release
           -- ./artifacts/drone-construction-frame.svg
 
-      - name: Verify and upload Drone Construction frame and provenance manifest
+      - name: Verify Drone Construction frame and provenance manifest
         shell: bash
         run: |
           set -euo pipefail
@@ -288,14 +288,20 @@ jobs:
           manifest="./artifacts/drone-construction-frame.manifest.txt"
           test -s "$svg"
           test -s "$manifest"
-          grep -q '^run=drone-construction-renderer-proof        shell: bash
-        run: |
-          set -euo pipefail
-          proof="./artifacts/renderer-selected-frame.svg"
-          test -s "$proof"
-          grep -q '<path' "$proof"
-          grep -q 'Visualizer frame manifested through GUI.SVG' "$proof"
-          echo "Verified executable Renderer -> Visualizer -> GUI.SVG proof: $proof"
+          grep -q '^run=drone-construction-renderer-proof$' "$manifest"
+          grep -q '^observerSequence=1$' "$manifest"
+          grep -q '^authoritativeAgents=3$' "$manifest"
+          grep -q '^submittedDraws=3$' "$manifest"
+          grep -q '^entityIds=101,202,303$' "$manifest"
+          cat "$manifest"
+
+      - uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: drone-construction-renderer-svg-proof
+          path: |
+            ./artifacts/drone-construction-frame.svg
+            ./artifacts/drone-construction-frame.manifest.txt
+          if-no-files-found: error
 
       - name: Upload Renderer-to-Visualize frame proof
         uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
