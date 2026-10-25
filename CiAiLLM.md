@@ -81,3 +81,24 @@ Please return:
 4. The first fresh workflow run with jobs, plus build/test/proof outcomes.
 5. Whether the SVG and manifest artifacts exist and pass the stated assertions.
 6. Remaining blockers and a revised readiness estimate. Current working estimate before this diagnosis: **60%** toward the intended showcase; this is not a test pass rate or release approval.
+
+
+## New finding from direct inspection of current `development` workflow
+
+A fresh read of `.github/workflows/build.yml` on `development` shows the workflow is not merely failing at runtime: the file content itself is visibly corrupted/interleaved.
+
+Evidence from the current file:
+- The workflow has 1,542 lines, although the valid-looking opening structure starts with one top-level `name`, `on`, `permissions`, and `jobs`.
+- At lines 480–501, the first `publish_nuget` job appears to finish normally.
+- Line 502 then contains the stray fragment `"$manifest"`; line 503 contains merged text `grep -q '^observerSequence=1        shell: bash`, immediately followed by another step's `run: |` at line 504. This is invalid YAML/step structure and is a concrete cause candidate for the zero-job workflow failure.
+- The file also repeats top-level job identifiers: `publish_nuget:` occurs at lines 480, 686, 892, 1098, 1304, and 1520. The same `build-and-test:`/step sequences appear to have been duplicated/interleaved. Duplicate job IDs and the broken line at 502 must be resolved before treating this as a C# issue.
+- The malformed section interleaves the verification for the earlier `renderer-selected-frame.svg` proof with Drone Construction manifest checks. Do not patch only the visible line: inspect the entire file and recover a coherent workflow definition.
+
+Recommended recovery:
+1. Compare the current file with the last known-good workflow commit and identify the smallest clean base.
+2. Reapply intended changes exactly once: GUI.SVG package proof, existing Visualize build/test, Renderer/Visualize proof, City Massing proof, and Drone Construction proof.
+3. Ensure each top-level job ID appears once, each step is nested under the correct job, and there are no stray/interleaved fragments.
+4. Run a YAML/workflow syntax validation if available, then push only to `development` and verify a fresh Actions run actually creates jobs.
+5. Keep the `publish_nuget` gate disabled; do not publish or merge.
+
+This is a stronger diagnosis than the earlier hypothesis about workflow discovery/events. It is based on the live file content, but a fresh successful run is still required to verify the repair.
