@@ -502,6 +502,8 @@ jobs:
           grep -qx 'run=drone-construction-renderer-proof' "$manifest"
           grep -qx 'spaceKind=SimulationGrid' "$manifest"
           grep -qx 'spaceId=construction-proof-grid' "$manifest"
+          grep -qx 'observerSequence=1' "$manifest"
+          grep -qx 'authoritativeAgents=3' "$manifest"
           grep -qx 'submittedDraws=3' "$manifest"
           grep -qx 'entityIds=101,202,303' "$manifest"
           grep -qx 'backend=CPU/SVG' "$manifest"
