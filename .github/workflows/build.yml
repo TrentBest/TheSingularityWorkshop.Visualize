@@ -480,7 +480,7 @@ jobs:
           path: integrations/GuiSvg/GuiSource
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@6df8cefd1440cf9313e76b8fdb8aaf90cfa745a3 # v7.0.1
+        uses: actions/setup-dotnet@6df8cefd1440cf9313e76b8fdb8aaf90cfa745a3 # v6.0.0
         with:
           dotnet-version: 8.0.x
 
