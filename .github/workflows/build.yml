@@ -483,7 +483,7 @@ jobs:
 
       - name: Generate Drone Construction frame from committed simulation snapshot
         env:
-          WorkshopGuiSvgProjectPath: integrations/GuiSvg/GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
         run: >
           dotnet run
           --project integrations/RendererAdapter/DroneConstructionProof/DroneConstructionFrameProof.csproj
