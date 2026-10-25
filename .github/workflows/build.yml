@@ -449,6 +449,75 @@ jobs:
           name: visualize-test-results
           path: ./TestResults/*
 
+  drone-construction-frame-proof:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Visualize
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Checkout Experiences simulation source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: TrentBest/TheSingularityWorkshop.Experiences
+          ref: development
+          path: ExperiencesSource
+          sparse-checkout: |
+            src/DroneConstruction
+          sparse-checkout-cone-mode: true
+
+      - name: Checkout Renderer source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: TrentBest/TheSingularityWorkshop.Renderer
+          ref: development
+          path: integrations/RendererAdapter/RendererSource
+
+      - name: Checkout GUI source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: TrentBest/TheSingularityWorkshop.GUI
+          ref: development
+          path: integrations/GuiSvg/GuiSource
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@6df8cefd1440cf9313e76b8fdb8aaf90cfa745a3 # v6.0.0
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Generate committed snapshot Renderer → Visualize → GUI.SVG proof
+        env:
+          WorkshopGuiSvgProjectPath: integrations/GuiSvg/GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: dotnet run --project integrations/RendererAdapter/DroneConstructionProof/DroneConstructionFrameProof.csproj --configuration Release -- ./artifacts/drone-construction-frame.svg
+
+      - name: Verify deterministic frame and provenance manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          svg="./artifacts/drone-construction-frame.svg"
+          manifest="./artifacts/drone-construction-frame.manifest.txt"
+          test -s "$svg"
+          test -s "$manifest"
+          grep -qx 'run=drone-construction-renderer-proof' "$manifest"
+          grep -qx 'tick=0' "$manifest"
+          grep -qx 'observerSequence=1' "$manifest"
+          grep -qx 'spaceKind=SimulationGrid' "$manifest"
+          grep -qx 'spaceId=construction-proof-grid' "$manifest"
+          grep -qx 'authoritativeAgents=3' "$manifest"
+          grep -qx 'submittedDraws=3' "$manifest"
+          grep -qx 'entityIds=101,202,303' "$manifest"
+          grep -qx 'backend=CPU/SVG' "$manifest"
+          echo "Verified committed Drone Construction snapshot and CPU/SVG frame:"
+          cat "$manifest"
+
+      - name: Upload Drone Construction frame and provenance manifest
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: drone-construction-renderer-svg-proof
+          path: |
+            ./artifacts/drone-construction-frame.svg
+            ./artifacts/drone-construction-frame.manifest.txt
+          if-no-files-found: error
+
   publish_nuget:
     needs: [build-and-test, gui-svg-package-proof]
     runs-on: ubuntu-24.04
