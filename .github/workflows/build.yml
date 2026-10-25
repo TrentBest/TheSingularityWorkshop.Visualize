@@ -179,6 +179,13 @@ jobs:
           ref: development
           path: integrations/GuiSvg/GuiSource
 
+      - name: Checkout Experiences source for the construction snapshot proof
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: TrentBest/TheSingularityWorkshop.Experiences
+          ref: development
+          path: ExperiencesSource
+
       - name: Setup .NET
         uses: actions/setup-dotnet@6df8cefd1440cf9313e76b8fdb8aaf90cfa745a3 # v6.0.0
         with:
@@ -264,6 +271,1061 @@ jobs:
           dotnet run --project integrations/RendererAdapter/Proof/RendererFrameToSvgProof.csproj
           --configuration Release
           -- ./artifacts/renderer-selected-frame.svg
+
+      - name: Render committed Drone Construction snapshot through Renderer and GUI.SVG
+        env:
+          WorkshopGuiSvgProjectPath: integrations/GuiSvg/GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/RendererAdapter/DroneConstructionProof/DroneConstructionFrameProof.csproj
+          --configuration Release
+          -- ./artifacts/drone-construction-frame.svg
+
+      - name: Verify and upload Drone Construction frame and provenance manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          svg="./artifacts/drone-construction-frame.svg"
+          manifest="./artifacts/drone-construction-frame.manifest.txt"
+          test -s "$svg"
+          test -s "$manifest"
+          grep -q '^run=drone-construction-renderer-proof        shell: bash
+        run: |
+          set -euo pipefail
+          proof="./artifacts/renderer-selected-frame.svg"
+          test -s "$proof"
+          grep -q '<path' "$proof"
+          grep -q 'Visualizer frame manifested through GUI.SVG' "$proof"
+          echo "Verified executable Renderer -> Visualizer -> GUI.SVG proof: $proof"
+
+      - name: Upload Renderer-to-Visualize frame proof
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: renderer-to-visualize-frame-proof
+          path: ./artifacts/renderer-selected-frame.svg
+          if-no-files-found: error
+
+      - name: Generate the same city scene through Visualizer for three material skins
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/GuiSvg/CityMassingProof/CityMassingProof.csproj
+          --configuration Release
+          -- ./samples/CityMassing/generated
+
+      - name: Generate deterministic Extremus crowd instance SVG proof
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/GuiSvg/ExtremusCrowdProof/ExtremusCrowdProof.csproj
+          --configuration Release
+          -- ./samples/ExtremusCrowd/generated
+
+      - name: Generate GUI.SVG feature gallery in the combined proof set
+        run: >
+          dotnet run --project integrations/GuiSvg/GuiSource/samples/SvgGallery/SvgGallery.csproj
+          --configuration Release
+          -- ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+
+      - name: Verify generated Visualizer SVG proof outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for sample in \
+            01-one-point.svg \
+            02-point-cloud-100.svg \
+            03-four-connected-points.svg \
+            04-one-line.svg \
+            05-many-lines-24.svg \
+            06-lit-hemisphere-normals.svg \
+            07-gui-svg-connected-points.svg \
+            08-gui-svg-perspective-mesh.svg \
+            09-gui-svg-feature-gallery.svg; do
+            file="./samples/PrimitiveGallery/generated/$sample"
+            test -s "$file" || { echo "Missing or empty Visualizer output: $file"; exit 1; }
+            grep -q '<path' "$file" || { echo "No rendered paths in: $file"; exit 1; }
+          done
+          grep -q 'stroke="#7ee0bd"' ./samples/PrimitiveGallery/generated/06-lit-hemisphere-normals.svg
+          grep -q 'attributeName="r"' ./samples/PrimitiveGallery/generated/07-gui-svg-connected-points.svg
+          grep -q '<linearGradient' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<pattern' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<marker' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<filter' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feTurbulence' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDisplacementMap' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feComponentTransfer' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDiffuseLighting' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDistantLight' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q 'filter="url(#surface-relief)"' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q 'filter="url(#surface-lighting)"' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<use' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<a ' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<animate' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<mpath' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<set' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          for skin in noir metro harmony; do
+            file="./samples/CityMassing/generated/singularity-city-$skin.svg"
+            test -s "$file" || { echo "Missing city skin output: $file"; exit 1; }
+            grep -q 'Singularity City /' "$file"
+            grep -q 'draw-' "$file"
+          done
+          grep -q 'fill="#050a12"' ./samples/CityMassing/generated/singularity-city-noir.svg
+          grep -q 'fill="#edf4e9"' ./samples/CityMassing/generated/singularity-city-harmony.svg
+          report="./samples/CityMassing/generated/city-massing-report.json"
+          test -s "$report" || { echo "Missing machine-readable city proof report."; exit 1; }
+          python -c 'import json; p="'"$report"'"; rows=json.load(open(p)); assert len(rows)==3, rows; assert all(r["sourceFaces"] > r["submittedFaces"] for r in rows), rows; assert all(r["omittedWindowDetailFaces"] > 0 for r in rows), rows; assert all(r["backend"] == "CPU/SVG" for r in rows), rows; print(json.dumps(rows, indent=2))'
+          crowd_dir="./samples/ExtremusCrowd/generated"
+          crowd_svg="$crowd_dir/extremus-crowd.svg"
+          crowd_manifest="$crowd_dir/extremus-crowd-manifest.json"
+          test -s "$crowd_svg" || { echo "Missing Extremus crowd SVG."; exit 1; }
+          test -s "$crowd_manifest" || { echo "Missing Extremus crowd manifest."; exit 1; }
+          grep -q 'Extremus deterministic crowd layout' "$crowd_svg"
+          python -c 'import json, pathlib; p=pathlib.Path("'"$crowd_manifest"'"); r=json.loads(p.read_text()); assert r["source"]["consumesGesturesBake"] is False, r; assert r["backend"]["execution"] == "CPU" and r["backend"]["hardwareGpuInstancing"] is False, r; assert r["counts"]["representedPopulation"] == 24 and r["counts"]["instanceRecords"] == 24, r; assert r["counts"]["drawCommands"] == 1 and r["repeatability"]["identicalInputProducedIdenticalSvg"] is True, r; assert r["repeatability"]["missingInstanceResourceRejected"] is True, r; assert len(r["records"]) == 24, r; assert r["output"]["svgBytes"] == len(pathlib.Path("'"$crowd_svg"'").read_bytes()), r; print(json.dumps({"counts": r["counts"], "output": r["output"]}, indent=2))'
+
+      - name: Upload Visualizer SVG proof images
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-svg-primitive-proof
+          path: ./samples/PrimitiveGallery/generated/*.svg
+          if-no-files-found: error
+
+      - name: Upload Visualizer-backed city massing skins and proof report
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-city-massing-proof
+          path: |
+            ./samples/CityMassing/generated/*.svg
+            ./samples/CityMassing/generated/city-massing-report.json
+          if-no-files-found: error
+      
+      - name: Upload deterministic Extremus crowd SVG and manifest
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-extremus-crowd-proof
+          path: |
+            ./samples/ExtremusCrowd/generated/extremus-crowd.svg
+            ./samples/ExtremusCrowd/generated/extremus-crowd-manifest.json
+          if-no-files-found: error
+
+      - name: Test with coverage
+        run: >
+          dotnet test tests/TheSingularityWorkshop.Visualize.Tests/TheSingularityWorkshop.Visualize.Tests.csproj
+          --configuration Release
+          --no-build
+          --verbosity normal
+          --collect:"XPlat Code Coverage;Format=cobertura"
+          --results-directory ./TestResults
+          --logger "trx;LogFileName=testresults.trx"
+
+      - name: Test GUI.SVG Visualizer backend integration
+        run: >
+          dotnet test tests/GuiSvgIntegration.Tests/GuiSvgIntegration.Tests.csproj
+          --configuration Release
+          -p:WorkshopGuiSvgProjectPath=GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+          --verbosity normal
+
+      - name: Prepare coverage report
+        shell: bash
+        run: |
+          set -euo pipefail
+          coverage_file="$(find ./TestResults -type f -name 'coverage.cobertura.xml' -print -quit)"
+          if [[ -z "$coverage_file" ]]; then
+            echo "No coverage.cobertura.xml file was produced."
+            find ./TestResults -maxdepth 4 -type f -print || true
+            exit 1
+          fi
+          cp "$coverage_file" ./TestResults/coverage.cobertura.xml
+
+      - name: Check whether Codecov upload is configured
+        id: codecov-config
+        shell: bash
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          if [[ -n "$CODECOV_TOKEN" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "CODECOV_TOKEN is not configured; coverage upload will be skipped. Coverage files remain available as workflow artifacts."
+          fi
+      - name: Upload coverage to Codecov
+        if: ${{ steps.codecov-config.outputs.enabled == 'true' }}
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: TrentBest/TheSingularityWorkshop.Visualize
+          files: ./TestResults/coverage.cobertura.xml
+          fail_ci_if_error: true
+
+      - name: Pack
+        run: dotnet pack TheSingularityWorkshop.Visualize.csproj --configuration Release --no-build --output ./artifacts
+
+      - name: Upload NuGet package artifact
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-nuget-package
+          path: ./artifacts/*.nupkg
+
+      - name: Upload test and coverage artifacts
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-test-results
+          path: ./TestResults/*
+
+  publish_nuget:
+    needs: [build-and-test, gui-svg-package-proof]
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true && github.ref == 'refs/heads/development' }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download NuGet package
+        uses: actions/download-artifact@e455989ae00f5bdd4054f05d3e972c6bf8a62dc5 # v8.0.2
+        with:
+          name: visualize-nuget-package
+          path: ./artifacts
+
+      - name: Authenticate with NuGet Trusted Publishing
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: login
+        with:
+          user: TheSingularityWorkshop
+
+      - name: Publish package to NuGet.org
+        run: dotnet nuget push "./artifacts/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --skip-duplicate
+ "$manifest"
+          grep -q '^observerSequence=1        shell: bash
+        run: |
+          set -euo pipefail
+          proof="./artifacts/renderer-selected-frame.svg"
+          test -s "$proof"
+          grep -q '<path' "$proof"
+          grep -q 'Visualizer frame manifested through GUI.SVG' "$proof"
+          echo "Verified executable Renderer -> Visualizer -> GUI.SVG proof: $proof"
+
+      - name: Upload Renderer-to-Visualize frame proof
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: renderer-to-visualize-frame-proof
+          path: ./artifacts/renderer-selected-frame.svg
+          if-no-files-found: error
+
+      - name: Generate the same city scene through Visualizer for three material skins
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/GuiSvg/CityMassingProof/CityMassingProof.csproj
+          --configuration Release
+          -- ./samples/CityMassing/generated
+
+      - name: Generate deterministic Extremus crowd instance SVG proof
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/GuiSvg/ExtremusCrowdProof/ExtremusCrowdProof.csproj
+          --configuration Release
+          -- ./samples/ExtremusCrowd/generated
+
+      - name: Generate GUI.SVG feature gallery in the combined proof set
+        run: >
+          dotnet run --project integrations/GuiSvg/GuiSource/samples/SvgGallery/SvgGallery.csproj
+          --configuration Release
+          -- ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+
+      - name: Verify generated Visualizer SVG proof outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for sample in \
+            01-one-point.svg \
+            02-point-cloud-100.svg \
+            03-four-connected-points.svg \
+            04-one-line.svg \
+            05-many-lines-24.svg \
+            06-lit-hemisphere-normals.svg \
+            07-gui-svg-connected-points.svg \
+            08-gui-svg-perspective-mesh.svg \
+            09-gui-svg-feature-gallery.svg; do
+            file="./samples/PrimitiveGallery/generated/$sample"
+            test -s "$file" || { echo "Missing or empty Visualizer output: $file"; exit 1; }
+            grep -q '<path' "$file" || { echo "No rendered paths in: $file"; exit 1; }
+          done
+          grep -q 'stroke="#7ee0bd"' ./samples/PrimitiveGallery/generated/06-lit-hemisphere-normals.svg
+          grep -q 'attributeName="r"' ./samples/PrimitiveGallery/generated/07-gui-svg-connected-points.svg
+          grep -q '<linearGradient' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<pattern' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<marker' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<filter' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feTurbulence' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDisplacementMap' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feComponentTransfer' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDiffuseLighting' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDistantLight' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q 'filter="url(#surface-relief)"' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q 'filter="url(#surface-lighting)"' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<use' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<a ' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<animate' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<mpath' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<set' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          for skin in noir metro harmony; do
+            file="./samples/CityMassing/generated/singularity-city-$skin.svg"
+            test -s "$file" || { echo "Missing city skin output: $file"; exit 1; }
+            grep -q 'Singularity City /' "$file"
+            grep -q 'draw-' "$file"
+          done
+          grep -q 'fill="#050a12"' ./samples/CityMassing/generated/singularity-city-noir.svg
+          grep -q 'fill="#edf4e9"' ./samples/CityMassing/generated/singularity-city-harmony.svg
+          report="./samples/CityMassing/generated/city-massing-report.json"
+          test -s "$report" || { echo "Missing machine-readable city proof report."; exit 1; }
+          python -c 'import json; p="'"$report"'"; rows=json.load(open(p)); assert len(rows)==3, rows; assert all(r["sourceFaces"] > r["submittedFaces"] for r in rows), rows; assert all(r["omittedWindowDetailFaces"] > 0 for r in rows), rows; assert all(r["backend"] == "CPU/SVG" for r in rows), rows; print(json.dumps(rows, indent=2))'
+          crowd_dir="./samples/ExtremusCrowd/generated"
+          crowd_svg="$crowd_dir/extremus-crowd.svg"
+          crowd_manifest="$crowd_dir/extremus-crowd-manifest.json"
+          test -s "$crowd_svg" || { echo "Missing Extremus crowd SVG."; exit 1; }
+          test -s "$crowd_manifest" || { echo "Missing Extremus crowd manifest."; exit 1; }
+          grep -q 'Extremus deterministic crowd layout' "$crowd_svg"
+          python -c 'import json, pathlib; p=pathlib.Path("'"$crowd_manifest"'"); r=json.loads(p.read_text()); assert r["source"]["consumesGesturesBake"] is False, r; assert r["backend"]["execution"] == "CPU" and r["backend"]["hardwareGpuInstancing"] is False, r; assert r["counts"]["representedPopulation"] == 24 and r["counts"]["instanceRecords"] == 24, r; assert r["counts"]["drawCommands"] == 1 and r["repeatability"]["identicalInputProducedIdenticalSvg"] is True, r; assert r["repeatability"]["missingInstanceResourceRejected"] is True, r; assert len(r["records"]) == 24, r; assert r["output"]["svgBytes"] == len(pathlib.Path("'"$crowd_svg"'").read_bytes()), r; print(json.dumps({"counts": r["counts"], "output": r["output"]}, indent=2))'
+
+      - name: Upload Visualizer SVG proof images
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-svg-primitive-proof
+          path: ./samples/PrimitiveGallery/generated/*.svg
+          if-no-files-found: error
+
+      - name: Upload Visualizer-backed city massing skins and proof report
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-city-massing-proof
+          path: |
+            ./samples/CityMassing/generated/*.svg
+            ./samples/CityMassing/generated/city-massing-report.json
+          if-no-files-found: error
+      
+      - name: Upload deterministic Extremus crowd SVG and manifest
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-extremus-crowd-proof
+          path: |
+            ./samples/ExtremusCrowd/generated/extremus-crowd.svg
+            ./samples/ExtremusCrowd/generated/extremus-crowd-manifest.json
+          if-no-files-found: error
+
+      - name: Test with coverage
+        run: >
+          dotnet test tests/TheSingularityWorkshop.Visualize.Tests/TheSingularityWorkshop.Visualize.Tests.csproj
+          --configuration Release
+          --no-build
+          --verbosity normal
+          --collect:"XPlat Code Coverage;Format=cobertura"
+          --results-directory ./TestResults
+          --logger "trx;LogFileName=testresults.trx"
+
+      - name: Test GUI.SVG Visualizer backend integration
+        run: >
+          dotnet test tests/GuiSvgIntegration.Tests/GuiSvgIntegration.Tests.csproj
+          --configuration Release
+          -p:WorkshopGuiSvgProjectPath=GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+          --verbosity normal
+
+      - name: Prepare coverage report
+        shell: bash
+        run: |
+          set -euo pipefail
+          coverage_file="$(find ./TestResults -type f -name 'coverage.cobertura.xml' -print -quit)"
+          if [[ -z "$coverage_file" ]]; then
+            echo "No coverage.cobertura.xml file was produced."
+            find ./TestResults -maxdepth 4 -type f -print || true
+            exit 1
+          fi
+          cp "$coverage_file" ./TestResults/coverage.cobertura.xml
+
+      - name: Check whether Codecov upload is configured
+        id: codecov-config
+        shell: bash
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          if [[ -n "$CODECOV_TOKEN" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "CODECOV_TOKEN is not configured; coverage upload will be skipped. Coverage files remain available as workflow artifacts."
+          fi
+      - name: Upload coverage to Codecov
+        if: ${{ steps.codecov-config.outputs.enabled == 'true' }}
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: TrentBest/TheSingularityWorkshop.Visualize
+          files: ./TestResults/coverage.cobertura.xml
+          fail_ci_if_error: true
+
+      - name: Pack
+        run: dotnet pack TheSingularityWorkshop.Visualize.csproj --configuration Release --no-build --output ./artifacts
+
+      - name: Upload NuGet package artifact
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-nuget-package
+          path: ./artifacts/*.nupkg
+
+      - name: Upload test and coverage artifacts
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-test-results
+          path: ./TestResults/*
+
+  publish_nuget:
+    needs: [build-and-test, gui-svg-package-proof]
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true && github.ref == 'refs/heads/development' }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download NuGet package
+        uses: actions/download-artifact@e455989ae00f5bdd4054f05d3e972c6bf8a62dc5 # v8.0.2
+        with:
+          name: visualize-nuget-package
+          path: ./artifacts
+
+      - name: Authenticate with NuGet Trusted Publishing
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: login
+        with:
+          user: TheSingularityWorkshop
+
+      - name: Publish package to NuGet.org
+        run: dotnet nuget push "./artifacts/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --skip-duplicate
+ "$manifest"
+          grep -q '^authoritativeAgents=3        shell: bash
+        run: |
+          set -euo pipefail
+          proof="./artifacts/renderer-selected-frame.svg"
+          test -s "$proof"
+          grep -q '<path' "$proof"
+          grep -q 'Visualizer frame manifested through GUI.SVG' "$proof"
+          echo "Verified executable Renderer -> Visualizer -> GUI.SVG proof: $proof"
+
+      - name: Upload Renderer-to-Visualize frame proof
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: renderer-to-visualize-frame-proof
+          path: ./artifacts/renderer-selected-frame.svg
+          if-no-files-found: error
+
+      - name: Generate the same city scene through Visualizer for three material skins
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/GuiSvg/CityMassingProof/CityMassingProof.csproj
+          --configuration Release
+          -- ./samples/CityMassing/generated
+
+      - name: Generate deterministic Extremus crowd instance SVG proof
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/GuiSvg/ExtremusCrowdProof/ExtremusCrowdProof.csproj
+          --configuration Release
+          -- ./samples/ExtremusCrowd/generated
+
+      - name: Generate GUI.SVG feature gallery in the combined proof set
+        run: >
+          dotnet run --project integrations/GuiSvg/GuiSource/samples/SvgGallery/SvgGallery.csproj
+          --configuration Release
+          -- ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+
+      - name: Verify generated Visualizer SVG proof outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for sample in \
+            01-one-point.svg \
+            02-point-cloud-100.svg \
+            03-four-connected-points.svg \
+            04-one-line.svg \
+            05-many-lines-24.svg \
+            06-lit-hemisphere-normals.svg \
+            07-gui-svg-connected-points.svg \
+            08-gui-svg-perspective-mesh.svg \
+            09-gui-svg-feature-gallery.svg; do
+            file="./samples/PrimitiveGallery/generated/$sample"
+            test -s "$file" || { echo "Missing or empty Visualizer output: $file"; exit 1; }
+            grep -q '<path' "$file" || { echo "No rendered paths in: $file"; exit 1; }
+          done
+          grep -q 'stroke="#7ee0bd"' ./samples/PrimitiveGallery/generated/06-lit-hemisphere-normals.svg
+          grep -q 'attributeName="r"' ./samples/PrimitiveGallery/generated/07-gui-svg-connected-points.svg
+          grep -q '<linearGradient' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<pattern' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<marker' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<filter' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feTurbulence' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDisplacementMap' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feComponentTransfer' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDiffuseLighting' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDistantLight' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q 'filter="url(#surface-relief)"' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q 'filter="url(#surface-lighting)"' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<use' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<a ' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<animate' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<mpath' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<set' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          for skin in noir metro harmony; do
+            file="./samples/CityMassing/generated/singularity-city-$skin.svg"
+            test -s "$file" || { echo "Missing city skin output: $file"; exit 1; }
+            grep -q 'Singularity City /' "$file"
+            grep -q 'draw-' "$file"
+          done
+          grep -q 'fill="#050a12"' ./samples/CityMassing/generated/singularity-city-noir.svg
+          grep -q 'fill="#edf4e9"' ./samples/CityMassing/generated/singularity-city-harmony.svg
+          report="./samples/CityMassing/generated/city-massing-report.json"
+          test -s "$report" || { echo "Missing machine-readable city proof report."; exit 1; }
+          python -c 'import json; p="'"$report"'"; rows=json.load(open(p)); assert len(rows)==3, rows; assert all(r["sourceFaces"] > r["submittedFaces"] for r in rows), rows; assert all(r["omittedWindowDetailFaces"] > 0 for r in rows), rows; assert all(r["backend"] == "CPU/SVG" for r in rows), rows; print(json.dumps(rows, indent=2))'
+          crowd_dir="./samples/ExtremusCrowd/generated"
+          crowd_svg="$crowd_dir/extremus-crowd.svg"
+          crowd_manifest="$crowd_dir/extremus-crowd-manifest.json"
+          test -s "$crowd_svg" || { echo "Missing Extremus crowd SVG."; exit 1; }
+          test -s "$crowd_manifest" || { echo "Missing Extremus crowd manifest."; exit 1; }
+          grep -q 'Extremus deterministic crowd layout' "$crowd_svg"
+          python -c 'import json, pathlib; p=pathlib.Path("'"$crowd_manifest"'"); r=json.loads(p.read_text()); assert r["source"]["consumesGesturesBake"] is False, r; assert r["backend"]["execution"] == "CPU" and r["backend"]["hardwareGpuInstancing"] is False, r; assert r["counts"]["representedPopulation"] == 24 and r["counts"]["instanceRecords"] == 24, r; assert r["counts"]["drawCommands"] == 1 and r["repeatability"]["identicalInputProducedIdenticalSvg"] is True, r; assert r["repeatability"]["missingInstanceResourceRejected"] is True, r; assert len(r["records"]) == 24, r; assert r["output"]["svgBytes"] == len(pathlib.Path("'"$crowd_svg"'").read_bytes()), r; print(json.dumps({"counts": r["counts"], "output": r["output"]}, indent=2))'
+
+      - name: Upload Visualizer SVG proof images
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-svg-primitive-proof
+          path: ./samples/PrimitiveGallery/generated/*.svg
+          if-no-files-found: error
+
+      - name: Upload Visualizer-backed city massing skins and proof report
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-city-massing-proof
+          path: |
+            ./samples/CityMassing/generated/*.svg
+            ./samples/CityMassing/generated/city-massing-report.json
+          if-no-files-found: error
+      
+      - name: Upload deterministic Extremus crowd SVG and manifest
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-extremus-crowd-proof
+          path: |
+            ./samples/ExtremusCrowd/generated/extremus-crowd.svg
+            ./samples/ExtremusCrowd/generated/extremus-crowd-manifest.json
+          if-no-files-found: error
+
+      - name: Test with coverage
+        run: >
+          dotnet test tests/TheSingularityWorkshop.Visualize.Tests/TheSingularityWorkshop.Visualize.Tests.csproj
+          --configuration Release
+          --no-build
+          --verbosity normal
+          --collect:"XPlat Code Coverage;Format=cobertura"
+          --results-directory ./TestResults
+          --logger "trx;LogFileName=testresults.trx"
+
+      - name: Test GUI.SVG Visualizer backend integration
+        run: >
+          dotnet test tests/GuiSvgIntegration.Tests/GuiSvgIntegration.Tests.csproj
+          --configuration Release
+          -p:WorkshopGuiSvgProjectPath=GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+          --verbosity normal
+
+      - name: Prepare coverage report
+        shell: bash
+        run: |
+          set -euo pipefail
+          coverage_file="$(find ./TestResults -type f -name 'coverage.cobertura.xml' -print -quit)"
+          if [[ -z "$coverage_file" ]]; then
+            echo "No coverage.cobertura.xml file was produced."
+            find ./TestResults -maxdepth 4 -type f -print || true
+            exit 1
+          fi
+          cp "$coverage_file" ./TestResults/coverage.cobertura.xml
+
+      - name: Check whether Codecov upload is configured
+        id: codecov-config
+        shell: bash
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          if [[ -n "$CODECOV_TOKEN" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "CODECOV_TOKEN is not configured; coverage upload will be skipped. Coverage files remain available as workflow artifacts."
+          fi
+      - name: Upload coverage to Codecov
+        if: ${{ steps.codecov-config.outputs.enabled == 'true' }}
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: TrentBest/TheSingularityWorkshop.Visualize
+          files: ./TestResults/coverage.cobertura.xml
+          fail_ci_if_error: true
+
+      - name: Pack
+        run: dotnet pack TheSingularityWorkshop.Visualize.csproj --configuration Release --no-build --output ./artifacts
+
+      - name: Upload NuGet package artifact
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-nuget-package
+          path: ./artifacts/*.nupkg
+
+      - name: Upload test and coverage artifacts
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-test-results
+          path: ./TestResults/*
+
+  publish_nuget:
+    needs: [build-and-test, gui-svg-package-proof]
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true && github.ref == 'refs/heads/development' }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download NuGet package
+        uses: actions/download-artifact@e455989ae00f5bdd4054f05d3e972c6bf8a62dc5 # v8.0.2
+        with:
+          name: visualize-nuget-package
+          path: ./artifacts
+
+      - name: Authenticate with NuGet Trusted Publishing
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: login
+        with:
+          user: TheSingularityWorkshop
+
+      - name: Publish package to NuGet.org
+        run: dotnet nuget push "./artifacts/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --skip-duplicate
+ "$manifest"
+          grep -q '^submittedDraws=3        shell: bash
+        run: |
+          set -euo pipefail
+          proof="./artifacts/renderer-selected-frame.svg"
+          test -s "$proof"
+          grep -q '<path' "$proof"
+          grep -q 'Visualizer frame manifested through GUI.SVG' "$proof"
+          echo "Verified executable Renderer -> Visualizer -> GUI.SVG proof: $proof"
+
+      - name: Upload Renderer-to-Visualize frame proof
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: renderer-to-visualize-frame-proof
+          path: ./artifacts/renderer-selected-frame.svg
+          if-no-files-found: error
+
+      - name: Generate the same city scene through Visualizer for three material skins
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/GuiSvg/CityMassingProof/CityMassingProof.csproj
+          --configuration Release
+          -- ./samples/CityMassing/generated
+
+      - name: Generate deterministic Extremus crowd instance SVG proof
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/GuiSvg/ExtremusCrowdProof/ExtremusCrowdProof.csproj
+          --configuration Release
+          -- ./samples/ExtremusCrowd/generated
+
+      - name: Generate GUI.SVG feature gallery in the combined proof set
+        run: >
+          dotnet run --project integrations/GuiSvg/GuiSource/samples/SvgGallery/SvgGallery.csproj
+          --configuration Release
+          -- ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+
+      - name: Verify generated Visualizer SVG proof outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for sample in \
+            01-one-point.svg \
+            02-point-cloud-100.svg \
+            03-four-connected-points.svg \
+            04-one-line.svg \
+            05-many-lines-24.svg \
+            06-lit-hemisphere-normals.svg \
+            07-gui-svg-connected-points.svg \
+            08-gui-svg-perspective-mesh.svg \
+            09-gui-svg-feature-gallery.svg; do
+            file="./samples/PrimitiveGallery/generated/$sample"
+            test -s "$file" || { echo "Missing or empty Visualizer output: $file"; exit 1; }
+            grep -q '<path' "$file" || { echo "No rendered paths in: $file"; exit 1; }
+          done
+          grep -q 'stroke="#7ee0bd"' ./samples/PrimitiveGallery/generated/06-lit-hemisphere-normals.svg
+          grep -q 'attributeName="r"' ./samples/PrimitiveGallery/generated/07-gui-svg-connected-points.svg
+          grep -q '<linearGradient' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<pattern' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<marker' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<filter' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feTurbulence' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDisplacementMap' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feComponentTransfer' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDiffuseLighting' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDistantLight' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q 'filter="url(#surface-relief)"' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q 'filter="url(#surface-lighting)"' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<use' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<a ' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<animate' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<mpath' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<set' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          for skin in noir metro harmony; do
+            file="./samples/CityMassing/generated/singularity-city-$skin.svg"
+            test -s "$file" || { echo "Missing city skin output: $file"; exit 1; }
+            grep -q 'Singularity City /' "$file"
+            grep -q 'draw-' "$file"
+          done
+          grep -q 'fill="#050a12"' ./samples/CityMassing/generated/singularity-city-noir.svg
+          grep -q 'fill="#edf4e9"' ./samples/CityMassing/generated/singularity-city-harmony.svg
+          report="./samples/CityMassing/generated/city-massing-report.json"
+          test -s "$report" || { echo "Missing machine-readable city proof report."; exit 1; }
+          python -c 'import json; p="'"$report"'"; rows=json.load(open(p)); assert len(rows)==3, rows; assert all(r["sourceFaces"] > r["submittedFaces"] for r in rows), rows; assert all(r["omittedWindowDetailFaces"] > 0 for r in rows), rows; assert all(r["backend"] == "CPU/SVG" for r in rows), rows; print(json.dumps(rows, indent=2))'
+          crowd_dir="./samples/ExtremusCrowd/generated"
+          crowd_svg="$crowd_dir/extremus-crowd.svg"
+          crowd_manifest="$crowd_dir/extremus-crowd-manifest.json"
+          test -s "$crowd_svg" || { echo "Missing Extremus crowd SVG."; exit 1; }
+          test -s "$crowd_manifest" || { echo "Missing Extremus crowd manifest."; exit 1; }
+          grep -q 'Extremus deterministic crowd layout' "$crowd_svg"
+          python -c 'import json, pathlib; p=pathlib.Path("'"$crowd_manifest"'"); r=json.loads(p.read_text()); assert r["source"]["consumesGesturesBake"] is False, r; assert r["backend"]["execution"] == "CPU" and r["backend"]["hardwareGpuInstancing"] is False, r; assert r["counts"]["representedPopulation"] == 24 and r["counts"]["instanceRecords"] == 24, r; assert r["counts"]["drawCommands"] == 1 and r["repeatability"]["identicalInputProducedIdenticalSvg"] is True, r; assert r["repeatability"]["missingInstanceResourceRejected"] is True, r; assert len(r["records"]) == 24, r; assert r["output"]["svgBytes"] == len(pathlib.Path("'"$crowd_svg"'").read_bytes()), r; print(json.dumps({"counts": r["counts"], "output": r["output"]}, indent=2))'
+
+      - name: Upload Visualizer SVG proof images
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-svg-primitive-proof
+          path: ./samples/PrimitiveGallery/generated/*.svg
+          if-no-files-found: error
+
+      - name: Upload Visualizer-backed city massing skins and proof report
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-city-massing-proof
+          path: |
+            ./samples/CityMassing/generated/*.svg
+            ./samples/CityMassing/generated/city-massing-report.json
+          if-no-files-found: error
+      
+      - name: Upload deterministic Extremus crowd SVG and manifest
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-extremus-crowd-proof
+          path: |
+            ./samples/ExtremusCrowd/generated/extremus-crowd.svg
+            ./samples/ExtremusCrowd/generated/extremus-crowd-manifest.json
+          if-no-files-found: error
+
+      - name: Test with coverage
+        run: >
+          dotnet test tests/TheSingularityWorkshop.Visualize.Tests/TheSingularityWorkshop.Visualize.Tests.csproj
+          --configuration Release
+          --no-build
+          --verbosity normal
+          --collect:"XPlat Code Coverage;Format=cobertura"
+          --results-directory ./TestResults
+          --logger "trx;LogFileName=testresults.trx"
+
+      - name: Test GUI.SVG Visualizer backend integration
+        run: >
+          dotnet test tests/GuiSvgIntegration.Tests/GuiSvgIntegration.Tests.csproj
+          --configuration Release
+          -p:WorkshopGuiSvgProjectPath=GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+          --verbosity normal
+
+      - name: Prepare coverage report
+        shell: bash
+        run: |
+          set -euo pipefail
+          coverage_file="$(find ./TestResults -type f -name 'coverage.cobertura.xml' -print -quit)"
+          if [[ -z "$coverage_file" ]]; then
+            echo "No coverage.cobertura.xml file was produced."
+            find ./TestResults -maxdepth 4 -type f -print || true
+            exit 1
+          fi
+          cp "$coverage_file" ./TestResults/coverage.cobertura.xml
+
+      - name: Check whether Codecov upload is configured
+        id: codecov-config
+        shell: bash
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          if [[ -n "$CODECOV_TOKEN" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "CODECOV_TOKEN is not configured; coverage upload will be skipped. Coverage files remain available as workflow artifacts."
+          fi
+      - name: Upload coverage to Codecov
+        if: ${{ steps.codecov-config.outputs.enabled == 'true' }}
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: TrentBest/TheSingularityWorkshop.Visualize
+          files: ./TestResults/coverage.cobertura.xml
+          fail_ci_if_error: true
+
+      - name: Pack
+        run: dotnet pack TheSingularityWorkshop.Visualize.csproj --configuration Release --no-build --output ./artifacts
+
+      - name: Upload NuGet package artifact
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-nuget-package
+          path: ./artifacts/*.nupkg
+
+      - name: Upload test and coverage artifacts
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-test-results
+          path: ./TestResults/*
+
+  publish_nuget:
+    needs: [build-and-test, gui-svg-package-proof]
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true && github.ref == 'refs/heads/development' }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download NuGet package
+        uses: actions/download-artifact@e455989ae00f5bdd4054f05d3e972c6bf8a62dc5 # v8.0.2
+        with:
+          name: visualize-nuget-package
+          path: ./artifacts
+
+      - name: Authenticate with NuGet Trusted Publishing
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: login
+        with:
+          user: TheSingularityWorkshop
+
+      - name: Publish package to NuGet.org
+        run: dotnet nuget push "./artifacts/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --skip-duplicate
+ "$manifest"
+          grep -q '^entityIds=101,202,303        shell: bash
+        run: |
+          set -euo pipefail
+          proof="./artifacts/renderer-selected-frame.svg"
+          test -s "$proof"
+          grep -q '<path' "$proof"
+          grep -q 'Visualizer frame manifested through GUI.SVG' "$proof"
+          echo "Verified executable Renderer -> Visualizer -> GUI.SVG proof: $proof"
+
+      - name: Upload Renderer-to-Visualize frame proof
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: renderer-to-visualize-frame-proof
+          path: ./artifacts/renderer-selected-frame.svg
+          if-no-files-found: error
+
+      - name: Generate the same city scene through Visualizer for three material skins
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/GuiSvg/CityMassingProof/CityMassingProof.csproj
+          --configuration Release
+          -- ./samples/CityMassing/generated
+
+      - name: Generate deterministic Extremus crowd instance SVG proof
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: >
+          dotnet run --project integrations/GuiSvg/ExtremusCrowdProof/ExtremusCrowdProof.csproj
+          --configuration Release
+          -- ./samples/ExtremusCrowd/generated
+
+      - name: Generate GUI.SVG feature gallery in the combined proof set
+        run: >
+          dotnet run --project integrations/GuiSvg/GuiSource/samples/SvgGallery/SvgGallery.csproj
+          --configuration Release
+          -- ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+
+      - name: Verify generated Visualizer SVG proof outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for sample in \
+            01-one-point.svg \
+            02-point-cloud-100.svg \
+            03-four-connected-points.svg \
+            04-one-line.svg \
+            05-many-lines-24.svg \
+            06-lit-hemisphere-normals.svg \
+            07-gui-svg-connected-points.svg \
+            08-gui-svg-perspective-mesh.svg \
+            09-gui-svg-feature-gallery.svg; do
+            file="./samples/PrimitiveGallery/generated/$sample"
+            test -s "$file" || { echo "Missing or empty Visualizer output: $file"; exit 1; }
+            grep -q '<path' "$file" || { echo "No rendered paths in: $file"; exit 1; }
+          done
+          grep -q 'stroke="#7ee0bd"' ./samples/PrimitiveGallery/generated/06-lit-hemisphere-normals.svg
+          grep -q 'attributeName="r"' ./samples/PrimitiveGallery/generated/07-gui-svg-connected-points.svg
+          grep -q '<linearGradient' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<pattern' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<marker' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<filter' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feTurbulence' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDisplacementMap' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feComponentTransfer' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDiffuseLighting' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<feDistantLight' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q 'filter="url(#surface-relief)"' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q 'filter="url(#surface-lighting)"' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<use' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<a ' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<animate' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<mpath' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          grep -q '<set' ./samples/PrimitiveGallery/generated/09-gui-svg-feature-gallery.svg
+          for skin in noir metro harmony; do
+            file="./samples/CityMassing/generated/singularity-city-$skin.svg"
+            test -s "$file" || { echo "Missing city skin output: $file"; exit 1; }
+            grep -q 'Singularity City /' "$file"
+            grep -q 'draw-' "$file"
+          done
+          grep -q 'fill="#050a12"' ./samples/CityMassing/generated/singularity-city-noir.svg
+          grep -q 'fill="#edf4e9"' ./samples/CityMassing/generated/singularity-city-harmony.svg
+          report="./samples/CityMassing/generated/city-massing-report.json"
+          test -s "$report" || { echo "Missing machine-readable city proof report."; exit 1; }
+          python -c 'import json; p="'"$report"'"; rows=json.load(open(p)); assert len(rows)==3, rows; assert all(r["sourceFaces"] > r["submittedFaces"] for r in rows), rows; assert all(r["omittedWindowDetailFaces"] > 0 for r in rows), rows; assert all(r["backend"] == "CPU/SVG" for r in rows), rows; print(json.dumps(rows, indent=2))'
+          crowd_dir="./samples/ExtremusCrowd/generated"
+          crowd_svg="$crowd_dir/extremus-crowd.svg"
+          crowd_manifest="$crowd_dir/extremus-crowd-manifest.json"
+          test -s "$crowd_svg" || { echo "Missing Extremus crowd SVG."; exit 1; }
+          test -s "$crowd_manifest" || { echo "Missing Extremus crowd manifest."; exit 1; }
+          grep -q 'Extremus deterministic crowd layout' "$crowd_svg"
+          python -c 'import json, pathlib; p=pathlib.Path("'"$crowd_manifest"'"); r=json.loads(p.read_text()); assert r["source"]["consumesGesturesBake"] is False, r; assert r["backend"]["execution"] == "CPU" and r["backend"]["hardwareGpuInstancing"] is False, r; assert r["counts"]["representedPopulation"] == 24 and r["counts"]["instanceRecords"] == 24, r; assert r["counts"]["drawCommands"] == 1 and r["repeatability"]["identicalInputProducedIdenticalSvg"] is True, r; assert r["repeatability"]["missingInstanceResourceRejected"] is True, r; assert len(r["records"]) == 24, r; assert r["output"]["svgBytes"] == len(pathlib.Path("'"$crowd_svg"'").read_bytes()), r; print(json.dumps({"counts": r["counts"], "output": r["output"]}, indent=2))'
+
+      - name: Upload Visualizer SVG proof images
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-svg-primitive-proof
+          path: ./samples/PrimitiveGallery/generated/*.svg
+          if-no-files-found: error
+
+      - name: Upload Visualizer-backed city massing skins and proof report
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-city-massing-proof
+          path: |
+            ./samples/CityMassing/generated/*.svg
+            ./samples/CityMassing/generated/city-massing-report.json
+          if-no-files-found: error
+      
+      - name: Upload deterministic Extremus crowd SVG and manifest
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-extremus-crowd-proof
+          path: |
+            ./samples/ExtremusCrowd/generated/extremus-crowd.svg
+            ./samples/ExtremusCrowd/generated/extremus-crowd-manifest.json
+          if-no-files-found: error
+
+      - name: Test with coverage
+        run: >
+          dotnet test tests/TheSingularityWorkshop.Visualize.Tests/TheSingularityWorkshop.Visualize.Tests.csproj
+          --configuration Release
+          --no-build
+          --verbosity normal
+          --collect:"XPlat Code Coverage;Format=cobertura"
+          --results-directory ./TestResults
+          --logger "trx;LogFileName=testresults.trx"
+
+      - name: Test GUI.SVG Visualizer backend integration
+        run: >
+          dotnet test tests/GuiSvgIntegration.Tests/GuiSvgIntegration.Tests.csproj
+          --configuration Release
+          -p:WorkshopGuiSvgProjectPath=GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+          --verbosity normal
+
+      - name: Prepare coverage report
+        shell: bash
+        run: |
+          set -euo pipefail
+          coverage_file="$(find ./TestResults -type f -name 'coverage.cobertura.xml' -print -quit)"
+          if [[ -z "$coverage_file" ]]; then
+            echo "No coverage.cobertura.xml file was produced."
+            find ./TestResults -maxdepth 4 -type f -print || true
+            exit 1
+          fi
+          cp "$coverage_file" ./TestResults/coverage.cobertura.xml
+
+      - name: Check whether Codecov upload is configured
+        id: codecov-config
+        shell: bash
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          if [[ -n "$CODECOV_TOKEN" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "CODECOV_TOKEN is not configured; coverage upload will be skipped. Coverage files remain available as workflow artifacts."
+          fi
+      - name: Upload coverage to Codecov
+        if: ${{ steps.codecov-config.outputs.enabled == 'true' }}
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: TrentBest/TheSingularityWorkshop.Visualize
+          files: ./TestResults/coverage.cobertura.xml
+          fail_ci_if_error: true
+
+      - name: Pack
+        run: dotnet pack TheSingularityWorkshop.Visualize.csproj --configuration Release --no-build --output ./artifacts
+
+      - name: Upload NuGet package artifact
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-nuget-package
+          path: ./artifacts/*.nupkg
+
+      - name: Upload test and coverage artifacts
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-test-results
+          path: ./TestResults/*
+
+  publish_nuget:
+    needs: [build-and-test, gui-svg-package-proof]
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true && github.ref == 'refs/heads/development' }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download NuGet package
+        uses: actions/download-artifact@e455989ae00f5bdd4054f05d3e972c6bf8a62dc5 # v8.0.2
+        with:
+          name: visualize-nuget-package
+          path: ./artifacts
+
+      - name: Authenticate with NuGet Trusted Publishing
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: login
+        with:
+          user: TheSingularityWorkshop
+
+      - name: Publish package to NuGet.org
+        run: dotnet nuget push "./artifacts/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --skip-duplicate
+ "$manifest"
+          cat "$manifest"
+      - uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: drone-construction-renderer-svg-proof
+          path: |
+            ./artifacts/drone-construction-frame.svg
+            ./artifacts/drone-construction-frame.manifest.txt
+          if-no-files-found: error
 
       - name: Verify and upload the Renderer-to-Visualize integration proof
         shell: bash
@@ -448,78 +1510,6 @@ jobs:
         with:
           name: visualize-test-results
           path: ./TestResults/*
-
-  drone-construction-frame-proof:
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout Visualize
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Checkout Experiences simulation source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: TrentBest/TheSingularityWorkshop.Experiences
-          ref: development
-          path: ExperiencesSource
-          sparse-checkout: |
-            src/DroneConstruction
-          sparse-checkout-cone-mode: true
-
-      - name: Checkout Renderer source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: TrentBest/TheSingularityWorkshop.Renderer
-          ref: development
-          path: integrations/RendererAdapter/RendererSource
-
-      - name: Checkout GUI source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: TrentBest/TheSingularityWorkshop.GUI
-          ref: development
-          path: integrations/GuiSvg/GuiSource
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@6df8cefd1440cf9313e76b8fdb8aaf90cfa745a3 # v6.0.0
-        with:
-          dotnet-version: 8.0.x
-
-      - name: Generate Drone Construction frame from committed simulation snapshot
-        env:
-          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
-        run: >
-          dotnet run
-          --project integrations/RendererAdapter/DroneConstructionProof/DroneConstructionFrameProof.csproj
-          --configuration Release
-          -- ./artifacts/drone-construction-frame.svg
-
-      - name: Verify Drone Construction frame and manifest
-        shell: bash
-        run: |
-          set -euo pipefail
-          svg="./artifacts/drone-construction-frame.svg"
-          manifest="./artifacts/drone-construction-frame.manifest.txt"
-          test -s "$svg"
-          test -s "$manifest"
-          grep -q '<path' "$svg"
-          grep -qx 'run=drone-construction-renderer-proof' "$manifest"
-          grep -qx 'tick=0' "$manifest"
-          grep -qx 'spaceKind=SimulationGrid' "$manifest"
-          grep -qx 'spaceId=construction-proof-grid' "$manifest"
-          grep -qx 'observerSequence=1' "$manifest"
-          grep -qx 'authoritativeAgents=3' "$manifest"
-          grep -qx 'submittedDraws=3' "$manifest"
-          grep -qx 'entityIds=101,202,303' "$manifest"
-          grep -qx 'backend=CPU/SVG' "$manifest"
-
-      - name: Upload Drone Construction frame proof
-        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
-        with:
-          name: drone-construction-frame-proof
-          path: |
-            ./artifacts/drone-construction-frame.svg
-            ./artifacts/drone-construction-frame.manifest.txt
-          if-no-files-found: error
 
   publish_nuget:
     needs: [build-and-test, gui-svg-package-proof]
