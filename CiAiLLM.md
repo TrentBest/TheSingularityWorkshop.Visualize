@@ -149,3 +149,29 @@ This excludes only the external checkout from the root package project's compile
 3. Inspect the artifact manifest itself to confirm observerSequence=1, authoritativeAgents=3, submittedDraws=3, and entityIds=101,202,303. The current workflow's shell assertions verify the run ID, space kind/id, draw count, IDs, and backend, but do not yet assert observerSequence or authoritativeAgents; consider adding those assertions after confirming the proof output.
 4. Do not state that CiAi's observer ran unless its run ID/results are produced. We have direct GitHub Actions evidence for the runs above, but no confirmed CiAi observer run in the available evidence.
 5. Keep publishing skipped; no merge or branch deletion.
+## Resolution progress: proof job is now green (2026-10-25 02:05Z)
+
+The compile-glob fix uncovered a second, independent integration path issue. Both have now been corrected on development, and a full build workflow run is green.
+
+### Two targeted fixes
+
+1. Commit 9e8bc1df597919b213b85059754831d3242596c0 (Exclude checked-out Experiences sources from Visualize compilation) adds Compile Remove="ExperiencesSource/**/*.cs" to TheSingularityWorkshop.Visualize.csproj. This stopped the root project's SDK glob from pulling the checked-out Experiences test sources into Visualize.
+2. Commit 0f761ae96624d588efa24a0ae3a1d3e797944edd (Fix GUI.SVG project path in Drone Construction proof job) changes the Drone proof job's WorkshopGuiSvgProjectPath from integrations/GuiSvg/GuiSource/src/SVG/... to GuiSource/src/SVG/.... The property is consumed by integrations/GuiSvg/TheSingularityWorkshop.Visualize.GUI.SVG.csproj, so the value is resolved relative to that integration project directory; the former root-relative-looking value caused a duplicated integrations/GuiSvg path and MSB9008 warning.
+
+### Confirmed green full run and artifact inspection
+
+- [Full build run 40152974937](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/40152974937), commit 0f761ae96624d588efa24a0ae3a1d3e797944edd: overall success.
+- Jobs build-and-test, gui-svg-package-proof, and drone-construction-frame-proof all passed. publish_nuget was skipped.
+- Artifact drone-construction-frame-proof exists, is unexpired, and contains both drone-construction-frame.svg and drone-construction-frame.manifest.txt.
+- I downloaded and inspected the manifest from that run. It contains: run=drone-construction-renderer-proof; tick=0; observerSequence=1; spaceKind=SimulationGrid; spaceId=construction-proof-grid; authoritativeAgents=3; submittedDraws=3; entityIds=101,202,303; backend=CPU/SVG.
+- Other artifacts from the successful run include visualize-nuget-package, visualize-test-results, renderer-to-visualize-frame-proof, visualize-city-massing-proof, visualize-extremus-crowd-proof, gui-svg-feature-gallery, and gui-svg-package-feed.
+
+### Strengthened acceptance checks
+
+Commit 3465f95406f80510c913c12a4393b0dd0e91bef6 (Assert observer sequence and authoritative agent count) adds explicit workflow assertions for observerSequence=1 and authoritativeAgents=3. This is an extra hardening change beyond the green run above; its fresh build workflow was queued at the time of this note and must be checked before calling the latest head fully green.
+
+### CiAi handoff status
+
+The zero-job workflow problem is no longer the current blocker: build.yml now creates jobs, and the main Visualize build/test/package job plus the isolated Drone Construction proof succeeded together in run 40152974937. I still have no verified run ID/results proving that CiAi's observer itself was dispatched. Please report that as not verified unless CiAi returns its own run evidence.
+
+Working showcase readiness estimate: 70% (up from 60%). This reflects the verified small end-to-end CPU/SVG presentation proof and successful full build workflow; it is not a release-readiness percentage, benchmark, or scale claim. Keep the NuGet publish gate closed and do not merge or delete branches.
