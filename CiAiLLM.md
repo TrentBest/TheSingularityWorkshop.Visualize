@@ -120,3 +120,32 @@ The current live `.github/workflows/build.yml` content has changed relative to t
 The current workflow has a coherent-looking top-level structure (`name`, `on`, `permissions`, `jobs`) and three job IDs: `gui-svg-package-proof`, `build-and-test`, and the manually gated `publish_nuget`. The Renderer-selected-frame verification is again a distinct step at lines 268–283, and the Drone Construction verification should be checked in the same current blob before any further edit. This observation alone does **not** establish that GitHub accepts the workflow or that jobs run.
 
 **Next action:** determine the commit that introduced blob `995d0018...` and inspect recent Actions evidence for that exact commit. If a fresh run now creates jobs, stop treating YAML corruption as the current blocker and diagnose the actual job/step failures instead. If no fresh run exists, request/trigger validation through the available authorized workflow mechanism; do not claim CiAi ran unless its run ID and results are returned. Do not rewrite the workflow just to match the stale corruption report. Preserve the publish gate and all branch/merge restrictions.
+## Fresh Actions evidence and targeted compile-glob fix (2026-10-25 02:00Z)
+
+The branch advanced after the earlier correction. Current development head at the time of this note was 30bbf575db96b9b910e7866870b7db9947280ce0 (Restore Drone Construction proof as an isolated CI job). The latest workflow inventory now definitively shows that .github/workflows/build.yml is parsing and executing; the earlier zero-job failure is no longer the active blocker.
+
+### Fresh runs
+
+- [Build/test run 40152366666](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/40152366666), commit c5eaf98514a1df474e7e2d6a22dca1239208aaf8: success. Jobs gui-svg-package-proof and build-and-test passed; NuGet publishing was skipped.
+- [Observer presentation run 40152560240](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/40152560240), commit 30bbf575db96b9b910e7866870b7db9947280ce0: success. Observer-driven presentation job passed and uploaded visualize-observer-driven-presentation-proof.
+- [Latest build/test run 40152560269](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/40152560269), commit 30bbf575db96b9b910e7866870b7db9947280ce0: overall failure, but gui-svg-package-proof and build-and-test both passed. Only the new drone-construction-frame-proof job failed. publish_nuget was skipped. Existing artifacts were uploaded for the passing work, including visualize-nuget-package, visualize-test-results, renderer-to-visualize-frame-proof, visualize-city-massing-proof, and visualize-extremus-crowd-proof.
+
+### Exact failure evidence and fix
+
+The failing job log reports CS0246 for FactAttribute / Fact across ExperiencesSource/tests/DroneConstruction.Tests/ConstructionSimulationTests.cs, with the compiler attributing those files to the root TheSingularityWorkshop.Visualize.csproj. The root project excludes tests/**/*.cs, samples/**/*.cs, and integrations/**/*.cs, but the Experiences checkout lives in a root-level ExperiencesSource/ directory, outside those exclusions. Consequently, the root SDK default compile glob accidentally compiles another repository's test sources into the Visualize package project.
+
+A minimal targeted fix was committed on development:
+- Commit: 9e8bc1df597919b213b85059754831d3242596c0
+- Message: Exclude checked-out Experiences sources from Visualize compilation
+- File: TheSingularityWorkshop.Visualize.csproj
+- Change: add <Compile Remove="ExperiencesSource/**/*.cs" /> alongside the existing compile exclusions.
+
+This excludes only the external checkout from the root package project's compile glob; the Drone Construction proof still references the specific Experiences project directly through its own ProjectReference. It does not add an xUnit dependency to Visualize or change simulation code.
+
+### Next validation requested
+
+1. Inspect commit 9e8bc1df597919b213b85059754831d3242596c0 and confirm the compile exclusion is narrowly scoped.
+2. Verify the fresh build.yml run triggered by that commit. Required outcomes: build-and-test and gui-svg-package-proof stay green, drone-construction-frame-proof builds and runs, manifest assertions pass, and both SVG and manifest are uploaded as drone-construction-frame-proof.
+3. Inspect the artifact manifest itself to confirm observerSequence=1, authoritativeAgents=3, submittedDraws=3, and entityIds=101,202,303. The current workflow's shell assertions verify the run ID, space kind/id, draw count, IDs, and backend, but do not yet assert observerSequence or authoritativeAgents; consider adding those assertions after confirming the proof output.
+4. Do not state that CiAi's observer ran unless its run ID/results are produced. We have direct GitHub Actions evidence for the runs above, but no confirmed CiAi observer run in the available evidence.
+5. Keep publishing skipped; no merge or branch deletion.
