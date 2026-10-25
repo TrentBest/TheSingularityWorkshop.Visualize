@@ -175,3 +175,33 @@ Commit 3465f95406f80510c913c12a4393b0dd0e91bef6 (Assert observer sequence and au
 The zero-job workflow problem is no longer the current blocker: build.yml now creates jobs, and the main Visualize build/test/package job plus the isolated Drone Construction proof succeeded together in run 40152974937. I still have no verified run ID/results proving that CiAi's observer itself was dispatched. Please report that as not verified unless CiAi returns its own run evidence.
 
 Working showcase readiness estimate: 70% (up from 60%). This reflects the verified small end-to-end CPU/SVG presentation proof and successful full build workflow; it is not a release-readiness percentage, benchmark, or scale claim. Keep the NuGet publish gate closed and do not merge or delete branches.
+
+## Latest verified status (2026-10-25 02:08Z)
+
+The earlier note about commit 3465f... needing fresh validation is now superseded by newer commits and successful runs.
+
+### Latest head and runs
+
+- Current verified development head at this check: `db5ba8de38747eb0acf8914ec64787023b842482`
+- Latest full build/test/package run: [40153184284](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/40153184284) — **completed successfully** on that exact SHA.
+- Latest observer-driven presentation run: [40153184255](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/40153184255) — **completed successfully** on that exact SHA.
+- In build run 40153184284, `build-and-test`, `drone-construction-frame-proof`, and `gui-svg-package-proof` all completed with conclusion `success`; `publish_nuget` was `skipped` as intended.
+- The observer workflow's `observer-presentation-proof` job completed successfully in run 40153184255.
+- The successful build run has unexpired artifacts for `drone-construction-frame-proof`, `renderer-to-visualize-frame-proof`, `visualize-city-massing-proof`, `visualize-extremus-crowd-proof`, `visualize-svg-primitive-proof`, `visualize-test-results`, `visualize-nuget-package`, `gui-svg-feature-gallery`, and `gui-svg-package-feed`.
+
+### Additional narrow fix since the previous note
+
+Commit `db5ba8de38747eb0acf8914ec64787023b842482`, message `Limit Drone proof checkout to Experiences runtime source`, limits the Drone proof checkout to the Experiences runtime source. Both the main build workflow and observer-driven presentation workflow passed at this commit, so the change has fresh green evidence.
+
+### Drone proof acceptance state
+
+The Drone Construction proof job passed again on the latest head, including its generation, manifest verification, and artifact upload steps. Prior direct artifact inspection on run [40152974937](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/40152974937) confirmed the SVG and manifest values:
+`observerSequence=1`, `authoritativeAgents=3`, `submittedDraws=3`, and `entityIds=101,202,303`. The strengthened workflow assertions for observer sequence and authoritative agent count passed in the subsequent green run [40153068487](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/40153068487), and the latest proof job passed again in run 40153184284.
+
+### Still not established
+
+- **CiAi observer dispatch is not verified.** The green observer-driven presentation workflow is a Visualize GitHub Actions workflow; it is not evidence that the separate CiAi release-candidate observer ran. No CiAi observer run ID/results have been supplied.
+- The green CI run does not authorize a NuGet release. `publish_nuget` remains skipped.
+- No branch merge or branch deletion was performed.
+
+Working showcase readiness estimate: **75%**, reflecting repeatable green integration/proof workflows and verified artifact generation. This is a project-progress estimate—not a release approval, performance benchmark, population-scale result, or test pass rate.
