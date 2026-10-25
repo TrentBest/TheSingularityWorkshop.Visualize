@@ -102,3 +102,12 @@ Recommended recovery:
 5. Keep the `publish_nuget` gate disabled; do not publish or merge.
 
 This is a stronger diagnosis than the earlier hypothesis about workflow discovery/events. It is based on the live file content, but a fresh successful run is still required to verify the repair.
+
+
+## Additional recovery finding (2026-10-25)
+
+A fresh branch comparison reports `development` and `master` as diverged: `development` is 383 commits ahead and 6 behind, with `94ccec89da19c4d8b2ba2cc923cb684d43a22d20` as the merge base. The comparison reports `.github/workflows/build.yml` as added on development; fetching that path from `master` returns 404. Therefore, do **not** restore the workflow by copying from `master`: that file is absent there, and the branches have substantial independent history.
+
+The GitHub commit endpoint reliably returns the specific diff for commit `8f88e9f58832ade1535e9a33f4e5a07d2e4cea93`, showing a local repair of the Drone Construction verification block. However, a historical `fetch_file` request returned the same current blob rather than trustworthy historical content, so it is not a safe way to recover a prior version. Treat commit diffs as evidence of individual edits, not as a complete recoverable workflow snapshot.
+
+**Recovery guidance:** preserve all intended jobs/proofs in `development`; reconstruct a single coherent workflow from the current workflow plus verified commit diffs, or have the CiAi workflow-repair process do so. Keep a pre-edit copy/commit before replacement, validate YAML and unique job IDs, then confirm a new Actions run creates jobs. Do not merge branches, delete branches, or publish packages.
