@@ -44,7 +44,7 @@ foreach (var agent in accepted.Agents
         geometryId,
         materialId,
         transform,
-        indexCount: droneIndices.Length,
+        indexCount: droneIndices.Count,
         firstIndex: 0,
         baseVertex: 0,
         RendererRepresentation.Interactive,
