@@ -486,7 +486,7 @@ jobs:
 
       - name: Generate committed snapshot Renderer → Visualize → GUI.SVG proof
         env:
-          WorkshopGuiSvgProjectPath: integrations/GuiSvg/GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
         run: dotnet run --project integrations/RendererAdapter/DroneConstructionProof/DroneConstructionFrameProof.csproj --configuration Release -- ./artifacts/drone-construction-frame.svg
 
       - name: Verify deterministic frame and provenance manifest
