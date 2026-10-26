@@ -30,37 +30,8 @@ if (!observer.TryPublish(snapshot))
 if (!observer.TryGetLatest(out var accepted, out var sequence) || accepted is null)
     throw new InvalidOperationException("The observer did not expose its committed snapshot.");
 
-var commands = new List<RenderDrawCommand>();
 var geometryId = new RenderResourceId(1);
 var materialId = new RenderResourceId(2);
-foreach (var agent in accepted.Agents
-    .Where(agent => agent.Location.SpaceKind == ConstructionSpaceKind.SimulationGrid
-        && StringComparer.Ordinal.Equals(agent.Location.SpaceId, spaceId))
-    .OrderBy(agent => agent.AgentId))
-{
-    var transform = Matrix4x4.CreateScale(0.18f)
-        * Matrix4x4.CreateTranslation(agent.Position.X * 0.45f - 0.5f, 0.35f - agent.Position.Y * 0.45f, 0);
-    commands.Add(new RenderDrawCommand(
-        geometryId,
-        materialId,
-        transform,
-        indexCount: droneIndices.Count,
-        firstIndex: 0,
-        baseVertex: 0,
-        RendererRepresentation.Interactive,
-        entity: new RenderEntityId(agent.AgentId)));
-}
-
-if (commands.Count != 3)
-    throw new InvalidOperationException($"Expected three in-space agents, found {commands.Count}.");
-var expectedIds = new ulong[] { 101, 202, 303 };
-if (!commands.Select(command => command.Entity.Value).SequenceEqual(expectedIds))
-    throw new InvalidOperationException("Stable construction agent IDs were not preserved in draw-command order.");
-
-var frame = new RenderFrame(
-    new RenderView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity),
-    commands);
-var visualizerFrame = new RendererFrameAdapter().Adapt(frame);
 var catalog = new VisualizerResourceCatalog();
 // One indexed top-down quadcopter glyph: central body, four arms, and four
 // rotor discs. Each drone remains one entity/draw command while its mesh is
@@ -131,6 +102,36 @@ catalog.SetGeometry(new VisualizerResourceId(geometryId.Value),
     new VisualizerGeometry(1, vertices.ToArray(), droneIndices.ToArray()));
 catalog.SetMaterial(new VisualizerResourceId(materialId.Value),
     new VisualizerMaterial(1, new Vector4(0.29f, 0.84f, 0.65f, 1)));
+
+var commands = new List<RenderDrawCommand>();
+foreach (var agent in accepted.Agents
+    .Where(agent => agent.Location.SpaceKind == ConstructionSpaceKind.SimulationGrid
+        && StringComparer.Ordinal.Equals(agent.Location.SpaceId, spaceId))
+    .OrderBy(agent => agent.AgentId))
+{
+    var transform = Matrix4x4.CreateScale(0.18f)
+        * Matrix4x4.CreateTranslation(agent.Position.X * 0.45f - 0.5f, 0.35f - agent.Position.Y * 0.45f, 0);
+    commands.Add(new RenderDrawCommand(
+        geometryId,
+        materialId,
+        transform,
+        indexCount: droneIndices.Count,
+        firstIndex: 0,
+        baseVertex: 0,
+        RendererRepresentation.Interactive,
+        entity: new RenderEntityId(agent.AgentId)));
+}
+
+if (commands.Count != 3)
+    throw new InvalidOperationException($"Expected three in-space agents, found {commands.Count}.");
+var expectedIds = new ulong[] { 101, 202, 303 };
+if (!commands.Select(command => command.Entity.Value).SequenceEqual(expectedIds))
+    throw new InvalidOperationException("Stable construction agent IDs were not preserved in draw-command order.");
+
+var frame = new RenderFrame(
+    new RenderView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity),
+    commands);
+var visualizerFrame = new RendererFrameAdapter().Adapt(frame);
 
 await using var visualizer = new Visualizer(new GuiSvgVisualizerBackend(output), catalog);
 var result = await visualizer.RenderAsync(visualizerFrame);
