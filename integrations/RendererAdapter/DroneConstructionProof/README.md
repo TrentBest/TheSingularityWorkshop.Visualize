@@ -2,11 +2,11 @@
 
 This proof uses the actual `ConstructionSimulation` and `ConstructionSnapshotObserver` contracts from the Experiences repository. It publishes one committed snapshot, filters agents by qualified simulation-space identity, maps stable `AgentId` values to Renderer `RenderEntityId` values, adapts the resulting `RenderFrame` through Visualize, and submits the frame to the GUI.SVG backend.
 
-The proof now uses a top-down indexed quadcopter glyph (central body, four arms, and four rotor discs) for each snapshot-selected drone. Each aircraft remains one stable entity and one draw command; the mesh detail does not multiply the authoritative agent or draw-command count. This is still a deliberately tiny three-drone CPU/SVG proof. The next visual slice should add real lane centerlines, sloped transition segments, protected VTOL volumes, and queue/conflict overlays from explicit snapshot/traffic data—not inferred animation.
+The proof now uses a top-down indexed quadcopter glyph (central body, four arms, and four rotor discs) for each snapshot-selected drone. Each aircraft remains one stable entity and one draw command. It also draws three **illustrative scenario-fixture overlays**: two directed corridor centerlines plus a sloped transition, a protected VTOL-volume outline, and a perimeter bypass/rejoin path. These overlays are authored fixture geometry, deliberately separate from the authoritative `ConstructionSimulation` snapshot; they do not claim that continuous lanes, traffic admission, queue behavior, or protected-volume enforcement are implemented. The proof remains a tiny three-drone CPU/SVG integration check, not a scale benchmark.
 
 The CI artifact includes:
 - `drone-construction-frame.svg` — the CPU/SVG manifestation.
-- `drone-construction-frame.manifest.txt` — run ID, committed tick, observer sequence, qualified space, authoritative population, submitted draw count, and entity IDs.
+- `drone-construction-frame.manifest.txt` — run ID, committed tick, observer sequence, qualified space, authoritative population, total submitted draws, authoritative drone draws, fixture overlay count/source, and stable entity IDs.
 
 Run from the Visualize repository root after checking out Experiences into `ExperiencesSource/` and Renderer/GUI into the paths used by the integration workflow:
 
