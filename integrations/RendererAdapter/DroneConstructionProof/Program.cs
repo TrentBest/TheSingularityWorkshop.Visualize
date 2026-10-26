@@ -161,9 +161,9 @@ catalog.SetMaterial(new VisualizerResourceId(materialId.Value),
 
 var commands = new List<RenderDrawCommand>
 {
-    new(corridorGeometryId, corridorMaterialId, Matrix4x4.Identity, 18, 0, 0, RendererRepresentation.Interactive),
-    new(protectedGeometryId, protectedMaterialId, Matrix4x4.Identity, 24, 0, 0, RendererRepresentation.Interactive),
-    new(bypassGeometryId, bypassMaterialId, Matrix4x4.Identity, 24, 0, 0, RendererRepresentation.Interactive)
+    new(corridorGeometryId, corridorMaterialId, Matrix4x4.Identity, 18, 0, 0, RendererRepresentation.Interactive, entity: new RenderEntityId(9001)),
+    new(protectedGeometryId, protectedMaterialId, Matrix4x4.Identity, 24, 0, 0, RendererRepresentation.Interactive, entity: new RenderEntityId(9002)),
+    new(bypassGeometryId, bypassMaterialId, Matrix4x4.Identity, 24, 0, 0, RendererRepresentation.Interactive, entity: new RenderEntityId(9003))
 };
 foreach (var agent in accepted.Agents
     .Where(agent => agent.Location.SpaceKind == ConstructionSpaceKind.SimulationGrid
@@ -185,7 +185,7 @@ foreach (var agent in accepted.Agents
 
 if (commands.Count != 6)
     throw new InvalidOperationException($"Expected three scenario overlays and three in-space agents, found {commands.Count}.");
-var droneCommands = commands.Where(command => command.Entity.Value != 0).ToArray();
+var droneCommands = commands.Where(command => command.Entity.Value is 101 or 202 or 303).ToArray();
 if (droneCommands.Length != 3)
     throw new InvalidOperationException($"Expected three authoritative drone draws, found {droneCommands.Length}.");
 var expectedIds = new ulong[] { 101, 202, 303 };
