@@ -44,7 +44,7 @@ foreach (var agent in accepted.Agents
         geometryId,
         materialId,
         transform,
-        indexCount: 3,
+        indexCount: droneIndices.Length,
         firstIndex: 0,
         baseVertex: 0,
         RendererRepresentation.Interactive,
@@ -62,14 +62,73 @@ var frame = new RenderFrame(
     commands);
 var visualizerFrame = new RendererFrameAdapter().Adapt(frame);
 var catalog = new VisualizerResourceCatalog();
-var vertices = new[]
+// One indexed top-down quadcopter glyph: central body, four arms, and four
+// rotor discs. Each drone remains one entity/draw command while its mesh is
+// materially more recognizable than the former generic triangle marker.
+var vertices = new List<VisualizerVertex>();
+var droneIndices = new List<uint>();
+
+void AddTriangle(Vector2 a, Vector2 b, Vector2 c)
 {
-    new VisualizerVertex(new Vector3(-0.08f, -0.07f, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One),
-    new VisualizerVertex(new Vector3(0, 0.09f, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One),
-    new VisualizerVertex(new Vector3(0.08f, -0.07f, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One)
+    var start = (uint)vertices.Count;
+    vertices.Add(new VisualizerVertex(new Vector3(a, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One));
+    vertices.Add(new VisualizerVertex(new Vector3(b, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One));
+    vertices.Add(new VisualizerVertex(new Vector3(c, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One));
+    droneIndices.Add(start);
+    droneIndices.Add(start + 1);
+    droneIndices.Add(start + 2);
+}
+
+void AddQuad(Vector2 a, Vector2 b, Vector2 c, Vector2 d)
+{
+    AddTriangle(a, b, c);
+    AddTriangle(a, c, d);
+}
+
+void AddDisc(Vector2 center, float radius, int segments = 10)
+{
+    for (var i = 0; i < segments; i++)
+    {
+        var a = i * MathF.Tau / segments;
+        var b = (i + 1) * MathF.Tau / segments;
+        AddTriangle(center,
+            center + new Vector2(MathF.Cos(a), MathF.Sin(a)) * radius,
+            center + new Vector2(MathF.Cos(b), MathF.Sin(b)) * radius);
+    }
+}
+
+var hubs = new[]
+{
+    new Vector2(-0.30f, -0.30f),
+    new Vector2(0.30f, -0.30f),
+    new Vector2(0.30f, 0.30f),
+    new Vector2(-0.30f, 0.30f)
 };
+
+// Arms use narrow rectangles from the body toward each rotor hub.
+foreach (var hub in hubs)
+{
+    var direction = Vector2.Normalize(hub);
+    var perpendicular = new Vector2(-direction.Y, direction.X);
+    var inner = direction * 0.08f;
+    var outer = hub - direction * 0.07f;
+    AddQuad(inner + perpendicular * 0.025f,
+        outer + perpendicular * 0.025f,
+        outer - perpendicular * 0.025f,
+        inner - perpendicular * 0.025f);
+}
+
+AddQuad(new Vector2(0, -0.14f), new Vector2(0.14f, 0),
+    new Vector2(0, 0.14f), new Vector2(-0.14f, 0));
+
+foreach (var hub in hubs)
+{
+    AddDisc(hub, 0.105f);
+    AddDisc(hub, 0.025f, 6);
+}
+
 catalog.SetGeometry(new VisualizerResourceId(geometryId.Value),
-    new VisualizerGeometry(1, vertices, new uint[] { 0, 1, 2 }));
+    new VisualizerGeometry(1, vertices.ToArray(), droneIndices.ToArray()));
 catalog.SetMaterial(new VisualizerResourceId(materialId.Value),
     new VisualizerMaterial(1, new Vector4(0.29f, 0.84f, 0.65f, 1)));
 
