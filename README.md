@@ -10,7 +10,7 @@
 
 > **Make the living world visible. Keep the world independent of its display.**
 
-**[Gallery](docs/GALLERY.md)** — short visual index · [Detailed SVG proof guide](docs/SVG_LIVING_DOCUMENTATION.md)
+**[Gallery](docs/GALLERY.md)** — short visual index · [Detailed SVG proof guide](docs/SVG_LIVING_DOCUMENTATION.md) · [GUI panel handoff](docs/GUI_PANEL_HANDOFF.md) — panel routing boundary and staged multi-panel plan
 
 ## Living visual showcase
 
