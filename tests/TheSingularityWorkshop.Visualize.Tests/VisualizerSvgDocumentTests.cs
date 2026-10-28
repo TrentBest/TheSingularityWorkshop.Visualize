@@ -71,9 +71,8 @@ public sealed class VisualizerSvgDocumentTests
     [Fact]
     public void PolygonRejectsNonFiniteCoordinates()
     {
-        var document = new VisualizerSvgDocument(10, 10,
-            [new VisualizerSvgPolygon("p", [(0, 0), (1, 0), (double.NaN, 1)], "#ffffff")]);
-        Assert.Throws<ArgumentOutOfRangeException>(() => document.ToSvg());
+        Assert.Throws<ArgumentOutOfRangeException>(() => new VisualizerSvgDocument(10, 10,
+            [new VisualizerSvgPolygon("p", [(0, 0), (1, 0), (double.NaN, 1)], "#ffffff")]));
     }
 
     [Fact]
