@@ -12,6 +12,12 @@ public sealed class VisualizerSvgDocument
     private static readonly Regex ColorPattern = new(@"^(#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?|none|currentColor)$", RegexOptions.CultureInvariant);
     private static readonly Regex IdPattern = new(@"^[A-Za-z_][A-Za-z0-9_.-]*$", RegexOptions.CultureInvariant);
 
+    /// <summary>Creates a validated SVG document from an ordered set of primitives.</summary>
+    /// <param name="width">Finite, positive viewport width.</param>
+    /// <param name="height">Finite, positive viewport height.</param>
+    /// <param name="primitives">Primitives to snapshot and serialize in order.</param>
+    /// <param name="background">SVG background fill, or <c>none</c> for transparency.</param>
+    /// <param name="role">Optional accessible SVG role.</param>
     public VisualizerSvgDocument(double width, double height, IEnumerable<VisualizerSvgPrimitive> primitives, string background = "none", string? role = null)
     {
         if (!double.IsFinite(width) || width <= 0)
@@ -42,10 +48,15 @@ public sealed class VisualizerSvgDocument
         Primitives = Array.AsReadOnly(snapshot);
     }
 
+    /// <summary>Gets the SVG viewport width.</summary>
     public double Width { get; }
+    /// <summary>Gets the SVG viewport height.</summary>
     public double Height { get; }
+    /// <summary>Gets the background fill, or <c>none</c> when transparent.</summary>
     public string Background { get; }
+    /// <summary>Gets the optional accessible role.</summary>
     public string? Role { get; }
+    /// <summary>Gets the validated, immutable ordered primitive snapshot.</summary>
     public IReadOnlyList<VisualizerSvgPrimitive> Primitives { get; }
 
     /// <summary>Serializes the scene as stable UTF-8-compatible SVG text with invariant numeric formatting.</summary>
@@ -163,6 +174,11 @@ public sealed record VisualizerSvgRectangle(string Id, double X, double Y, doubl
 /// <summary>A filled triangle/polygon described by an ordered list of viewport-coordinate pairs.</summary>
 public sealed record VisualizerSvgPolygon : VisualizerSvgPrimitive
 {
+    /// <summary>Creates a filled polygon from viewport-coordinate points.</summary>
+    /// <param name="id">Unique SVG identifier.</param>
+    /// <param name="points">Ordered polygon vertices.</param>
+    /// <param name="fill">Validated SVG fill color.</param>
+    /// <param name="attributes">Optional allow-listed metadata attributes.</param>
     public VisualizerSvgPolygon(string id, IEnumerable<(double X, double Y)> points, string fill, IReadOnlyDictionary<string, string>? attributes = null)
         : base(id, fill, attributes)
     {
@@ -170,6 +186,7 @@ public sealed record VisualizerSvgPolygon : VisualizerSvgPrimitive
         Points = Array.AsReadOnly(points.ToArray());
     }
 
+    /// <summary>Gets the immutable ordered viewport-coordinate vertices.</summary>
     public IReadOnlyList<(double X, double Y)> Points { get; }
 
     internal override void Validate()
