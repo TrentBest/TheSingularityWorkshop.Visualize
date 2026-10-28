@@ -119,7 +119,7 @@ public sealed class SvgVisualizerBackend : IVisualizerBackend
                     for (var i = command.FirstIndex; i < command.FirstIndex + command.IndexCount; i += 3)
                     {
                         var points = new (float X, float Y)[3];
-                        var color = material.BaseColor;
+                        var color = Vector4.Zero;
                         for (var corner = 0; corner < 3; corner++)
                         {
                             var vertexIndex = (long)geometry.Indices[i + corner] + command.BaseVertex;
@@ -132,7 +132,11 @@ public sealed class SvgVisualizerBackend : IVisualizerBackend
                             var ndcX = clip.X / clip.W;
                             var ndcY = clip.Y / clip.W;
                             points[corner] = ((ndcX + 1f) * _width * 0.5f, (1f - ndcY) * _height * 0.5f);
-                            color = new Vector4(color.X * vertex.Color.X, color.Y * vertex.Color.Y, color.Z * vertex.Color.Z, color.W * vertex.Color.W);
+                            color += new Vector4(
+                                material.BaseColor.X * vertex.Color.X,
+                                material.BaseColor.Y * vertex.Color.Y,
+                                material.BaseColor.Z * vertex.Color.Z,
+                                material.BaseColor.W * vertex.Color.W) / 3f;
                         }
                         color = new Vector4(color.X * instance.Color.X, color.Y * instance.Color.Y, color.Z * instance.Color.Z, color.W * instance.Color.W);
                         writer.WriteStartElement("polygon");
