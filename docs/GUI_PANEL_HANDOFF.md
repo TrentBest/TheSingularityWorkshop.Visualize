@@ -4,7 +4,7 @@
 
 > Visualize describes and submits presentation work. GUI owns panel structure and layout. An adapter connects the two without turning Visualize core into a GUI framework.
 
-**Status:** Domain scaffold and integration contract. The current GUI.SVG path is an executable CPU-side manifestation proof; the multi-panel and world-projection host contract below is a target for audit and staged implementation.
+**Status:** Domain scaffold and integration contract. Visualize's own `SvgVisualizerBackend` is the direct CPU-side static-artifact path for Visualizer frames and resources. The separate `GuiSvgVisualizerBackend` is an optional interoperability proof that deliberately converts a Visualizer frame into a GUI semantic tree before SVG manifestation. Neither is a GPU renderer; the multi-panel and world-projection host contract below remains a target for audit and staged implementation.
 
 ## 1. Responsibility map
 
@@ -33,11 +33,11 @@ flowchart TD
 
 ## 2. What works today
 
-The existing [Renderer → Visualize → GUI.SVG proof](../integrations/RendererAdapter/Proof/README.md) exercises real Renderer distance/horizon selection, FSM-backed representation state, frame adaptation, Visualizer resource validation/submission, and SVG output.
+The existing [Renderer → Visualize → GUI.SVG proof](../integrations/RendererAdapter/Proof/README.md) exercises real Renderer distance/horizon selection, FSM-backed representation state, frame adaptation, Visualizer resource validation/submission, and SVG output. It remains a cross-repository interoperability proof, not a requirement that general scene output pass through GUI.
 
-The [GUI.SVG backend](../integrations/GuiSvg/GuiSvgVisualizerBackend.cs) supports a file destination and an in-memory SVG sink. The latter is a useful seam for a host-owned surface. The backend remains a CPU-side SVG manifestation path, not a GPU renderer.
+For direct general-purpose Visualizer-frame artifacts, use [`SvgVisualizerBackend`](../SvgVisualizerBackend.cs) and its [static SVG backend contract](STATIC_SVG_BACKEND.md). It consumes Visualizer frame/resource contracts directly and has no GUI.Core or GUI.SVG dependency. The [GUI.SVG integration backend](../integrations/GuiSvg/GuiSvgVisualizerBackend.cs) is retained for cases where the purpose is specifically to exercise GUI-tree semantics, GUI.SVG features, or that interoperability seam; it supports file and in-memory SVG sinks. Both are CPU-side artifact paths, not GPU renderers.
 
-Visualize core should remain independently usable. GUI.SVG is one optional adapter; it must not become a mandatory dependency of the Visualize core package.
+Visualize core should remain independently usable. GUI.SVG is an optional integration adapter; it must not become a mandatory dependency of the Visualize core package.
 
 ## 3. Panel and projection handoff: target contract
 
