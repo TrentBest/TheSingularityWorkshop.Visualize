@@ -86,4 +86,12 @@ public sealed class VisualizerSvgDocumentTests
             new VisualizerSvgDocument(10, 10,
                 [new VisualizerSvgRectangle("ok", 0, 0, 1, 1, "red; onload=alert(1)")]));
     }
+    [Fact]
+    public void DocumentReservesBackgroundIdentifierWhenBackgroundIsRendered()
+    {
+        Assert.Throws<ArgumentException>(() => new VisualizerSvgDocument(10, 10,
+            [new VisualizerSvgRectangle("visualize-background", 0, 0, 1, 1, "#ffffff")],
+            "#000000"));
+    }
+
 }
