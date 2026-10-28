@@ -74,86 +74,79 @@ public sealed class SvgVisualizerBackend : IVisualizerBackend
         ArgumentNullException.ThrowIfNull(resources);
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
 
-        var output = new StringBuilder();
-        var settings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = false };
-        using (var writer = XmlWriter.Create(output, settings))
+        var primitives = new List<VisualizerSvgPrimitive>();
+        foreach (var command in frame.Commands)
         {
-            writer.WriteStartElement("svg", "http://www.w3.org/2000/svg");
-            writer.WriteAttributeString("width", _width.ToString(CultureInfo.InvariantCulture));
-            writer.WriteAttributeString("height", _height.ToString(CultureInfo.InvariantCulture));
-            writer.WriteAttributeString("viewBox", FormattableString.Invariant($"0 0 {_width} {_height}"));
-            writer.WriteAttributeString("role", "img");
-            writer.WriteStartElement("rect");
-            writer.WriteAttributeString("width", "100%");
-            writer.WriteAttributeString("height", "100%");
-            writer.WriteAttributeString("fill", _background);
-            writer.WriteEndElement();
+            cancellationToken.ThrowIfCancellationRequested();
+            if (command.IndexCount % 3 != 0)
+                throw new NotSupportedException($"SVG backend supports triangle-list draws; command index count {command.IndexCount} is not divisible by three.");
+            if (!resources.TryGetGeometry(command.Geometry, out var geometry) || geometry is null)
+                throw new InvalidOperationException($"Missing geometry resource {command.Geometry.Value}.");
+            if (!resources.TryGetMaterial(command.Material, out var material) || material is null)
+                throw new InvalidOperationException($"Missing material resource {command.Material.Value}.");
+            if (command.FirstIndex + (long)command.IndexCount > geometry.Indices.Count)
+                throw new InvalidOperationException($"Draw command exceeds geometry index range for resource {command.Geometry.Value}.");
 
-            foreach (var command in frame.Commands)
+            VisualizerInstanceBuffer? instanceBuffer = null;
+            if (command.Instances.IsValid &&
+                (!resources.TryGetInstances(command.Instances, out instanceBuffer) || instanceBuffer is null))
+                throw new InvalidOperationException($"Missing instance resource {command.Instances.Value}.");
+            var instanceCount = command.Instances.IsValid ? command.InstanceCount : 1;
+            if (instanceBuffer is not null && command.FirstInstance + (long)instanceCount > instanceBuffer.Instances.Count)
+                throw new InvalidOperationException($"Draw command exceeds instance range for resource {command.Instances.Value}.");
+
+            for (var instanceOffset = 0; instanceOffset < instanceCount; instanceOffset++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (command.IndexCount % 3 != 0)
-                    throw new NotSupportedException($"SVG backend supports triangle-list draws; command index count {command.IndexCount} is not divisible by three.");
-                if (!resources.TryGetGeometry(command.Geometry, out var geometry) || geometry is null)
-                    throw new InvalidOperationException($"Missing geometry resource {command.Geometry.Value}.");
-                if (!resources.TryGetMaterial(command.Material, out var material) || material is null)
-                    throw new InvalidOperationException($"Missing material resource {command.Material.Value}.");
-                if (command.FirstIndex + (long)command.IndexCount > geometry.Indices.Count)
-                    throw new InvalidOperationException($"Draw command exceeds geometry index range for resource {command.Geometry.Value}.");
-
-                VisualizerInstanceBuffer? instanceBuffer = null;
-                if (command.Instances.IsValid &&
-                    (!resources.TryGetInstances(command.Instances, out instanceBuffer) || instanceBuffer is null))
-                    throw new InvalidOperationException($"Missing instance resource {command.Instances.Value}.");
-                var instanceCount = command.Instances.IsValid ? command.InstanceCount : 1;
-                if (instanceBuffer is not null && command.FirstInstance + (long)instanceCount > instanceBuffer.Instances.Count)
-                    throw new InvalidOperationException($"Draw command exceeds instance range for resource {command.Instances.Value}.");
-
-                for (var instanceOffset = 0; instanceOffset < instanceCount; instanceOffset++)
+                var instance = instanceBuffer is null
+                    ? new VisualizerInstance(Matrix4x4.Identity, Vector4.One)
+                    : instanceBuffer.Instances[command.FirstInstance + instanceOffset];
+                var world = instance.WorldTransform * command.WorldTransform;
+                for (var i = command.FirstIndex; i < command.FirstIndex + command.IndexCount; i += 3)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    var instance = instanceBuffer is null
-                        ? new VisualizerInstance(Matrix4x4.Identity, Vector4.One)
-                        : instanceBuffer.Instances[command.FirstInstance + instanceOffset];
-                    var world = instance.WorldTransform * command.WorldTransform;
-                    for (var i = command.FirstIndex; i < command.FirstIndex + command.IndexCount; i += 3)
+                    var points = new (double X, double Y)[3];
+                    var color = Vector4.Zero;
+                    for (var corner = 0; corner < 3; corner++)
                     {
-                        var points = new (float X, float Y)[3];
-                        var color = Vector4.Zero;
-                        for (var corner = 0; corner < 3; corner++)
-                        {
-                            var vertexIndex = (long)geometry.Indices[i + corner] + command.BaseVertex;
-                            if (vertexIndex < 0 || vertexIndex >= geometry.Vertices.Count)
-                                throw new InvalidOperationException($"Effective vertex index {vertexIndex} is outside geometry resource {command.Geometry.Value}.");
-                            var vertex = geometry.Vertices[(int)vertexIndex];
-                            var clip = Vector4.Transform(new Vector4(vertex.Position, 1), world * frame.View.View * frame.View.Projection);
-                            if (!float.IsFinite(clip.X) || !float.IsFinite(clip.Y) || !float.IsFinite(clip.W) || Math.Abs(clip.W) < 1e-7f)
-                                throw new InvalidOperationException("A triangle vertex produced invalid clip coordinates.");
-                            var ndcX = clip.X / clip.W;
-                            var ndcY = clip.Y / clip.W;
-                            points[corner] = ((ndcX + 1f) * _width * 0.5f, (1f - ndcY) * _height * 0.5f);
-                            color += new Vector4(
-                                material.BaseColor.X * vertex.Color.X,
-                                material.BaseColor.Y * vertex.Color.Y,
-                                material.BaseColor.Z * vertex.Color.Z,
-                                material.BaseColor.W * vertex.Color.W) / 3f;
-                        }
-                        color = new Vector4(color.X * instance.Color.X, color.Y * instance.Color.Y, color.Z * instance.Color.Z, color.W * instance.Color.W);
-                        writer.WriteStartElement("polygon");
-                        writer.WriteAttributeString("points", string.Join(" ", points.Select(p => FormattableString.Invariant($"{p.X:0.###},{p.Y:0.###}"))));
-                        writer.WriteAttributeString("fill", ToHex(color));
-                        if (color.W < 1f)
-                            writer.WriteAttributeString("fill-opacity", color.W.ToString("0.###", CultureInfo.InvariantCulture));
-                        writer.WriteAttributeString("data-representation", command.Representation.ToString().ToLowerInvariant());
-                        if (command.Entity.IsValid)
-                            writer.WriteAttributeString("data-entity-id", command.Entity.Value.ToString(CultureInfo.InvariantCulture));
-                        writer.WriteEndElement();
+                        var vertexIndex = (long)geometry.Indices[i + corner] + command.BaseVertex;
+                        if (vertexIndex < 0 || vertexIndex >= geometry.Vertices.Count)
+                            throw new InvalidOperationException($"Effective vertex index {vertexIndex} is outside geometry resource {command.Geometry.Value}.");
+                        var vertex = geometry.Vertices[(int)vertexIndex];
+                        var clip = Vector4.Transform(new Vector4(vertex.Position, 1), world * frame.View.View * frame.View.Projection);
+                        if (!float.IsFinite(clip.X) || !float.IsFinite(clip.Y) || !float.IsFinite(clip.W) || Math.Abs(clip.W) < 1e-7f)
+                            throw new InvalidOperationException("A triangle vertex produced invalid clip coordinates.");
+                        var ndcX = clip.X / clip.W;
+                        var ndcY = clip.Y / clip.W;
+                        if (!float.IsFinite(ndcX) || !float.IsFinite(ndcY))
+                            throw new InvalidOperationException("A triangle vertex produced non-finite normalized coordinates.");
+                        points[corner] = ((ndcX + 1f) * _width * 0.5f, (1f - ndcY) * _height * 0.5f);
+                        color += new Vector4(
+                            material.BaseColor.X * vertex.Color.X,
+                            material.BaseColor.Y * vertex.Color.Y,
+                            material.BaseColor.Z * vertex.Color.Z,
+                            material.BaseColor.W * vertex.Color.W) / 3f;
                     }
+                    color = new Vector4(color.X * instance.Color.X, color.Y * instance.Color.Y, color.Z * instance.Color.Z, color.W * instance.Color.W);
+                    var attributes = new SortedDictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["data-representation"] = command.Representation.ToString().ToLowerInvariant()
+                    };
+                    if (color.W < 1f)
+                        attributes["fill-opacity"] = color.W.ToString("0.###", CultureInfo.InvariantCulture);
+                    if (command.Entity.IsValid)
+                        attributes["data-entity-id"] = command.Entity.Value.ToString(CultureInfo.InvariantCulture);
+
+                    primitives.Add(new VisualizerSvgPolygon(
+                        $"visualize-triangle-{primitives.Count.ToString(CultureInfo.InvariantCulture)}",
+                        points,
+                        ToHex(color),
+                        attributes));
                 }
             }
-            writer.WriteEndElement();
         }
-        return output.ToString();
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return new VisualizerSvgDocument(_width, _height, primitives, _background, role: "img").ToSvg();
     }
 
     /// <inheritdoc />
