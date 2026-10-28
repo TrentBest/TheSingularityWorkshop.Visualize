@@ -26,6 +26,8 @@ public sealed class VisualizerSvgDocument
         Background = background;
         var snapshot = primitives.ToArray();
         var ids = new HashSet<string>(StringComparer.Ordinal);
+        if (background != "none")
+            ids.Add("visualize-background");
         foreach (var primitive in snapshot)
         {
             ArgumentNullException.ThrowIfNull(primitive);
