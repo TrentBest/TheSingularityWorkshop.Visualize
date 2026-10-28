@@ -81,6 +81,23 @@ Cache invalidation must account for relevant world changes, observer movement/or
 
 These are conceptual ownership boundaries. They do not require every concept to become a separate assembly immediately.
 
+## 3.1 SVG output ownership and adapter boundary
+
+SVG is a possible output format for Visualize, not a GUI-only concept. Visualize owns the mapping from its visual scene data—geometry, transforms, materials, and frame/draw descriptions—to a visual output representation. It may serialize that representation to SVG for documentation, inspection, previews, or other host-neutral output without requiring GUI's semantic control tree.
+
+GUI and GUI.SVG have a different responsibility. GUI owns the platform-neutral semantic presentation tree and interaction-oriented contracts; GUI.SVG adapts that tree to SVG when a semantic GUI surface needs an SVG manifestation. It remains a reusable, optional adapter and must not be removed merely because Visualize gains its own scene-to-SVG path.
+
+The current `GuiSvgVisualizerBackend` is an integration proof, not the final ownership boundary: it resolves Visualizer resources and draw commands, projects triangles on the CPU, constructs GUI nodes, then delegates XML serialization to GUI.SVG. Keep that path working while a Visualize-owned scene-to-SVG representation and serializer are implemented and tested independently. Do not change the public `IVisualizerBackend` contract just to establish this path.
+
+| Path | Responsibility |
+| --- | --- |
+| Visualize scene/frame → Visualize SVG output | Visual scene primitives and resource/draw descriptions to deterministic SVG |
+| GUI semantic tree → GUI.SVG | Semantic UI nodes, attributes, accessibility and declared animation to SVG |
+| Renderer → Visualize | Observer-relative representation/work selection; not SVG element serialization |
+| Host | Owns surface lifecycle and decides how/where emitted output is presented |
+
+The two SVG paths can coexist. Do not copy GUI.SVG's entire semantic vocabulary into Visualize or introduce a shared package pre-emptively. Extract a low-level shared utility only if real duplication is demonstrated and the dependency graph remains acyclic. CPU-generated SVG is not evidence of GPU execution, browser interactivity, or that an output was presented; capability reports and documentation must keep those claims separate.
+
 ## 4. Resource identity and lifetime
 
 Renderer commands identify geometry and materials by RenderResourceId. Visualizer currently defines its own VisualizerResourceId and VisualizerFrame so its core can build and evolve independently of the Renderer package release cadence. A GPU backend must not assume that an ID is a raw device pointer or that the ID alone describes all required data.
