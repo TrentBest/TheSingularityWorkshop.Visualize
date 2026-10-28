@@ -12,7 +12,7 @@ public sealed class VisualizerSvgDocument
     private static readonly Regex ColorPattern = new(@"^(#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?|none|currentColor)$", RegexOptions.CultureInvariant);
     private static readonly Regex IdPattern = new(@"^[A-Za-z_][A-Za-z0-9_.-]*$", RegexOptions.CultureInvariant);
 
-    public VisualizerSvgDocument(double width, double height, IEnumerable<VisualizerSvgPrimitive> primitives, string background = "none")
+    public VisualizerSvgDocument(double width, double height, IEnumerable<VisualizerSvgPrimitive> primitives, string background = "none", string? role = null)
     {
         if (!double.IsFinite(width) || width <= 0)
             throw new ArgumentOutOfRangeException(nameof(width), "SVG width must be finite and greater than zero.");
@@ -20,10 +20,13 @@ public sealed class VisualizerSvgDocument
             throw new ArgumentOutOfRangeException(nameof(height), "SVG height must be finite and greater than zero.");
         ArgumentNullException.ThrowIfNull(primitives);
         ValidateColor(background, nameof(background));
+        if (role is not null && (role.Length == 0 || role.Any(char.IsControl)))
+            throw new ArgumentException("SVG role must be non-empty and contain no control characters.", nameof(role));
 
         Width = width;
         Height = height;
         Background = background;
+        Role = role;
         var snapshot = primitives.ToArray();
         var ids = new HashSet<string>(StringComparer.Ordinal);
         if (background != "none")
@@ -42,6 +45,7 @@ public sealed class VisualizerSvgDocument
     public double Width { get; }
     public double Height { get; }
     public string Background { get; }
+    public string? Role { get; }
     public IReadOnlyList<VisualizerSvgPrimitive> Primitives { get; }
 
     /// <summary>Serializes the scene as stable UTF-8-compatible SVG text with invariant numeric formatting.</summary>
@@ -61,6 +65,8 @@ public sealed class VisualizerSvgDocument
             writer.WriteAttributeString("width", Format(Width));
             writer.WriteAttributeString("height", Format(Height));
             writer.WriteAttributeString("viewBox", $"0 0 {Format(Width)} {Format(Height)}");
+            if (Role is not null)
+                writer.WriteAttributeString("role", Role);
             if (Background != "none")
             {
                 writer.WriteStartElement("rect");
@@ -98,12 +104,27 @@ public sealed class VisualizerSvgDocument
 }
 
 /// <summary>Base type for Visualize-owned SVG drawing primitives.</summary>
-public abstract record VisualizerSvgPrimitive(string Id, string Fill)
+public abstract record VisualizerSvgPrimitive(string Id, string Fill, IReadOnlyDictionary<string, string>? Attributes = null)
 {
     internal void ValidateCommon()
     {
         VisualizerSvgDocument.ValidateId(Id);
         VisualizerSvgDocument.ValidateColor(Fill, nameof(Fill));
+        if (Attributes is null) return;
+        foreach (var attribute in Attributes)
+        {
+            if (attribute.Key is not ("fill-opacity" or "data-representation" or "data-entity-id"))
+                throw new ArgumentException($"SVG primitive attribute '{attribute.Key}' is not allowed.", nameof(Attributes));
+            if (string.IsNullOrEmpty(attribute.Value) || attribute.Value.Any(char.IsControl))
+                throw new ArgumentException($"SVG primitive attribute '{attribute.Key}' has an invalid value.", nameof(Attributes));
+        }
+    }
+
+    internal void WriteAttributes(XmlWriter writer)
+    {
+        if (Attributes is null) return;
+        foreach (var attribute in Attributes.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+            writer.WriteAttributeString(attribute.Key, attribute.Value);
     }
 
     internal abstract void Validate();
@@ -111,8 +132,8 @@ public abstract record VisualizerSvgPrimitive(string Id, string Fill)
 }
 
 /// <summary>A filled rectangle in SVG viewport coordinates.</summary>
-public sealed record VisualizerSvgRectangle(string Id, double X, double Y, double Width, double Height, string Fill)
-    : VisualizerSvgPrimitive(Id, Fill)
+public sealed record VisualizerSvgRectangle(string Id, double X, double Y, double Width, double Height, string Fill, IReadOnlyDictionary<string, string>? Attributes = null)
+    : VisualizerSvgPrimitive(Id, Fill, Attributes)
 {
     internal override void Validate()
     {
@@ -134,6 +155,7 @@ public sealed record VisualizerSvgRectangle(string Id, double X, double Y, doubl
         writer.WriteAttributeString("width", VisualizerSvgDocument.Format(Width));
         writer.WriteAttributeString("height", VisualizerSvgDocument.Format(Height));
         writer.WriteAttributeString("fill", Fill);
+        WriteAttributes(writer);
         writer.WriteEndElement();
     }
 }
@@ -141,8 +163,8 @@ public sealed record VisualizerSvgRectangle(string Id, double X, double Y, doubl
 /// <summary>A filled triangle/polygon described by an ordered list of viewport-coordinate pairs.</summary>
 public sealed record VisualizerSvgPolygon : VisualizerSvgPrimitive
 {
-    public VisualizerSvgPolygon(string id, IEnumerable<(double X, double Y)> points, string fill)
-        : base(id, fill)
+    public VisualizerSvgPolygon(string id, IEnumerable<(double X, double Y)> points, string fill, IReadOnlyDictionary<string, string>? attributes = null)
+        : base(id, fill, attributes)
     {
         ArgumentNullException.ThrowIfNull(points);
         Points = Array.AsReadOnly(points.ToArray());
@@ -166,6 +188,7 @@ public sealed record VisualizerSvgPolygon : VisualizerSvgPrimitive
         writer.WriteAttributeString("points", string.Join(" ", Points.Select(point =>
             $"{VisualizerSvgDocument.Format(point.X)},{VisualizerSvgDocument.Format(point.Y)}")));
         writer.WriteAttributeString("fill", Fill);
+        WriteAttributes(writer);
         writer.WriteEndElement();
     }
 }
