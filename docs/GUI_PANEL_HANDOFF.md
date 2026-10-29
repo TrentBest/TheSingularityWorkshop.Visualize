@@ -94,4 +94,7 @@ These are audit criteria, not claims that the current API already supports every
 
 See [Visualizer Architecture](ARCHITECTURE.md), [Renderer adapter proof](../integrations/RendererAdapter/Proof/README.md), [GUI architecture](https://github.com/TrentBest/TheSingularityWorkshop.GUI/blob/development/docs/ARCHITECTURE.md), and the [living SVG documentation guide](SVG_LIVING_DOCUMENTATION.md).
 
-TheSingularityWorkshop
+
+---
+
+![The Singularity Workshop avatar](../Avatar.jpg)
