@@ -165,10 +165,15 @@ var commands = new List<RenderDrawCommand>
     new(protectedGeometryId, protectedMaterialId, Matrix4x4.Identity, 24, 0, 0, RendererRepresentation.Interactive, entity: new RenderEntityId(9002)),
     new(bypassGeometryId, bypassMaterialId, Matrix4x4.Identity, 24, 0, 0, RendererRepresentation.Interactive, entity: new RenderEntityId(9003))
 };
-foreach (var agent in accepted.Agents
-    .Where(agent => agent.Location.SpaceKind == ConstructionSpaceKind.SimulationGrid
-        && StringComparer.Ordinal.Equals(agent.Location.SpaceId, spaceId))
-    .OrderBy(agent => agent.AgentId))
+var selection = ConstructionSnapshotPresentationSelector.Select(
+    accepted,
+    observer.RunId,
+    sequence,
+    spaceId,
+    new ConstructionObserverPose(new GridCell(0, 0)),
+    new ConstructionSnapshotPresentationPolicy(maximumIndividualAgents: 1, individualRadius: 2));
+
+foreach (var agent in selection.IndividualAgents)
 {
     var transform = Matrix4x4.CreateScale(0.18f)
         * Matrix4x4.CreateTranslation(agent.Position.X * 0.45f - 0.5f, 0.35f - agent.Position.Y * 0.45f, 0);
@@ -183,14 +188,38 @@ foreach (var agent in accepted.Agents
         entity: new RenderEntityId(agent.AgentId)));
 }
 
+// Aggregate glyphs use reserved renderer IDs; the manifest retains their real
+// stable aggregate identities and member-agent IDs so presentation identity is
+// never confused with authoritative agent identity.
+var aggregateMaterialId = new RenderResourceId(9);
+catalog.SetMaterial(new VisualizerResourceId(aggregateMaterialId.Value),
+    new VisualizerMaterial(1, new Vector4(0.95f, 0.72f, 0.24f, 1)));
+for (var index = 0; index < selection.Aggregates.Count; index++)
+{
+    var aggregate = selection.Aggregates[index];
+    var transform = Matrix4x4.CreateScale(0.12f)
+        * Matrix4x4.CreateTranslation(aggregate.Cell.X * 0.45f - 0.5f, 0.35f - aggregate.Cell.Y * 0.45f, 0);
+    commands.Add(new RenderDrawCommand(
+        geometryId,
+        aggregateMaterialId,
+        transform,
+        indexCount: droneIndices.Count,
+        firstIndex: 0,
+        baseVertex: 0,
+        RendererRepresentation.Interactive,
+        entity: new RenderEntityId(800_000UL + (ulong)index)));
+}
+
 if (commands.Count != 6)
-    throw new InvalidOperationException($"Expected three scenario overlays and three in-space agents, found {commands.Count}.");
-var droneCommands = commands.Where(command => command.Entity.Value is 101 or 202 or 303).ToArray();
-if (droneCommands.Length != 3)
-    throw new InvalidOperationException($"Expected three authoritative drone draws, found {droneCommands.Length}.");
-var expectedIds = new ulong[] { 101, 202, 303 };
+    throw new InvalidOperationException($"Expected three scenario overlays, one individual, and two aggregate draws; found {commands.Count}.");
+var droneCommands = commands.Where(command => command.Entity.Value == 101).ToArray();
+if (droneCommands.Length != selection.SelectedIndividualCount || droneCommands.Length != 1)
+    throw new InvalidOperationException($"Expected one selected authoritative drone draw, found {droneCommands.Length}.");
+if (selection.AggregatedAgentCount != 2 || selection.Aggregates.Count != 2)
+    throw new InvalidOperationException($"Expected two agents in two aggregate cells, found {selection.AggregatedAgentCount} agents in {selection.Aggregates.Count} aggregates.");
+var expectedIds = new ulong[] { 101 };
 if (!droneCommands.Select(command => command.Entity.Value).SequenceEqual(expectedIds))
-    throw new InvalidOperationException("Stable construction agent IDs were not preserved in draw-command order.");
+    throw new InvalidOperationException("Stable selected construction agent IDs were not preserved in draw-command order.");
 
 var frame = new RenderFrame(
     new RenderView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity),
@@ -209,15 +238,25 @@ await File.WriteAllTextAsync(manifestPath,
     $"observerSequence={sequence}{Environment.NewLine}" +
     $"spaceKind={ConstructionSpaceKind.SimulationGrid}{Environment.NewLine}" +
     $"spaceId={spaceId}{Environment.NewLine}" +
-    $"authoritativeAgents={accepted.Agents.Count}{Environment.NewLine}" +
+    $"authoritativeAgents={selection.TotalAgentsInSnapshot}{Environment.NewLine}" +
+    $"agentsInSpace={selection.TotalAgentsInSpace}{Environment.NewLine}" +
+    $"selectedIndividuals={selection.SelectedIndividualCount}{Environment.NewLine}" +
+    $"aggregateGroups={selection.Aggregates.Count}{Environment.NewLine}" +
+    $"aggregatedAgents={selection.AggregatedAgentCount}{Environment.NewLine}" +
     $"submittedDraws={result.SubmittedDrawCount}{Environment.NewLine}" +
     $"authoritativeDroneDraws={droneCommands.Length}{Environment.NewLine}" +
+    $"aggregateDraws={selection.Aggregates.Count}{Environment.NewLine}" +
+    $"provenanceRunId={selection.Provenance.RunId}{Environment.NewLine}" +
+    $"provenanceTick={selection.Provenance.Tick}{Environment.NewLine}" +
+    $"provenanceSequence={selection.Provenance.Sequence}{Environment.NewLine}" +
+    $"aggregateIds={string.Join(",", selection.Aggregates.Select(aggregate => aggregate.AggregateId))}{Environment.NewLine}" +
+    $"aggregateMembers={string.Join(";", selection.Aggregates.Select(aggregate => $"{aggregate.AggregateId}:[{string.Join(",", aggregate.MemberAgentIds)}]"))}{Environment.NewLine}" +
     "scenarioOverlayDraws=3" + Environment.NewLine +
     "scenarioOverlaySource=illustrative-fixture-not-simulation-state" + Environment.NewLine +
     $"entityIds={string.Join(",", droneCommands.Select(command => command.Entity.Value))}{Environment.NewLine}" +
     "backend=CPU/SVG" + Environment.NewLine);
 
-Console.WriteLine($"Construction snapshot + explicit illustrative Skylane fixture -> RenderFrame -> Visualize -> GUI.SVG: {result.SubmittedDrawCount} draws (3 authoritative drones, 3 fixture overlays).");
-Console.WriteLine($"run={observer.RunId}; tick={accepted.Tick}; sequence={sequence}; entityIds={string.Join(",", expectedIds)}");
+Console.WriteLine($"Construction snapshot + bounded presentation selection -> RenderFrame -> Visualize -> GUI.SVG: {result.SubmittedDrawCount} draws (1 individual, {selection.Aggregates.Count} aggregates, 3 fixture overlays).");
+Console.WriteLine($"run={selection.Provenance.RunId}; tick={selection.Provenance.Tick}; sequence={selection.Provenance.Sequence}; entityIds={string.Join(",", expectedIds)}");
 Console.WriteLine($"SVG: {output}");
 Console.WriteLine($"Manifest: {manifestPath}");
