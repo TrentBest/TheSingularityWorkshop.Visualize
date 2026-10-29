@@ -18,6 +18,8 @@
     <Compile Remove="RendererSource/**/*.cs" />
     <!-- Experiences is checked out beside the adapter for integration builds; compile it only through its own project, never as loose adapter source. -->
     <Compile Remove="ExperiencesSource/**/*.cs" />
+    <Compile Remove="**/ExperiencesSource/**/*.cs" />
+    <Compile Remove="CapsuleClinicProof/**/*.cs" />
     <Compile Remove="Proof/**/*.cs" />
     <Compile Remove="DroneConstructionProof/**/*.cs" />
     <ProjectReference Include="../../TheSingularityWorkshop.Visualize.csproj" />
