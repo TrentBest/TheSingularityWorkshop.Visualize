@@ -140,6 +140,99 @@ public sealed class SvgVisualizerBackendTests
             await backend.RenderAsync(CreateFrame(indexCount: 3), CreateResources()));
     }
 
+
+    [Fact]
+    public async Task RenderAsync_SerializesConcurrentSinkCallsAndFrameNumbers()
+    {
+        using var firstSinkEntered = new ManualResetEventSlim();
+        using var releaseFirstSink = new ManualResetEventSlim();
+        using var secondSinkEntered = new ManualResetEventSlim();
+        var sinkCalls = 0;
+        var activeSinkCalls = 0;
+        var maxActiveSinkCalls = 0;
+        var backend = new SvgVisualizerBackend(_ =>
+        {
+            var active = Interlocked.Increment(ref activeSinkCalls);
+            UpdateMaximum(ref maxActiveSinkCalls, active);
+            var call = Interlocked.Increment(ref sinkCalls);
+            try
+            {
+                if (call == 1)
+                {
+                    firstSinkEntered.Set();
+                    if (!releaseFirstSink.Wait(TimeSpan.FromSeconds(5)))
+                        throw new TimeoutException("Test did not release the first sink call.");
+                }
+                else if (call == 2)
+                {
+                    secondSinkEntered.Set();
+                }
+            }
+            finally
+            {
+                Interlocked.Decrement(ref activeSinkCalls);
+            }
+        });
+
+        var first = Task.Run(async () => await backend.RenderAsync(CreateFrame(3), CreateResources()));
+        Assert.True(firstSinkEntered.Wait(TimeSpan.FromSeconds(5)), "The first sink call did not start.");
+
+        var second = Task.Run(async () => await backend.RenderAsync(CreateFrame(3), CreateResources()));
+        Assert.False(secondSinkEntered.Wait(TimeSpan.FromMilliseconds(100)),
+            "A second sink call entered while the first call was still active.");
+
+        releaseFirstSink.Set();
+        var results = await Task.WhenAll(first, second);
+
+        Assert.Equal(1, maxActiveSinkCalls);
+        Assert.Equal(new long[] { 0, 1 }, results.Select(result => result.FrameNumber).Order().ToArray());
+        Assert.Equal(2, sinkCalls);
+    }
+
+    [Fact]
+    public async Task DisposeAsync_WaitsForActiveSinkCallBeforeCompleting()
+    {
+        using var sinkEntered = new ManualResetEventSlim();
+        using var releaseSink = new ManualResetEventSlim();
+        var backend = new SvgVisualizerBackend(_ =>
+        {
+            sinkEntered.Set();
+            if (!releaseSink.Wait(TimeSpan.FromSeconds(5)))
+                throw new TimeoutException("Test did not release the sink call.");
+        });
+
+        var render = Task.Run(async () => await backend.RenderAsync(CreateFrame(3), CreateResources()));
+        Assert.True(sinkEntered.Wait(TimeSpan.FromSeconds(5)), "The sink call did not start.");
+
+        using var disposalStarted = new ManualResetEventSlim();
+        var dispose = Task.Run(async () =>
+        {
+            disposalStarted.Set();
+            await backend.DisposeAsync();
+        });
+        Assert.True(disposalStarted.Wait(TimeSpan.FromSeconds(5)), "Disposal did not start.");
+        Assert.False(dispose.IsCompleted, "Disposal completed while the sink call was still active.");
+
+        releaseSink.Set();
+        await render;
+        await dispose;
+
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () =>
+            await backend.RenderAsync(CreateFrame(3), CreateResources()));
+    }
+
+    private static void UpdateMaximum(ref int maximum, int candidate)
+    {
+        var observed = Volatile.Read(ref maximum);
+        while (candidate > observed)
+        {
+            var previous = Interlocked.CompareExchange(ref maximum, candidate, observed);
+            if (previous == observed)
+                return;
+            observed = previous;
+        }
+    }
+
     private static VisualizerResourceCatalog CreateResources(float vertexAlpha = 1f)
     {
         var resources = new VisualizerResourceCatalog();
