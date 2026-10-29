@@ -55,7 +55,7 @@ public sealed class VisualizerSvgDocument
         IReadOnlyDictionary<string, string>? attributes = primitive.Attributes is null
             ? null
             : new ReadOnlyDictionary<string, string>(
-                new Dictionary<string, string>(primitive.Attributes, StringComparer.Ordinal));
+                primitive.Attributes.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal));
 
         return primitive switch
         {
