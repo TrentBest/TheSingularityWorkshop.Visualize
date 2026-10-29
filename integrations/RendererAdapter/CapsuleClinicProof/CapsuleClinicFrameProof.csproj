@@ -7,8 +7,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../TheSingularityWorkshop.Renderer.VisualizeAdapter.csproj" />
-    <ProjectReference Include="../CapsuleClinicIntegration/TheSingularityWorkshop.Visualize.CapsuleClinicIntegration.csproj" />
-    <ProjectReference Include="../../GuiSvg/TheSingularityWorkshop.Visualize.GUI.SVG.csproj" />
+    <ProjectReference Include="../../../ExperiencesSource/integrations/CapsuleClinic.VisualizeIntegration/TheSingularityWorkshop.Experiences.CapsuleClinic.VisualizeIntegration.csproj" />
   </ItemGroup>
 </Project>
