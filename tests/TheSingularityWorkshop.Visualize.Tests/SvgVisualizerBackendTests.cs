@@ -35,6 +35,30 @@ public sealed class SvgVisualizerBackendTests
         Assert.Equal(new VisualizerCapabilities("Visualize static SVG artifact backend", "SVG/CPU", false, false, false, false), backend.Capabilities);
     }
 
+    [Theory]
+    [InlineData(-0.1f)]
+    [InlineData(1.1f)]
+    [InlineData(float.NaN)]
+    [InlineData(float.PositiveInfinity)]
+    public void BuildSvg_RejectsInvalidComputedAlpha(float alpha)
+    {
+        var resources = CreateResources(vertexAlpha: alpha);
+        var backend = new SvgVisualizerBackend(_ => { });
+
+        var exception = Assert.Throws<InvalidOperationException>(() => backend.BuildSvg(CreateFrame(indexCount: 3), resources));
+        Assert.Contains("alpha", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void BuildSvg_PreservesTransparentAndOpaqueAlphaEndpoints()
+    {
+        var transparent = new SvgVisualizerBackend(_ => { }).BuildSvg(CreateFrame(3), CreateResources(vertexAlpha: 0f));
+        var opaque = new SvgVisualizerBackend(_ => { }).BuildSvg(CreateFrame(3), CreateResources(vertexAlpha: 1f));
+
+        Assert.Contains("fill-opacity=\"0\"", transparent, StringComparison.Ordinal);
+        Assert.DoesNotContain("fill-opacity=", opaque, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task RenderAsync_EmitsArtifactAndDoesNotClaimPresentation()
     {
@@ -71,16 +95,16 @@ public sealed class SvgVisualizerBackendTests
             backend.BuildSvg(CreateFrame(indexCount: 3), CreateResources(), source.Token));
     }
 
-    private static VisualizerResourceCatalog CreateResources()
+    private static VisualizerResourceCatalog CreateResources(float vertexAlpha = 1f)
     {
         var resources = new VisualizerResourceCatalog();
         resources.SetGeometry(new VisualizerResourceId(1), new VisualizerGeometry(
             revision: 1,
             vertices:
             [
-                new VisualizerVertex(new Vector3(-0.5f, -0.5f, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One),
-                new VisualizerVertex(new Vector3(0.5f, -0.5f, 0), Vector3.UnitZ, Vector2.UnitX, Vector4.One),
-                new VisualizerVertex(new Vector3(0, 0.5f, 0), Vector3.UnitZ, Vector2.UnitY, Vector4.One)
+                new VisualizerVertex(new Vector3(-0.5f, -0.5f, 0), Vector3.UnitZ, Vector2.Zero, new Vector4(1, 1, 1, vertexAlpha)),
+                new VisualizerVertex(new Vector3(0.5f, -0.5f, 0), Vector3.UnitZ, Vector2.UnitX, new Vector4(1, 1, 1, vertexAlpha)),
+                new VisualizerVertex(new Vector3(0, 0.5f, 0), Vector3.UnitZ, Vector2.UnitY, new Vector4(1, 1, 1, vertexAlpha))
             ],
             indices: [0, 1, 2]));
         resources.SetMaterial(new VisualizerResourceId(2), new VisualizerMaterial(1, new Vector4(1, 0, 0, 1)));
