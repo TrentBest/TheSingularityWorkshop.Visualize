@@ -147,6 +147,7 @@ public sealed class SvgVisualizerBackendTests
         using var firstSinkEntered = new ManualResetEventSlim();
         using var releaseFirstSink = new ManualResetEventSlim();
         using var secondSinkEntered = new ManualResetEventSlim();
+        using var secondRenderStarted = new ManualResetEventSlim();
         var sinkCalls = 0;
         var activeSinkCalls = 0;
         var maxActiveSinkCalls = 0;
@@ -177,7 +178,12 @@ public sealed class SvgVisualizerBackendTests
         var first = Task.Run(async () => await backend.RenderAsync(CreateFrame(3), CreateResources()));
         Assert.True(firstSinkEntered.Wait(TimeSpan.FromSeconds(5)), "The first sink call did not start.");
 
-        var second = Task.Run(async () => await backend.RenderAsync(CreateFrame(3), CreateResources()));
+        var second = Task.Run(async () =>
+        {
+            secondRenderStarted.Set();
+            return await backend.RenderAsync(CreateFrame(3), CreateResources());
+        });
+        Assert.True(secondRenderStarted.Wait(TimeSpan.FromSeconds(5)), "The second render task did not start.");
         Assert.False(secondSinkEntered.Wait(TimeSpan.FromMilliseconds(100)),
             "A second sink call entered while the first call was still active.");
 
