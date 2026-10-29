@@ -19,6 +19,7 @@ public sealed class SvgVisualizerBackend : IVisualizerBackend
     private readonly int _width;
     private readonly int _height;
     private readonly string _background;
+    private readonly object _lifecycleGate = new();
     private long _frameNumber;
     private int _disposed;
 
@@ -45,6 +46,7 @@ public sealed class SvgVisualizerBackend : IVisualizerBackend
         new("Visualize static SVG artifact backend", "SVG/CPU", false, false, false, false);
 
     /// <inheritdoc />
+    /// <remarks>Rendering and SVG building are serialized. Disposal waits for an active operation to leave the lifecycle gate.</remarks>
     public ValueTask<VisualizerFrameResult> RenderAsync(
         VisualizerFrame frame,
         IVisualizerResourceProvider resources,
@@ -52,17 +54,21 @@ public sealed class SvgVisualizerBackend : IVisualizerBackend
     {
         ArgumentNullException.ThrowIfNull(frame);
         ArgumentNullException.ThrowIfNull(resources);
-        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
-        cancellationToken.ThrowIfCancellationRequested();
 
-        var timer = System.Diagnostics.Stopwatch.StartNew();
-        var svg = BuildSvg(frame, resources, cancellationToken);
-        cancellationToken.ThrowIfCancellationRequested();
-        _svgSink(svg);
-        timer.Stop();
+        lock (_lifecycleGate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed != 0, this);
+            cancellationToken.ThrowIfCancellationRequested();
 
-        var number = Interlocked.Increment(ref _frameNumber) - 1;
-        return ValueTask.FromResult(new VisualizerFrameResult(number, frame.Commands.Count, timer.Elapsed, wasPresented: false));
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            var svg = BuildSvgCore(frame, resources, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            _svgSink(svg);
+            timer.Stop();
+
+            var number = _frameNumber++;
+            return ValueTask.FromResult(new VisualizerFrameResult(number, frame.Commands.Count, timer.Elapsed, wasPresented: false));
+        }
     }
 
     /// <summary>Builds the SVG text without writing it to the configured sink.</summary>
@@ -73,8 +79,19 @@ public sealed class SvgVisualizerBackend : IVisualizerBackend
     {
         ArgumentNullException.ThrowIfNull(frame);
         ArgumentNullException.ThrowIfNull(resources);
-        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
 
+        lock (_lifecycleGate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed != 0, this);
+            return BuildSvgCore(frame, resources, cancellationToken);
+        }
+    }
+
+    private string BuildSvgCore(
+        VisualizerFrame frame,
+        IVisualizerResourceProvider resources,
+        CancellationToken cancellationToken)
+    {
         var primitives = new List<VisualizerSvgPrimitive>();
         foreach (var command in frame.Commands)
         {
@@ -153,9 +170,14 @@ public sealed class SvgVisualizerBackend : IVisualizerBackend
     }
 
     /// <inheritdoc />
+    /// <remarks>Disposal waits for a currently executing build or sink callback to finish.</remarks>
     public ValueTask DisposeAsync()
     {
-        Interlocked.Exchange(ref _disposed, 1);
+        lock (_lifecycleGate)
+        {
+            _disposed = 1;
+        }
+
         return ValueTask.CompletedTask;
     }
 
