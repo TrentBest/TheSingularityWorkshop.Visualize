@@ -6,7 +6,7 @@ The proof now uses a top-down indexed quadcopter glyph (central body, four arms,
 
 The CI artifact includes:
 - `drone-construction-frame.svg` — the CPU/SVG manifestation.
-- `drone-construction-frame.manifest.txt` — run ID, committed tick, observer sequence, qualified space, authoritative population, total submitted draws, authoritative drone draws, fixture overlay count/source, and stable entity IDs.
+- `drone-construction-frame.manifest.txt` — run ID, committed tick, observer sequence, qualified space, authoritative population, total submitted draws, authoritative drone draws, fixture overlay count/source, stable entity IDs, geometry/material resource counts, snapshot capture timestamp, and elapsed snapshot age at submission. Snapshot age is measured as wall-clock elapsed time within this proof process; it is not a simulation-time age or a stale-snapshot policy.
 
 Run from the Visualize repository root after checking out Experiences into `ExperiencesSource/` and Renderer/GUI into the paths used by the integration workflow:
 
