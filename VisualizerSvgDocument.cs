@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -33,7 +34,7 @@ public sealed class VisualizerSvgDocument
         Height = height;
         Background = background;
         Role = role;
-        var snapshot = primitives.ToArray();
+        var snapshot = primitives.Select(SnapshotPrimitive).ToArray();
         var ids = new HashSet<string>(StringComparer.Ordinal);
         if (background != "none")
             ids.Add("visualize-background");
@@ -46,6 +47,25 @@ public sealed class VisualizerSvgDocument
             primitive.Validate();
         }
         Primitives = Array.AsReadOnly(snapshot);
+    }
+
+    private static VisualizerSvgPrimitive SnapshotPrimitive(VisualizerSvgPrimitive primitive)
+    {
+        ArgumentNullException.ThrowIfNull(primitive);
+        IReadOnlyDictionary<string, string>? attributes = primitive.Attributes is null
+            ? null
+            : new ReadOnlyDictionary<string, string>(
+                new Dictionary<string, string>(primitive.Attributes, StringComparer.Ordinal));
+
+        return primitive switch
+        {
+            VisualizerSvgRectangle rectangle => new VisualizerSvgRectangle(
+                rectangle.Id, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, rectangle.Fill, attributes),
+            VisualizerSvgPolygon polygon => new VisualizerSvgPolygon(
+                polygon.Id, polygon.Points, polygon.Fill, attributes),
+            _ => throw new NotSupportedException(
+                $"SVG primitive type '{primitive.GetType().FullName}' is not supported by this document.")
+        };
     }
 
     /// <summary>Gets the SVG viewport width.</summary>
