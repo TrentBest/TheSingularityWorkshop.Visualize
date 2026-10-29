@@ -2,7 +2,7 @@ using System.Text.Json;
 using TheSingularityWorkshop.Experiences.CapsuleClinic;
 using TheSingularityWorkshop.Renderer.VisualizeAdapter;
 using TheSingularityWorkshop.Visualize;
-using TheSingularityWorkshop.Visualize.CapsuleClinic;
+using TheSingularityWorkshop.Experiences.CapsuleClinic.VisualizeIntegration;
 using TheSingularityWorkshop.Visualize.GuiSvg;
 
 var output = args.Length > 0
