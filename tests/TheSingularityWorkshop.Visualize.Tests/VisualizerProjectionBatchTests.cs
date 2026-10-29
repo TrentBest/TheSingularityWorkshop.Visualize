@@ -42,6 +42,22 @@ public sealed class VisualizerProjectionBatchTests
     }
 
     [Fact]
+    public void Batch_TreatsTargetIdsAsOrdinalAndCaseSensitive()
+    {
+        var source = new VisualizerSourceRectangle(0, 0, 10, 10, "logical-pixels");
+        var upper = new VisualizerProjectionRequest(source, new VisualizerProjectionTarget(
+            "panel:Preview", VisualizerProjectionSpace.Screen, 100, 100, Matrix4x4.Identity));
+        var lower = new VisualizerProjectionRequest(source, new VisualizerProjectionTarget(
+            "panel:preview", VisualizerProjectionSpace.Screen, 100, 100, Matrix4x4.Identity));
+
+        var batch = new VisualizerProjectionBatch(new[] { upper, lower });
+
+        Assert.Equal(2, batch.Requests.Count);
+        Assert.Equal("panel:Preview", batch.Requests[0].Target.TargetId);
+        Assert.Equal("panel:preview", batch.Requests[1].Target.TargetId);
+    }
+
+    [Fact]
     public void Batch_ExposesReadOnlyRequestCollection()
     {
         var source = new VisualizerSourceRectangle(0, 0, 10, 10, "logical-pixels");
