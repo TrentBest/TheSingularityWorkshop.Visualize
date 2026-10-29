@@ -70,10 +70,13 @@ jobs:
           assert report["experience"] == "Capsule Clinic", report
           assert report["backend"] == "CPU/SVG" and report["gpuSubmission"] is False, report
           assert report["authoritativeSnapshot"] is True, report
+          assert report["hardDropAccepted"] is True, report
           assert report["paneCount"] == 4, report
           assert report["baseCellCommands"] == report["boardWidth"] * report["boardHeight"] * 4, report
-          assert report["commandCount"] == report["submittedDrawCount"], report
+          assert report["occupiedCells"] > 0, report
           assert report["activeSegments"] >= 2, report
+          assert report["deterministicCommandSequence"] is True, report
+          assert report["commandCount"] == report["submittedDrawCount"], report
           print(json.dumps(report, indent=2))
           PY
       - name: Upload Capsule Clinic SVG and manifest
