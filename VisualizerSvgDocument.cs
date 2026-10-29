@@ -128,6 +128,10 @@ public abstract record VisualizerSvgPrimitive(string Id, string Fill, IReadOnlyD
                 throw new ArgumentException($"SVG primitive attribute '{attribute.Key}' is not allowed.", nameof(Attributes));
             if (string.IsNullOrEmpty(attribute.Value) || attribute.Value.Any(char.IsControl))
                 throw new ArgumentException($"SVG primitive attribute '{attribute.Key}' has an invalid value.", nameof(Attributes));
+            if (attribute.Key == "fill-opacity" &&
+                (!double.TryParse(attribute.Value, System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out var opacity) ||
+                 !double.IsFinite(opacity) || opacity < 0 || opacity > 1))
+                throw new ArgumentOutOfRangeException(nameof(Attributes), "SVG fill-opacity must be an invariant-culture number between zero and one.");
         }
     }
 
