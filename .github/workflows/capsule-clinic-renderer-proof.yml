@@ -43,7 +43,7 @@ jobs:
           dotnet-version: 8.0.x
       - name: Restore Capsule Clinic proof
         env:
-          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+          WorkshopGuiSvgProjectPath: ${{ github.workspace }}/integrations/GuiSvg/GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
         run: dotnet restore integrations/RendererAdapter/CapsuleClinicProof/CapsuleClinicFrameProof.csproj
       - name: Build Capsule Clinic proof
         env:
