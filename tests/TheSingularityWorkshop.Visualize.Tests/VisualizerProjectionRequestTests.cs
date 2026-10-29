@@ -60,6 +60,30 @@ public sealed class VisualizerProjectionRequestTests
     }
 
     [Fact]
+    public void ProjectionTarget_RejectsInvalidSpaceAndViewportHeight()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new VisualizerProjectionTarget("preview", (VisualizerProjectionSpace)42, 100, 100, Matrix4x4.Identity));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new VisualizerProjectionTarget("preview", VisualizerProjectionSpace.Screen, 100, 0, Matrix4x4.Identity));
+    }
+
+    [Fact]
+    public void ProjectionTarget_RejectsInfiniteTransformComponents()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new VisualizerProjectionTarget("preview", VisualizerProjectionSpace.Screen, 100, 100,
+                new Matrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, float.PositiveInfinity, 1)));
+    }
+
+    [Fact]
+    public void Request_RejectsNullTarget()
+    {
+        var source = new VisualizerSourceRectangle(0, 0, 10, 10, "logical-pixels");
+        Assert.Throws<ArgumentNullException>(() => new VisualizerProjectionRequest(source, null!));
+    }
+
+    [Fact]
     public void ProjectionTarget_RequiresStableTargetIdentity()
     {
         Assert.Throws<ArgumentException>(() =>
