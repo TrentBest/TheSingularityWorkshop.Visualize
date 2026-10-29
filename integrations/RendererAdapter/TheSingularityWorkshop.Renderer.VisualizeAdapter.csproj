@@ -20,6 +20,7 @@
     <Compile Remove="ExperiencesSource/**/*.cs" />
     <Compile Remove="**/ExperiencesSource/**/*.cs" />
     <Compile Remove="**/GuiSource/**/*.cs" />
+    <Compile Remove="CapsuleClinicProof/Program.cs" />
     <Compile Remove="CapsuleClinicProof/**/*.cs" />
     <Compile Remove="**/CapsuleClinicProof/**/*.cs" />
     <Compile Remove="Proof/**/*.cs" />
