@@ -26,7 +26,7 @@ public sealed class VisualizerSvgDocumentTests
         Assert.Equal("320", (string?)xml.Root!.Attribute("width"));
         Assert.Equal(new[] { "visualize-background", "panel", "triangle" },
             xml.Root.Elements().Select(element => (string?)element.Attribute("id")).ToArray());
-        Assert.Equal("10.5,0 5,9", (string?)xml.Root.Elements(svg + "polygon").Single().Attribute("points"));
+        Assert.Equal("0,0 10.5,0 5,9", (string?)xml.Root.Elements(svg + "polygon").Single().Attribute("points"));
     }
 
     [Fact]
