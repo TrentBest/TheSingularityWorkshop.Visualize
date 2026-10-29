@@ -31,6 +31,7 @@ public sealed class SvgVisualizerBackend : IVisualizerBackend
     {
         ArgumentNullException.ThrowIfNull(svgSink);
         ArgumentException.ThrowIfNullOrWhiteSpace(background);
+        VisualizerSvgDocument.ValidateColor(background, nameof(background));
         if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width));
         if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height));
         _svgSink = svgSink;
