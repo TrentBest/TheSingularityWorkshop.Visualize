@@ -10,10 +10,10 @@
     <ProjectReference Include="../TheSingularityWorkshop.Renderer.VisualizeAdapter.csproj" />
     <ProjectReference Include="../../GuiSvg/TheSingularityWorkshop.Visualize.GUI.SVG.csproj" />
     <ProjectReference Include="../../../ExperiencesSource/src/CapsuleClinic/TheSingularityWorkshop.Experiences.CapsuleClinic.csproj"
-                      Condition="Exists('ExperiencesSource/src/CapsuleClinic/TheSingularityWorkshop.Experiences.CapsuleClinic.csproj')" />
+                      Condition="Exists('$(MSBuildThisFileDirectory)../../../ExperiencesSource/src/CapsuleClinic/TheSingularityWorkshop.Experiences.CapsuleClinic.csproj')" />
   </ItemGroup>
   <Target Name="RequireExperiencesSource" BeforeTargets="ResolveReferences"
-          Condition="!Exists('ExperiencesSource/src/CapsuleClinic/TheSingularityWorkshop.Experiences.CapsuleClinic.csproj')">
+          Condition="!Exists('$(MSBuildThisFileDirectory)../../../ExperiencesSource/src/CapsuleClinic/TheSingularityWorkshop.Experiences.CapsuleClinic.csproj')">
     <Error Text="The Capsule Clinic proof requires Experiences checked out at repository-root ExperiencesSource/." />
   </Target>
 </Project>
