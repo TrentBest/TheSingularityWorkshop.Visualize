@@ -19,6 +19,8 @@ public readonly record struct VisualizerSourceRectangle
         if (!float.IsFinite(y)) throw new ArgumentOutOfRangeException(nameof(y));
         if (!float.IsFinite(width) || width <= 0) throw new ArgumentOutOfRangeException(nameof(width));
         if (!float.IsFinite(height) || height <= 0) throw new ArgumentOutOfRangeException(nameof(height));
+        if (!float.IsFinite(x + width)) throw new ArgumentOutOfRangeException(nameof(width), "The source rectangle's right edge must be finite.");
+        if (!float.IsFinite(y + height)) throw new ArgumentOutOfRangeException(nameof(height), "The source rectangle's bottom edge must be finite.");
 
         X = x;
         Y = y;
