@@ -34,6 +34,15 @@ public sealed class VisualizerProjectionRequestTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new VisualizerSourceRectangle(x, y, width, height, "logical-pixels"));
     }
 
+    [Theory]
+    [InlineData(float.MaxValue, 0, float.MaxValue, 1)]
+    [InlineData(0, float.MaxValue, 1, float.MaxValue)]
+    public void SourceRectangle_RejectsOverflowingRightOrBottomEdge(float x, float y, float width, float height)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new VisualizerSourceRectangle(x, y, width, height, "logical-pixels"));
+    }
+
     [Fact]
     public void SourceRectangle_RequiresCoordinateSystem()
     {
