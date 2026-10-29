@@ -43,14 +43,17 @@ jobs:
           dotnet-version: 8.0.x
       - name: Restore Capsule Clinic proof
         env:
+          WorkshopVisualizeRoot: ${{ github.workspace }}
           WorkshopGuiSvgProjectPath: ${{ github.workspace }}/integrations/GuiSvg/GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
         run: dotnet restore integrations/RendererAdapter/CapsuleClinicProof/CapsuleClinicFrameProof.csproj
       - name: Build Capsule Clinic proof
         env:
+          WorkshopVisualizeRoot: ${{ github.workspace }}
           WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
         run: dotnet build integrations/RendererAdapter/CapsuleClinicProof/CapsuleClinicFrameProof.csproj --configuration Release --no-restore
       - name: Render Capsule Clinic snapshot
         env:
+          WorkshopVisualizeRoot: ${{ github.workspace }}
           WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
         run: dotnet run --project integrations/RendererAdapter/CapsuleClinicProof/CapsuleClinicFrameProof.csproj --configuration Release --no-build -- ./artifacts/capsule-clinic-frame.svg
       - name: Verify SVG and deterministic manifest
