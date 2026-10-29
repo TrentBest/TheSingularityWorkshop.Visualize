@@ -52,4 +52,27 @@ public sealed class VisualizerProjectionBatchTests
         Assert.IsAssignableFrom<IReadOnlyList<VisualizerProjectionRequest>>(batch.Requests);
         Assert.IsNotAssignableFrom<VisualizerProjectionRequest[]>(batch.Requests);
     }
+
+    [Fact]
+    public void Batch_SnapshotsCallerCollection()
+    {
+        var source = new VisualizerSourceRectangle(0, 0, 10, 10, "logical-pixels");
+        var request = new VisualizerProjectionRequest(source, new VisualizerProjectionTarget(
+            "panel:preview", VisualizerProjectionSpace.Screen, 100, 100, Matrix4x4.Identity));
+        var callerOwned = new List<VisualizerProjectionRequest> { request };
+
+        var batch = new VisualizerProjectionBatch(callerOwned);
+        callerOwned.Clear();
+
+        Assert.Single(batch.Requests);
+        Assert.Same(request, batch.Requests[0]);
+    }
+
+    [Fact]
+    public void Batch_RejectsNullRequestEntry()
+    {
+        var requests = new VisualizerProjectionRequest[] { null! };
+
+        Assert.Throws<ArgumentException>(() => new VisualizerProjectionBatch(requests));
+    }
 }
