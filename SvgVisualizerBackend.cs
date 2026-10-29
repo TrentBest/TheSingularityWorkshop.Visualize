@@ -128,6 +128,8 @@ public sealed class SvgVisualizerBackend : IVisualizerBackend
                             material.BaseColor.W * vertex.Color.W) / 3f;
                     }
                     color = new Vector4(color.X * instance.Color.X, color.Y * instance.Color.Y, color.Z * instance.Color.Z, color.W * instance.Color.W);
+                    if (!float.IsFinite(color.W) || color.W < 0f || color.W > 1f)
+                        throw new InvalidOperationException("Computed triangle alpha must be finite and within the inclusive range [0, 1].");
                     var attributes = new SortedDictionary<string, string>(StringComparer.Ordinal)
                     {
                         ["data-representation"] = command.Representation.ToString().ToLowerInvariant()
