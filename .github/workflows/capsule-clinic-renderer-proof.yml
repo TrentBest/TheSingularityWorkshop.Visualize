@@ -1,0 +1,81 @@
+name: Capsule Clinic Renderer to Visualize proof
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - master
+      - development
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capsule-clinic-renderer-proof:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Visualize
+        uses: actions/checkout@v7
+      - name: Checkout Renderer source
+        uses: actions/checkout@v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.Renderer
+          ref: development
+          path: integrations/RendererAdapter/RendererSource
+      - name: Checkout GUI source
+        uses: actions/checkout@v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.GUI
+          ref: development
+          path: integrations/GuiSvg/GuiSource
+      - name: Checkout Experiences source
+        uses: actions/checkout@v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.Experiences
+          ref: development
+          path: integrations/RendererAdapter/ExperiencesSource
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore Capsule Clinic proof
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: dotnet restore integrations/RendererAdapter/CapsuleClinicProof/CapsuleClinicFrameProof.csproj
+      - name: Build Capsule Clinic proof
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: dotnet build integrations/RendererAdapter/CapsuleClinicProof/CapsuleClinicFrameProof.csproj --configuration Release --no-restore
+      - name: Render Capsule Clinic snapshot
+        env:
+          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+        run: dotnet run --project integrations/RendererAdapter/CapsuleClinicProof/CapsuleClinicFrameProof.csproj --configuration Release --no-build -- ./artifacts/capsule-clinic-frame.svg
+      - name: Verify SVG and deterministic manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s ./artifacts/capsule-clinic-frame.svg
+          test -s ./artifacts/capsule-clinic-frame.manifest.json
+          grep -q 'svg' ./artifacts/capsule-clinic-frame.svg
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("./artifacts/capsule-clinic-frame.manifest.json").read_text())
+          assert report["experience"] == "Capsule Clinic", report
+          assert report["backend"] == "CPU/SVG" and report["gpuSubmission"] is False, report
+          assert report["authoritativeSnapshot"] is True, report
+          assert report["paneCount"] == 4, report
+          assert report["baseCellCommands"] == report["boardWidth"] * report["boardHeight"] * 4, report
+          assert report["commandCount"] == report["submittedDrawCount"], report
+          assert report["activeSegments"] >= 2, report
+          print(json.dumps(report, indent=2))
+          PY
+      - name: Upload Capsule Clinic SVG and manifest
+        uses: actions/upload-artifact@v7
+        with:
+          name: capsule-clinic-renderer-visualize-proof
+          path: ./artifacts/capsule-clinic-frame.*
+          if-no-files-found: error
