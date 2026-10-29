@@ -6,6 +6,15 @@ namespace TheSingularityWorkshop.Visualize.Tests;
 
 public sealed class SvgVisualizerBackendTests
 {
+    [Theory]
+    [InlineData("")]
+    [InlineData("red")]
+    [InlineData("#12345")]
+    public void Constructor_RejectsInvalidBackgroundColors(string background)
+    {
+        Assert.Throws<ArgumentException>(() => new SvgVisualizerBackend(_ => { }, background: background));
+    }
+
     [Fact]
     public void BuildSvg_EmitsTriangleAndStableSemanticMetadata()
     {
