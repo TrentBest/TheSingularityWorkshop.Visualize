@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../TheSingularityWorkshop.Renderer.VisualizeAdapter.csproj" />
+    <ProjectReference Include="../../../ExperiencesSource/src/CapsuleClinic/TheSingularityWorkshop.Experiences.CapsuleClinic.csproj"
+                      Condition="Exists('$(MSBuildThisFileDirectory)../../../ExperiencesSource/src/CapsuleClinic/TheSingularityWorkshop.Experiences.CapsuleClinic.csproj')" />
+  </ItemGroup>
+  <Target Name="RequireExperiencesSource" BeforeTargets="ResolveReferences"
+          Condition="!Exists('$(MSBuildThisFileDirectory)../../../ExperiencesSource/src/CapsuleClinic/TheSingularityWorkshop.Experiences.CapsuleClinic.csproj')">
+    <Error Text="The Capsule Clinic integration requires Experiences checked out at repository-root ExperiencesSource/." />
+  </Target>
+</Project>
