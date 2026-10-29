@@ -95,6 +95,51 @@ public sealed class SvgVisualizerBackendTests
             backend.BuildSvg(CreateFrame(indexCount: 3), CreateResources(), source.Token));
     }
 
+    [Fact]
+    public async Task RenderAsync_SinkFailurePropagatesWithoutConsumingFrameNumber()
+    {
+        var fail = true;
+        var backend = new SvgVisualizerBackend(_ =>
+        {
+            if (fail)
+                throw new InvalidOperationException("sink failed");
+        });
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await backend.RenderAsync(CreateFrame(indexCount: 3), CreateResources()));
+        Assert.Equal("sink failed", exception.Message);
+
+        fail = false;
+        var result = await backend.RenderAsync(CreateFrame(indexCount: 3), CreateResources());
+        Assert.Equal(0, result.FrameNumber);
+    }
+
+    [Fact]
+    public async Task RenderAsync_ObservesCancellationBeforeCallingSink()
+    {
+        var sinkCalls = 0;
+        var backend = new SvgVisualizerBackend(_ => sinkCalls++);
+        using var source = new CancellationTokenSource();
+        source.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+            await backend.RenderAsync(CreateFrame(indexCount: 3), CreateResources(), source.Token));
+
+        Assert.Equal(0, sinkCalls);
+    }
+
+    [Fact]
+    public async Task DisposedBackend_RejectsBuildAndSubmission()
+    {
+        var backend = new SvgVisualizerBackend(_ => { });
+        await backend.DisposeAsync();
+
+        Assert.Throws<ObjectDisposedException>(() =>
+            backend.BuildSvg(CreateFrame(indexCount: 3), CreateResources()));
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () =>
+            await backend.RenderAsync(CreateFrame(indexCount: 3), CreateResources()));
+    }
+
     private static VisualizerResourceCatalog CreateResources(float vertexAlpha = 1f)
     {
         var resources = new VisualizerResourceCatalog();
