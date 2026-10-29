@@ -75,7 +75,28 @@ Do not add a Panel class to Visualize core merely to make the handoff convenient
 
 These are audit criteria, not claims that the current API already supports every case.
 
-## 4. Layered implementation plan
+## 4. Contract audit: frame correlation and resource lifetime
+
+The current contracts expose useful submission boundaries, but they do **not** yet provide a complete panel-handoff execution contract:
+
+- `VisualizerFrame` snapshots the ordered draw commands and view state. It has no source-frame identity or producer revision.
+- `VisualizerFrameResult.FrameNumber` is the backend's submission sequence. It cannot be treated as the identity of the source frame, nor assumed comparable across backends or targets.
+- `VisualizerProjectionBatch` snapshots target requests in caller order and prevents duplicate target IDs within one batch. It does not bind those requests to a particular `VisualizerFrame`, route output, or define completion ordering.
+- `VisualizerResourceCatalog` protects individual catalog operations with a lock, but supports replacing/removing entries while frames are in flight. A submitted frame does not pin a catalog revision or immutable resource snapshot.
+- `Visualizer` serializes submissions through its own instance and validates referenced geometry, materials, and instance ranges before calling the backend. That gate does not establish global ordering across multiple Visualizer instances or provide per-target failure isolation.
+- `IVisualizerBackend` exposes a capability snapshot and cancellation token, but no structured diagnostic result or target-specific lifecycle. The SVG backend reports `WasPresented = false`; its output is a static CPU-side artifact.
+
+**Consequence:** consumers cannot reliably correlate an output with the exact source frame from these contracts alone, reject stale completion after a newer frame or resize, or assume that resources remain unchanged between validation and backend consumption. These are concrete gaps, not reasons to label the existing scaffold broken.
+
+The next contract decision should distinguish three concepts rather than overload one counter:
+
+1. **Source correlation identity** — assigned by the producer/host and carried unchanged through a handoff.
+2. **Target identity and target-local freshness policy** — owned by the host/adapter; different targets may progress independently.
+3. **Backend submission sequence** — reported by a backend for its own submissions and diagnostics.
+
+Before adding public API, confirm whether source correlation should be an opaque caller token or a numeric producer sequence, and whether resource consistency belongs in a future immutable resource snapshot/revision contract. Stale-result rejection and per-target failure policy should remain host/adapter behavior unless a real consumer proves they belong in Visualize core. Do not use a backend-local frame number as a substitute.
+
+## 5. Layered implementation plan
 
 1. **Inventory:** document the actual public frame, resource, backend, capability, validation, diagnostic, cancellation, and disposal contracts.
 2. **Single-target proof:** formalize the existing SVG sink as a host-owned output seam; keep GUI-specific routing outside Visualize core.
@@ -85,7 +106,7 @@ These are audit criteria, not claims that the current API already supports every
 6. **Native/GPU backend:** implement separately, with device lifecycle and performance evidence; do not infer GPU behavior from SVG.
 7. **Consumer quick start:** show the smallest experience-owned composition that passes a frame to an adapter and routes the result to a GUI panel.
 
-## 5. Evidence boundaries
+## 6. Evidence boundaries
 
 - A generated SVG proves the described CPU-side data path and serialized SVG content.
 - A test can prove validation, ordering, resource identity, cancellation, and disposal only to the extent those cases are explicitly exercised.
