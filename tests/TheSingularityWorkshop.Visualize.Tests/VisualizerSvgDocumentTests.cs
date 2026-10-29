@@ -85,6 +85,27 @@ public sealed class VisualizerSvgDocumentTests
             new VisualizerSvgDocument(10, 10,
                 [new VisualizerSvgRectangle("ok", 0, 0, 1, 1, "red; onload=alert(1)")]));
     }
+    [Theory]
+    [InlineData("-0.1")]
+    [InlineData("1.1")]
+    [InlineData("NaN")]
+    [InlineData("0,5")]
+    public void PrimitiveRejectsInvalidFillOpacity(string opacity)
+    {
+        var attributes = new Dictionary<string, string> { ["fill-opacity"] = opacity };
+        Assert.Throws<ArgumentOutOfRangeException>(() => new VisualizerSvgDocument(10, 10,
+            [new VisualizerSvgRectangle("r", 0, 0, 1, 1, "#ffffff", attributes)]));
+    }
+
+    [Fact]
+    public void PrimitiveAcceptsInvariantFillOpacityAtBounds()
+    {
+        var attributes = new Dictionary<string, string> { ["fill-opacity"] = "0" };
+        var document = new VisualizerSvgDocument(10, 10,
+            [new VisualizerSvgRectangle("r", 0, 0, 1, 1, "#ffffff", attributes)]);
+        Assert.Contains("fill-opacity=\"0\"", document.ToSvg());
+    }
+
     [Fact]
     public void DocumentReservesBackgroundIdentifierWhenBackgroundIsRendered()
     {
