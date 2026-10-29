@@ -4,7 +4,7 @@
 
 > Visualize describes and submits presentation work. GUI owns panel structure and layout. An adapter connects the two without turning Visualize core into a GUI framework.
 
-**Status:** Domain scaffold and integration contract. Visualize's own `SvgVisualizerBackend` is the direct CPU-side static-artifact path for Visualizer frames and resources. The separate `GuiSvgVisualizerBackend` is an optional interoperability proof that deliberately converts a Visualizer frame into a GUI semantic tree before SVG manifestation. Neither is a GPU renderer; the multi-panel and world-projection host contract below remains a target for audit and staged implementation.
+**Status:** Domain scaffold plus a target-neutral projection-request contract. `VisualizerSourceRectangle`, `VisualizerProjectionTarget`, and `VisualizerProjectionRequest` keep source region, destination identity/viewport, and mapping transform separate; validation is covered by `VisualizerProjectionRequestTests`. This is not yet a host routing engine or a world-space renderer. Visualize's own `SvgVisualizerBackend` is the direct CPU-side static-artifact path for Visualizer frames and resources. The separate `GuiSvgVisualizerBackend` is an optional interoperability proof that deliberately converts a Visualizer frame into a GUI semantic tree before SVG manifestation. Neither is a GPU renderer; the multi-panel and world-projection host contract below remains a target for audit and staged implementation.
 
 ## 1. Responsibility map
 
@@ -39,9 +39,9 @@ For direct general-purpose Visualizer-frame artifacts, use [`SvgVisualizerBacken
 
 Visualize core should remain independently usable. GUI.SVG is an optional integration adapter; it must not become a mandatory dependency of the Visualize core package.
 
-## 3. Panel and projection handoff: target contract
+## 3. Panel and projection handoff
 
-A panel is a GUI/host concept, not a Visualize resource. The clean direction is:
+A panel is a GUI/host concept, not a Visualize resource. The core now provides a minimal target-neutral request shape in [`VisualizerProjectionRequest.cs`](../VisualizerProjectionRequest.cs). A request carries an explicit source rectangle, stable host target ID, destination viewport dimensions, screen/world target kind, and source-to-destination matrix. The contract validates finite source coordinates, positive dimensions, a non-empty coordinate-system label, stable target identity, and a finite transform. It does not choose coordinate units or a matrix convention for the host; those must be agreed by the producer and adapter. The clean direction is:
 
 1. The host owns a stable destination identity and its layout/lifecycle.
 2. Every projection request supplies an explicit **source rectangle** describing which logical GUI/content region is projected. Do not derive it implicitly from the destination's dimensions.
@@ -79,9 +79,9 @@ These are audit criteria, not claims that the current API already supports every
 
 1. **Inventory:** document the actual public frame, resource, backend, capability, validation, diagnostic, cancellation, and disposal contracts.
 2. **Single-target proof:** formalize the existing SVG sink as a host-owned output seam; keep GUI-specific routing outside Visualize core.
-3. **Projection scaffold:** document source-rectangle semantics and the minimum target-neutral mapping context, without prematurely committing to a particular coordinate unit.
-4. **Multi-target proof:** submit one source scene to two independent targets and prove distinct source rectangles/mappings plus explicit shared-resource behavior.
-5. **World-space adapter:** prove a source rectangle can be mapped to a world-space surface with an explicit transform; keep engine/device-specific execution in an optional adapter.
+3. **Projection scaffold:** implemented as `VisualizerProjectionRequest`, with an explicit producer-defined coordinate-system label and host/adapter-defined matrix convention; constructor validation is covered by tests.
+4. **Multi-target proof:** still future work; submit one source scene to two independent targets and prove distinct source rectangles/mappings plus explicit shared-resource behavior.
+5. **World-space adapter:** still future work; prove a source rectangle can be mapped to a world-space surface with an explicit transform in an optional host adapter.
 6. **Native/GPU backend:** implement separately, with device lifecycle and performance evidence; do not infer GPU behavior from SVG.
 7. **Consumer quick start:** show the smallest experience-owned composition that passes a frame to an adapter and routes the result to a GUI panel.
 
