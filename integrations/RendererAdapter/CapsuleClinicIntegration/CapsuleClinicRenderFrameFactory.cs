@@ -11,6 +11,9 @@ public static class CapsuleClinicRenderFrameFactory
 {
     private const float CellSize = 0.035f;
 
+    /// <summary>Maps the supplied immutable snapshot into ordered draw commands and presentation resources.</summary>
+    /// <param name="snapshot">The authoritative snapshot to represent.</param>
+    /// <returns>A frame, matching resource catalog, and evidence counts.</returns>
     public static CapsuleClinicRenderFrame Create(CapsuleArenaSnapshot snapshot)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
@@ -128,6 +131,9 @@ public sealed record CapsuleClinicRenderFrame(
     int OccupiedCells,
     int ActiveSegments)
 {
+    /// <summary>Number of board-cell presentation commands before active capsule segments.</summary>
     public int BaseCellCommands => PaneCount * BoardWidth * BoardHeight;
+
+    /// <summary>Total number of Renderer draw commands in the frame.</summary>
     public int CommandCount => Frame.Commands.Count;
 }
