@@ -86,12 +86,13 @@ for (var paneIndex = 0; paneIndex < snapshot.Panes.Count; paneIndex++)
 
     if (pane.Player?.Active is { } active)
     {
-        var pivot = active.Pivot;
-        var partnerX = pivot.X + (active.Orientation == CapsuleOrientation.Horizontal ? 1 : 0);
-        var partnerY = pivot.Y + (active.Orientation == CapsuleOrientation.Vertical ? 1 : 0);
+        var pivotX = active.PivotX;
+        var pivotY = active.PivotY;
+        var partnerX = pivotX + (active.Orientation == CapsuleOrientation.Horizontal ? 1 : 0);
+        var partnerY = pivotY + (active.Orientation == CapsuleOrientation.Vertical ? 1 : 0);
         foreach (var segment in new[]
         {
-            (X: pivot.X, Y: pivot.Y, Color: active.Pair.PivotColor),
+            (X: pivotX, Y: pivotY, Color: active.Pair.PivotColor),
             (X: partnerX, Y: partnerY, Color: active.Pair.PartnerColor)
         })
         {
