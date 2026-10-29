@@ -25,6 +25,7 @@ var simulation = new ConstructionSimulation(
     spaceId);
 var observer = new ConstructionSnapshotObserver(runId);
 var snapshot = simulation.Snapshot();
+var snapshotCapturedAtUtc = DateTimeOffset.UtcNow;
 if (!observer.TryPublish(snapshot))
     throw new InvalidOperationException("The committed construction snapshot was not accepted.");
 if (!observer.TryGetLatest(out var accepted, out var sequence) || accepted is null)
@@ -231,6 +232,9 @@ var result = await visualizer.RenderAsync(visualizerFrame);
 if (result.SubmittedDrawCount != 6)
     throw new InvalidOperationException($"Expected six submitted draws (three scenario overlays and three drones), found {result.SubmittedDrawCount}.");
 
+var snapshotAgeMilliseconds = (DateTimeOffset.UtcNow - snapshotCapturedAtUtc).TotalMilliseconds;
+const int geometryResourceCount = 4;
+const int materialResourceCount = 5;
 var manifestPath = Path.ChangeExtension(output, ".manifest.txt");
 await File.WriteAllTextAsync(manifestPath,
     $"run={observer.RunId}{Environment.NewLine}" +
@@ -240,6 +244,11 @@ await File.WriteAllTextAsync(manifestPath,
     $"spaceId={spaceId}{Environment.NewLine}" +
     $"authoritativeAgents={selection.TotalAgentsInSnapshot}{Environment.NewLine}" +
     $"agentsInSpace={selection.TotalAgentsInSpace}{Environment.NewLine}" +
+    $"snapshotCapturedAtUtc={snapshotCapturedAtUtc:O}{Environment.NewLine}" +
+    $"snapshotAgeMilliseconds={snapshotAgeMilliseconds:F3}{Environment.NewLine}" +
+    $"geometryResources={geometryResourceCount}{Environment.NewLine}" +
+    $"materialResources={materialResourceCount}{Environment.NewLine}" +
+    $"totalResources={geometryResourceCount + materialResourceCount}{Environment.NewLine}" +
     $"selectedIndividuals={selection.SelectedIndividualCount}{Environment.NewLine}" +
     $"aggregateGroups={selection.Aggregates.Count}{Environment.NewLine}" +
     $"aggregatedAgents={selection.AggregatedAgentCount}{Environment.NewLine}" +
@@ -257,6 +266,6 @@ await File.WriteAllTextAsync(manifestPath,
     "backend=CPU/SVG" + Environment.NewLine);
 
 Console.WriteLine($"Construction snapshot + bounded presentation selection -> RenderFrame -> Visualize -> GUI.SVG: {result.SubmittedDrawCount} draws (1 individual, {selection.Aggregates.Count} aggregates, 3 fixture overlays).");
-Console.WriteLine($"run={selection.Provenance.RunId}; tick={selection.Provenance.Tick}; sequence={selection.Provenance.Sequence}; entityIds={string.Join(",", expectedIds)}");
+Console.WriteLine($"run={selection.Provenance.RunId}; tick={selection.Provenance.Tick}; sequence={selection.Provenance.Sequence}; snapshotAgeMs={snapshotAgeMilliseconds:F3}; resources={geometryResourceCount + materialResourceCount} (geometry={geometryResourceCount}, material={materialResourceCount}); entityIds={string.Join(",", expectedIds)}");
 Console.WriteLine($"SVG: {output}");
 Console.WriteLine($"Manifest: {manifestPath}");
