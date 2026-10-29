@@ -85,6 +85,7 @@ public sealed class VisualizerSvgDocumentTests
             new VisualizerSvgDocument(10, 10,
                 [new VisualizerSvgRectangle("ok", 0, 0, 1, 1, "red; onload=alert(1)")]));
     }
+
     [Theory]
     [InlineData("-0.1")]
     [InlineData("1.1")]
@@ -97,13 +98,29 @@ public sealed class VisualizerSvgDocumentTests
             [new VisualizerSvgRectangle("r", 0, 0, 1, 1, "#ffffff", attributes)]));
     }
 
-    [Fact]
-    public void PrimitiveAcceptsInvariantFillOpacityAtBounds()
+    [Theory]
+    [InlineData("0")]
+    [InlineData("1")]
+    public void PrimitiveAcceptsInvariantFillOpacityAtBounds(string opacity)
     {
-        var attributes = new Dictionary<string, string> { ["fill-opacity"] = "0" };
+        var attributes = new Dictionary<string, string> { ["fill-opacity"] = opacity };
         var document = new VisualizerSvgDocument(10, 10,
             [new VisualizerSvgRectangle("r", 0, 0, 1, 1, "#ffffff", attributes)]);
-        Assert.Contains("fill-opacity=\"0\"", document.ToSvg());
+        Assert.Contains($"fill-opacity=\"{opacity}\"", document.ToSvg());
+    }
+
+    [Fact]
+    public void DocumentSnapshotsPrimitiveMetadata()
+    {
+        var attributes = new Dictionary<string, string> { ["data-entity-id"] = "101" };
+        var primitive = new VisualizerSvgRectangle("r", 0, 0, 1, 1, "#ffffff", attributes);
+        var document = new VisualizerSvgDocument(10, 10, [primitive]);
+        var originalSvg = document.ToSvg();
+
+        attributes["data-entity-id"] = "202";
+
+        Assert.Equal(originalSvg, document.ToSvg());
+        Assert.Contains("data-entity-id=\"101\"", document.ToSvg());
     }
 
     [Fact]
