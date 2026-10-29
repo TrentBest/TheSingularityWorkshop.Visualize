@@ -12,7 +12,8 @@
 - Geometry indices and base-vertex offsets are validated before use.
 - Material base color, vertex colors, and optional instance tint contribute to the triangle fill.
 - Representation and valid entity identity are emitted as SVG data attributes to support inspection.
-- The output sink is caller-owned. The backend does not create a browser, window, Word surface, or GPU device.
+- The output sink is caller-owned. Render submissions and direct SVG builds are serialized by the backend; a sink callback runs inside that serialized operation. The backend does not create a browser, window, Word surface, or GPU device.
+- Disposal waits for an active build or sink callback to finish. After disposal completes, new builds and submissions are rejected. A sink that never returns will therefore also prevent disposal from completing.
 
 ## Boundaries and limitations
 
@@ -37,7 +38,7 @@ Use `BuildSvg(frame, resources)` when the caller needs the SVG string directly a
 
 ## Verification
 
-The unit tests cover stable output for identical inputs, triangle and identity metadata, sink emission, explicit CPU/not-presented reporting, cancellation, and rejection of unsupported index counts. The repository's current CI result is the authoritative evidence for whether these tests pass on the latest commit.
+The unit tests cover stable output for identical inputs, triangle and identity metadata, sink emission, explicit CPU/not-presented reporting, cancellation, rejection of unsupported index counts, serialized concurrent submissions, and disposal waiting for an active sink callback. The repository's current CI result is the authoritative evidence for whether these tests pass on the latest commit.
 
 Related: [SVG living documentation](SVG_LIVING_DOCUMENTATION.md) · [GUI panel handoff](GUI_PANEL_HANDOFF.md) · [Issue #34: move general SVG output ownership into Visualize](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/issues/34)
 
