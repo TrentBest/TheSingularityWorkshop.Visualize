@@ -21,7 +21,7 @@ We will measure allocation, transfer, submission, synchronization, and end-to-en
 - **Native adapters** translate our small contracts to a selected explicit graphics/compute API.
 - **The OS and vendor driver** still perform hardware initialization, scheduling, and device-specific operations.
 
-The core contract should stay dependency-light. Optional API adapters may carry platform-specific dependencies in isolated projects. No Unity dependency is introduced. A System Detector will inventory the host and all adapters exposed by available APIs, preserve raw hardware identifiers and per-device capabilities, and leave selection to explicit policy. See [System Detection and Hardware Inventory](../../docs/GPU_SYSTEM_DETECTION.md).
+The core contract stays dependency-light. Optional API adapters may carry platform-specific dependencies in isolated projects. No Unity dependency is introduced. The first API-neutral detector slice now captures host/runtime facts, aggregates reports from independent adapter providers, preserves raw hardware identifiers and unknown values, and records per-backend failures without suppressing successful providers. It does not yet enumerate real hardware; native provider implementations and selection policy remain future work. See [System Detection and Hardware Inventory](../../docs/GPU_SYSTEM_DETECTION.md).
 
 ## Renderer integration boundary
 
@@ -71,4 +71,4 @@ A clear-screen test is useful for bring-up, but it is not the end-to-end proof. 
 
 ## Status
 
-**Foundation plus CPU-side frame/resource validation, frame-level resource planning, and first array encoder.** This project does not yet contain a working native GPU backend and does not claim to render pixels.
+**Foundation plus CPU-side frame/resource validation, frame-level resource planning, first array encoder, and API-neutral host/adapter discovery contracts.** No native provider currently enumerates physical hardware; this project does not yet contain a working native GPU backend and does not claim to render pixels.
