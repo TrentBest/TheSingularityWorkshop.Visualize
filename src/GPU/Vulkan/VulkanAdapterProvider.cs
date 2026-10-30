@@ -94,8 +94,8 @@ public sealed unsafe class VulkanAdapterProvider : IGpuAdapterProvider
 
     private static string ReadDeviceName(PhysicalDeviceProperties* properties)
     {
-        fixed (byte* name = properties->DeviceName)
-            return Marshal.PtrToStringAnsi((nint)name) ?? string.Empty;
+        byte* name = properties->DeviceName;
+        return Marshal.PtrToStringAnsi((nint)name) ?? string.Empty;
     }
 
     private static (ulong DeviceLocal, ulong HostVisible) ReadHeapSizes(
