@@ -21,7 +21,7 @@ We will measure allocation, transfer, submission, synchronization, and end-to-en
 - **Native adapters** translate our small contracts to a selected explicit graphics/compute API.
 - **The OS and vendor driver** still perform hardware initialization, scheduling, and device-specific operations.
 
-The core contract should stay dependency-light. Optional API adapters may carry platform-specific dependencies in isolated projects. No Unity dependency is introduced.
+The core contract should stay dependency-light. Optional API adapters may carry platform-specific dependencies in isolated projects. No Unity dependency is introduced. A System Detector will inventory the host and all adapters exposed by available APIs, preserve raw hardware identifiers and per-device capabilities, and leave selection to explicit policy. See [System Detection and Hardware Inventory](../../docs/GPU_SYSTEM_DETECTION.md).
 
 ## Renderer integration boundary
 
