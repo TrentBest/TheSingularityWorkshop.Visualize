@@ -24,7 +24,21 @@ For example:
 - If a preferred backend cannot initialize, the host may try another compatible backend according to an explicit policy. It must report the selected backend and why fallbacks occurred.
 - If no compatible GPU path exists, the host can choose an explicitly supported non-GPU path or fail with a diagnostic. A CPU/SVG result must never be reported as GPU execution.
 
-## 3. The common contract
+## 3. System detection and hardware inventory
+
+Yes: the runtime needs a **System Detector**, but it must be a layered inventory and capability-discovery service—not a vendor-name switch and not a replacement driver.
+
+It answers two questions: **what system is this?** (OS/version, process architecture, runtime, host type and surface constraints) and **what accelerators can this execution path actually use?** (all adapters enumerated by each available API, raw vendor/device IDs, device type, driver/runtime, memory heaps/budgets, queues, feature/format limits, and initialization outcome where exposed).
+
+Use OS facilities only for supplemental inventory and diagnostics. The initialized graphics API's adapter/device query is authoritative for what that backend can execute. A hardware inventory result does not prove that a backend initializes or that a feature works. Preserve raw IDs and API-specific details; unknown means unknown, never guessed. Support multiple GPUs and refresh after device arrival/removal, driver/device loss, host changes, and explicit rescan.
+
+Detection is not selection. A separate policy consumes the profile, host compatibility, actual backend initialization results, workload requirements, and explicit runtime/user preferences. It must explain selected and rejected devices. Never assume the primary display adapter is the best compute/render device.
+
+**Ownership flow:** vendor kernel driver + OS graphics runtime → our native API adapter → Visualize.GPU → Renderer/Visualize → Foundry and the wider Workshop ecosystem. The driver remains responsible for hardware-specific execution and memory management. Our code owns workload shaping, resource residency/cache policy, command construction, synchronization, shader/compute work, measurement, and orchestration. We can go close to the documented hardware interface without pretending a user-mode renderer is a kernel driver.
+
+See [System Detection and Hardware Inventory](GPU_SYSTEM_DETECTION.md) for the proposed data model and acceptance tests.
+
+## 4. The common contract
 
 The backend-neutral Visualize contract should express the meaning of work, not API objects. Its responsibilities include:
 - frames, views, draw work, resource IDs, materials, and transform semantics;
@@ -38,7 +52,7 @@ Vulkan handles, WebGPU objects, D3D resources, browser objects, HWNDs, and devic
 
 A backend may keep GPU-resident derived copies of authoritative CPU-side data. Revision changes drive the minimum correct update; unchanged revisions should not cause needless recreation or upload. This is a target to test, not a current zero-copy claim.
 
-## 4. Baseline plus explicit extensions
+## 5. Baseline plus explicit extensions
 
 Avoid two failure modes:
 - **Lowest-common-denominator trap:** stripping useful backend features until every API looks identical.
@@ -50,7 +64,7 @@ A request declares which features are required and which are optional. If a requ
 
 Keep escape hatches narrow and deliberately backend-specific. They belong in an adapter/extension boundary and must not become required for the shared workload. Record when an extension makes a workload non-portable.
 
-## 5. Host and backend boundaries
+## 6. Host and backend boundaries
 
 - **Visualize core:** backend-neutral work, resource semantics, requirements, and result/diagnostic contracts.
 - **Native backend:** owns API device selection, queues, buffers, pipelines, command submission, synchronization, readback, and native resource disposal.
@@ -59,7 +73,7 @@ Keep escape hatches narrow and deliberately backend-specific. They belong in an 
 - **Renderer:** decides observer-relative representations, horizons, visibility, and detail cadence. It submits the resulting work; it does not choose a GPU vendor.
 - **Driver/runtime:** supplied by the platform ecosystem. Workshop code implements the renderer and adapters, not the hardware driver.
 
-## 6. Resource and lifecycle behavior
+## 7. Resource and lifecycle behavior
 
 Every backend must define and test:
 - adapter/device identity and capability report;
@@ -71,7 +85,7 @@ Every backend must define and test:
 
 A host surface is not the same thing as an offscreen target. Offscreen pixel readback can establish rendering correctness, but it does not prove WPF/browser presentation integration. Both gates are necessary for a production path.
 
-## 7. Evaluation sequence
+## 8. Evaluation sequence
 
 Use the same logical workload and assertions across backend implementations:
 
@@ -85,6 +99,6 @@ Use the same logical workload and assertions across backend implementations:
 
 Do not compare backends using workloads that silently differ in visual quality, enabled features, or output correctness. Separate software-adapter correctness evidence from physical-GPU performance evidence.
 
-## 8. Current status and non-claims
+## 9. Current status and non-claims
 
 This document defines an architecture direction. It does not mean capability negotiation, fallback selection, device-loss recovery, Vulkan rendering, browser WebGPU rendering, or GPU readback has been implemented. The dated [candidate comparison](GPU_BACKEND_CANDIDATE_COMPARISON.md) is research for selecting a first disposable experiment—not a permanent API choice. The [evaluation gate](GPU_BACKEND_EVALUATION.md) defines evidence required before claiming correctness or performance.
