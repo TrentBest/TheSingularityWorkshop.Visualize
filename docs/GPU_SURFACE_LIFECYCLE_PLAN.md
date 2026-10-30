@@ -2,7 +2,7 @@
 
 **Status:** Implementation plan; no API or binding selected  
 **Owner:** Visualize GPU + native host adapter  
-**Branch:** `work/gpu-foundation`  
+**Branch:** `development`  
 **Purpose:** Define a surface lifecycle that fits the existing desktop host and preserves the browser path as a separate implementation.
 
 ## Boundary
