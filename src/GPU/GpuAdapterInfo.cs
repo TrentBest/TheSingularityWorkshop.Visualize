@@ -28,4 +28,6 @@ public sealed record GpuAdapterInfo(
     string? ApiVersion = null,
     ulong? DedicatedMemoryBytes = null,
     ulong? SharedMemoryBytes = null,
-    IReadOnlyList<string>? SupportedFeatures = null);
+    IReadOnlyList<string>? SupportedFeatures = null,
+    ulong? DeviceLocalMemoryBytes = null,
+    ulong? NonDeviceLocalMemoryBytes = null);
