@@ -1,6 +1,6 @@
 # GPU System Detection and Hardware Inventory
 
-**Status:** Architecture contract proposal. No detector implementation is claimed.
+**Status:** The API-neutral discovery contract is implemented in `src/GPU`; native adapter enumeration and device selection are not yet implemented.
 
 ## Purpose
 
@@ -74,3 +74,18 @@ Refresh on adapter arrival/removal, device loss, driver/runtime changes, host su
 Keep the initial System Detector API-neutral in Visualize.GPU. Backend adapters provide enumeration and raw capability reports. OS-specific probes live in optional diagnostic providers. Do not add WMI, SetupAPI, NVML, CUDA, Vulkan, DirectX, or browser dependencies to core merely to populate one field.
 
 Implement the narrow vertical slice first: host profile + adapter enumeration contract + structured reports + selection explanation. Then implement enumeration in the first native adapter and verify it against actual hardware. Do not claim hardware detection from mocks or CI software adapters.
+
+
+## Implemented API-neutral discovery slice
+
+The core package now contains:
+
+- `GpuHostInfo.CaptureCurrent()` for OS/runtime and process/OS architecture facts.
+- `GpuAdapterInfo` and `GpuAdapterType` for backend-reported identity, raw vendor/device IDs, driver/API versions, memory facts, and optional feature names. Unknown values remain null or `Unknown`.
+- `IGpuAdapterProvider` as the isolated enumeration seam for each API adapter.
+- `GpuSystemDetector` to aggregate every configured provider, preserve multi-adapter results, and report a provider failure without discarding successful results from other providers.
+- `GpuSystemDetectionResult` to expose the host snapshot, discovery timestamp, adapter reports, and failures.
+
+Focused tests cover multiple providers/devices, raw identifier preservation, unknown values, software adapters, partial backend failure, provider identity validation, cancellation, and current host capture.
+
+This slice is intentionally not a native hardware detector yet: no Vulkan, Direct3D, WebGPU, WMI, SetupAPI, NVML, or CUDA provider has been added. A report from a fake/test provider proves the contract behavior only. Real hardware recognition begins when a native provider is implemented and run on a machine with the relevant driver/runtime. Device initialization, workload verification, explicit selection policy, hot-plug refresh, and benchmarking remain subsequent evidence stages.
