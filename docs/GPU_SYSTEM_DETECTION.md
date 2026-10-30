@@ -1,6 +1,6 @@
 # GPU System Detection and Hardware Inventory
 
-**Status:** The API-neutral discovery contract is implemented in `src/GPU`; native adapter enumeration and device selection are not yet implemented.
+**Status:** The API-neutral discovery contract is implemented in `src/GPU`; an isolated Vulkan physical-device enumeration provider now exists in `src/GPU/Vulkan`. Device initialization, surface presentation, and selection are not yet implemented.
 
 ## Purpose
 
@@ -89,3 +89,19 @@ The core package now contains:
 Focused tests cover multiple providers/devices, raw identifier preservation, unknown values, software adapters, partial backend failure, provider identity validation, cancellation, and current host capture.
 
 This slice is intentionally not a native hardware detector yet: no Vulkan, Direct3D, WebGPU, WMI, SetupAPI, NVML, or CUDA provider has been added. A report from a fake/test provider proves the contract behavior only. Real hardware recognition begins when a native provider is implemented and run on a machine with the relevant driver/runtime. Device initialization, workload verification, explicit selection policy, hot-plug refresh, and benchmarking remain subsequent evidence stages.
+
+
+## First native enumeration provider
+
+The optional `TheSingularityWorkshop.Visualize.GPU.Vulkan` project now contains `VulkanAdapterProvider`, pinned to Silk.NET.Vulkan 2.23.0. It creates a minimal Vulkan 1.0 instance, enumerates every physical device exposed by the installed loader/ICDs, and reports:
+
+- API-reported device type, name, and raw vendor/device IDs;
+- Vulkan API version and raw vendor-defined driver-version bits;
+- total device-local and non-device-local memory heap sizes;
+- whether any queue family supports graphics, compute, and transfer.
+
+The provider destroys its temporary instance after each enumeration and remains separate from the API-neutral GPU assembly. The adapter ID includes the enumeration ordinal and is therefore session-local, not a persistent hardware identity.
+
+**Important limitations:** memory heap totals are not live budgets or free-memory estimates; Vulkan's driver-version integer is vendor-defined and is preserved as raw hexadecimal; queue flags are discovery facts, not proof of presentation compatibility. This provider does not create a logical device, initialize a workload, create a WPF surface, render pixels, select a GPU, or benchmark physical hardware. A Vulkan software implementation may also be enumerated.
+
+The solution and contract-test project now reference this adapter project so normal CI builds compile it. Runtime enumeration still requires execution on a machine with a Vulkan loader and ICD installed.
