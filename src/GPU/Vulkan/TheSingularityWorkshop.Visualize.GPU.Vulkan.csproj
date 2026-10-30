@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>TheSingularityWorkshop.Visualize.GPU.Vulkan</PackageId>
+    <Version>0.1.0-alpha.1</Version>
+    <Authors>TheSingularityWorkshop</Authors>
+    <Company>The Singularity Workshop</Company>
+    <Description>Vulkan adapter enumeration provider for Visualize GPU system detection.</Description>
+    <PackageTags>visualize;gpu;vulkan;hardware;enumeration</PackageTags>
+    <RepositoryUrl>https://github.com/TrentBest/TheSingularityWorkshop.Visualize</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../TheSingularityWorkshop.Visualize.GPU.csproj" />
+    <PackageReference Include="Silk.NET.Vulkan" Version="2.23.0" />
+  </ItemGroup>
+</Project>
