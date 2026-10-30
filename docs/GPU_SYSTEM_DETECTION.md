@@ -97,7 +97,7 @@ The optional `TheSingularityWorkshop.Visualize.GPU.Vulkan` project now contains 
 
 - API-reported device type, name, and raw vendor/device IDs;
 - Vulkan API version and raw vendor-defined driver-version bits;
-- total device-local and non-device-local memory heap sizes;
+- total device-local and non-device-local memory heap sizes (reported in dedicated neutral fields, not misrepresented as dedicated VRAM or live shared-memory budgets);
 - whether any queue family supports graphics, compute, and transfer.
 
 The provider destroys its temporary instance after each enumeration and remains separate from the API-neutral GPU assembly. The adapter ID includes the enumeration ordinal and is therefore session-local, not a persistent hardware identity.
