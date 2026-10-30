@@ -77,9 +77,9 @@ public sealed unsafe class VulkanAdapterProvider : IGpuAdapterProvider
                     DeviceId: properties.DeviceID,
                     DriverVersion: $"0x{properties.DriverVersion:x8}",
                     ApiVersion: FormatVulkanVersion(properties.ApiVersion),
-                    DedicatedMemoryBytes: deviceLocalBytes,
-                    SharedMemoryBytes: hostVisibleBytes,
-                    SupportedFeatures: features));
+                    SupportedFeatures: features,
+                    DeviceLocalMemoryBytes: deviceLocalBytes,
+                    NonDeviceLocalMemoryBytes: hostVisibleBytes));
             }
 
             return ValueTask.FromResult<IReadOnlyList<GpuAdapterInfo>>(adapters.AsReadOnly());
