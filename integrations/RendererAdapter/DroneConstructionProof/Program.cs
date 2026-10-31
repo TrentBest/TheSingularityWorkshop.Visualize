@@ -22,7 +22,7 @@ var simulation = new ConstructionSimulation(
         // agents in four cell aggregates.
         ..Enumerable.Range(0, 12).Select(index => new ConstructionAgent(
             1001UL + (ulong)index,
-            index / 3 switch
+            (index / 3) switch
             {
                 0 => new GridCell(0, 0),
                 1 => new GridCell(1, 0),
