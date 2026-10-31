@@ -17,9 +17,18 @@ var simulation = new ConstructionSimulation(
     2,
     (_, _) => 0,
     [
-        new ConstructionAgent(101, new GridCell(0, 0)),
-        new ConstructionAgent(202, new GridCell(1, 0)),
-        new ConstructionAgent(303, new GridCell(2, 1))
+        // Three agents occupy each of four cells. The selector should retain the
+        // nearest stable identity as an individual and represent the other eleven
+        // agents in four cell aggregates.
+        ..Enumerable.Range(0, 12).Select(index => new ConstructionAgent(
+            1001UL + (ulong)index,
+            index / 3 switch
+            {
+                0 => new GridCell(0, 0),
+                1 => new GridCell(1, 0),
+                2 => new GridCell(2, 1),
+                _ => new GridCell(3, 1)
+            }))
     ],
     [],
     spaceId);
@@ -172,7 +181,7 @@ var selection = ConstructionSnapshotPresentationSelector.Select(
     sequence,
     spaceId,
     new ConstructionObserverPose(new GridCell(0, 0)),
-    new ConstructionSnapshotPresentationPolicy(maximumIndividualAgents: 1, individualRadius: 2));
+    new ConstructionSnapshotPresentationPolicy(maximumIndividualAgents: 1, individualRadius: 0));
 
 foreach (var agent in selection.IndividualAgents)
 {
@@ -211,16 +220,28 @@ for (var index = 0; index < selection.Aggregates.Count; index++)
         entity: new RenderEntityId(800_000UL + (ulong)index)));
 }
 
-if (commands.Count != 6)
-    throw new InvalidOperationException($"Expected three scenario overlays, one individual, and two aggregate draws; found {commands.Count}.");
-var droneCommands = commands.Where(command => command.Entity.Value == 101).ToArray();
-if (droneCommands.Length != selection.SelectedIndividualCount || droneCommands.Length != 1)
-    throw new InvalidOperationException($"Expected one selected authoritative drone draw, found {droneCommands.Length}.");
-if (selection.AggregatedAgentCount != 2 || selection.Aggregates.Count != 2)
-    throw new InvalidOperationException($"Expected two agents in two aggregate cells, found {selection.AggregatedAgentCount} agents in {selection.Aggregates.Count} aggregates.");
-var expectedIds = new ulong[] { 101 };
-if (!droneCommands.Select(command => command.Entity.Value).SequenceEqual(expectedIds))
-    throw new InvalidOperationException("Stable selected construction agent IDs were not preserved in draw-command order.");
+var droneCommands = commands.Where(command => command.Entity.Value >= 1001 && command.Entity.Value <= 1012).ToArray();
+var individualDraws = droneCommands.Length;
+var aggregateDraws = selection.Aggregates.Count;
+var baselineIndividualDraws = selection.TotalAgentsInSpace;
+var presentedDroneDraws = individualDraws + aggregateDraws;
+if (commands.Count != 3 + presentedDroneDraws)
+    throw new InvalidOperationException($"Expected three fixture overlays plus {presentedDroneDraws} presentation draws; found {commands.Count}.");
+if (individualDraws != selection.SelectedIndividualCount || individualDraws != 1)
+    throw new InvalidOperationException($"Expected one selected authoritative drone draw, found {individualDraws}.");
+if (selection.AggregatedAgentCount != 11 || aggregateDraws != 4)
+    throw new InvalidOperationException($"Expected eleven agents in four aggregate cells, found {selection.AggregatedAgentCount} agents in {aggregateDraws} aggregates.");
+if (!selection.PopulationIsReconciled || selection.RepresentedAgentCount != baselineIndividualDraws)
+    throw new InvalidOperationException("Individual and aggregate presentation identities do not reconcile to the authoritative population.");
+var representedIds = droneCommands.Select(command => command.Entity.Value)
+    .Concat(selection.Aggregates.SelectMany(aggregate => aggregate.MemberAgentIds))
+    .Order()
+    .ToArray();
+var expectedIds = Enumerable.Range(0, 12).Select(index => 1001UL + (ulong)index).ToArray();
+if (!representedIds.SequenceEqual(expectedIds))
+    throw new InvalidOperationException("Stable individual and aggregate member identities do not exactly cover the authoritative agent population.");
+if (presentedDroneDraws >= baselineIndividualDraws)
+    throw new InvalidOperationException("Crowd aggregation did not reduce the drone draw-command count.");
 
 var frame = new RenderFrame(
     new RenderView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity),
@@ -229,8 +250,8 @@ var visualizerFrame = new RendererFrameAdapter().Adapt(frame);
 
 await using var visualizer = new Visualizer(new GuiSvgVisualizerBackend(output), catalog);
 var result = await visualizer.RenderAsync(visualizerFrame);
-if (result.SubmittedDrawCount != 6)
-    throw new InvalidOperationException($"Expected six submitted draws (three scenario overlays and three drones), found {result.SubmittedDrawCount}.");
+if (result.SubmittedDrawCount != 8)
+    throw new InvalidOperationException($"Expected eight submitted draws (three scenario overlays and five crowd presentation draws), found {result.SubmittedDrawCount}.");
 
 var snapshotAgeMilliseconds = (DateTimeOffset.UtcNow - snapshotCapturedAtUtc).TotalMilliseconds;
 const int geometryResourceCount = 4;
@@ -250,11 +271,16 @@ await File.WriteAllTextAsync(manifestPath,
     $"materialResources={materialResourceCount}{Environment.NewLine}" +
     $"totalResources={geometryResourceCount + materialResourceCount}{Environment.NewLine}" +
     $"selectedIndividuals={selection.SelectedIndividualCount}{Environment.NewLine}" +
+    $"baselineIndividualDroneDraws={baselineIndividualDraws}{Environment.NewLine}" +
+    $"presentedDroneDraws={presentedDroneDraws}{Environment.NewLine}" +
+    $"drawReductionPercent={(1d - (double)presentedDroneDraws / baselineIndividualDraws) * 100d:F2}{Environment.NewLine}" +
     $"aggregateGroups={selection.Aggregates.Count}{Environment.NewLine}" +
     $"aggregatedAgents={selection.AggregatedAgentCount}{Environment.NewLine}" +
     $"submittedDraws={result.SubmittedDrawCount}{Environment.NewLine}" +
     $"authoritativeDroneDraws={droneCommands.Length}{Environment.NewLine}" +
     $"aggregateDraws={selection.Aggregates.Count}{Environment.NewLine}" +
+    $"representedAgents={selection.RepresentedAgentCount}{Environment.NewLine}" +
+    $"populationReconciled={selection.PopulationIsReconciled}{Environment.NewLine}" +
     $"provenanceRunId={selection.Provenance.RunId}{Environment.NewLine}" +
     $"provenanceTick={selection.Provenance.Tick}{Environment.NewLine}" +
     $"provenanceSequence={selection.Provenance.Sequence}{Environment.NewLine}" +
@@ -263,9 +289,10 @@ await File.WriteAllTextAsync(manifestPath,
     "scenarioOverlayDraws=3" + Environment.NewLine +
     "scenarioOverlaySource=illustrative-fixture-not-simulation-state" + Environment.NewLine +
     $"entityIds={string.Join(",", droneCommands.Select(command => command.Entity.Value))}{Environment.NewLine}" +
+    $"expectedAgentIds={string.Join(",", expectedIds)}{Environment.NewLine}" +
     "backend=CPU/SVG" + Environment.NewLine);
 
-Console.WriteLine($"Construction snapshot + bounded presentation selection -> RenderFrame -> Visualize -> GUI.SVG: {result.SubmittedDrawCount} draws (1 individual, {selection.Aggregates.Count} aggregates, 3 fixture overlays).");
+Console.WriteLine($"Construction crowd snapshot -> Renderer -> Visualize -> GUI.SVG: {result.SubmittedDrawCount} total draws; {presentedDroneDraws}/{baselineIndividualDraws} drone draws ({(1d - (double)presentedDroneDraws / baselineIndividualDraws) * 100d:F2}% reduction), {individualDraws} individual + {aggregateDraws} aggregates representing {selection.RepresentedAgentCount} agents.");
 Console.WriteLine($"run={selection.Provenance.RunId}; tick={selection.Provenance.Tick}; sequence={selection.Provenance.Sequence}; snapshotAgeMs={snapshotAgeMilliseconds:F3}; resources={geometryResourceCount + materialResourceCount} (geometry={geometryResourceCount}, material={materialResourceCount}); entityIds={string.Join(",", expectedIds)}");
 Console.WriteLine($"SVG: {output}");
 Console.WriteLine($"Manifest: {manifestPath}");
