@@ -3,6 +3,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>TheSingularityWorkshop.Visualize.GPU</PackageId>
@@ -18,5 +19,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../TheSingularityWorkshop.Visualize.csproj" />
+    <PackageReference Include="Silk.NET.Vulkan" Version="2.23.0" />
   </ItemGroup>
 </Project>
