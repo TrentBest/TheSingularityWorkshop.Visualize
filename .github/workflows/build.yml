@@ -265,21 +265,43 @@ jobs:
           --configuration Release
           -- ./artifacts/renderer-selected-frame.svg
 
-      - name: Verify and upload the Renderer-to-Visualize integration proof
+      - name: Verify the shared Renderer / Visualize tri-view proof
         shell: bash
         run: |
           set -euo pipefail
-          proof="./artifacts/renderer-selected-frame.svg"
-          test -s "$proof"
-          grep -q '<path' "$proof"
-          grep -q 'Visualizer frame manifested through GUI.SVG' "$proof"
-          echo "Verified executable Renderer -> Visualizer -> GUI.SVG proof: $proof"
+          documentation_svg="./artifacts/renderer-selected-frame.svg"
+          renderer_json="./artifacts/renderer-selected-frame.renderer.json"
+          visualize_svg="./artifacts/renderer-selected-frame.visualize.svg"
+          test -s "$documentation_svg"
+          test -s "$renderer_json"
+          test -s "$visualize_svg"
+          grep -q '<path' "$documentation_svg"
+          grep -q 'Visualizer frame manifested through GUI.SVG' "$documentation_svg"
+          grep -q '<polygon' "$visualize_svg"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
 
-      - name: Upload Renderer-to-Visualize frame proof
+          frame = json.loads(Path("./artifacts/renderer-selected-frame.renderer.json").read_text(encoding="utf-8"))
+          assert frame["schema"] == "workshop.renderer-frame.v1", frame
+          assert frame["commandCount"] == 5, frame
+          commands = frame["commands"]
+          assert [item["order"] for item in commands] == list(range(5)), commands
+          assert [item["entityId"] for item in commands] == [300, 301, 302, 303, 304], commands
+          assert len({item["geometryResourceId"] for item in commands}) == 5, commands
+          assert len({item["materialResourceId"] for item in commands}) == 5, commands
+          assert all(item["representation"] in {"Semantic", "Aggregate", "Distant", "Near", "Interactive"} for item in commands), commands
+          print("Verified shared Renderer / Visualize tri-view identity, ordering, and representations.")
+          PY
+
+      - name: Upload shared Renderer / Visualize tri-view proof
         uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
         with:
-          name: renderer-to-visualize-frame-proof
-          path: ./artifacts/renderer-selected-frame.svg
+          name: renderer-visualize-tri-view-proof
+          path: |
+            ./artifacts/renderer-selected-frame.svg
+            ./artifacts/renderer-selected-frame.renderer.json
+            ./artifacts/renderer-selected-frame.visualize.svg
           if-no-files-found: error
 
       - name: Generate the same city scene through Visualizer for three material skins
