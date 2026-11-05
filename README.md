@@ -8,6 +8,7 @@
 
 ![](docs/assets/dividers/star-gold.svg)
 
+[![Sith Policy](assets/sith-policy.svg)](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/workflows/sith-policy.yml)
 > **Make the living world visible. Keep the world independent of its display.**
 
 **[Gallery](docs/GALLERY.md)** — short visual index · [Visualize-owned SVG backend](docs/STATIC_SVG_BACKEND.md) · [Detailed SVG proof guide](docs/SVG_LIVING_DOCUMENTATION.md) · [GUI panel handoff](docs/GUI_PANEL_HANDOFF.md) — panel routing boundary and staged multi-panel plan
