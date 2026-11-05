@@ -157,6 +157,7 @@ The tests verify the current contracts. To explore the first visible SVG sequenc
 - [Singularity City rendering handoff](docs/integrations/SINGULARITY_CITY_RENDERING_HANDOFF.md) — coordinate the Renderer / Visualize vertical slice with WebPage, from city plan view toward street-level exploration.
 - [Performance and benchmark rules](docs/PERFORMANCE.md) — understand how performance evidence must be collected and reported.
 - [Environment and scene composition](docs/ENVIRONMENT_AND_SCENE_COMPOSITION.md) — define the composable scene across surfaces, volumetric media, weather, sound, haptics, persistence, and staged proofs.
+- [Formation field presentation](docs/FORMATION_FIELD_PRESENTATION.md) — define the isometric drill-field concept, row-by-row Fall In, orderly Fall Out, and visual scaling from soldiers to squads and platoons.
 - [Physics-based lighting, shadows, and extensible math](docs/LIGHTING_AND_SHADOWS.md) — understand physical light-source meaning, independent horizon work buckets, MicroBundle arbitration, cache invalidation, and the staged plan for optional math optimizations.
 - [Open questions](docs/OPEN_QUESTIONS.md) — review unresolved design decisions.
 - [Rotating spacecraft armor research note](docs/RESEARCH_NOTES.md) — a concept-only trade study with explicit thermal, exposure, structural, and mass/power caveats.
@@ -182,11 +183,8 @@ The package is not ready for NuGet merely because its contracts compile. A selec
 ---
 
 <p align="center">
-  <a href="https://github.com/TrentBest/WebPage" aria-label="Visit The Singularity Workshop">
-    <img src="https://raw.githubusercontent.com/TrentBest/WebPage/development/TheSingularityWorkshop/wwwroot/Images/TheSingularityWorkshopLivingAvatar.svg" alt="The Singularity Workshop living avatar — a digital vortex of information converging on its central eye" width="112" />
-  </a><br />
-  <strong>The Singularity Workshop</strong><br />
-  <em>Forging Software for the Singularity.</em><br />
-  <a href="https://github.com/TrentBest">GitHub</a> · <a href="https://github.com/TrentBest/WebPage">Workshop</a>
+  <a href="https://github.com/TrentBest/FSM_API">
+    <img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop" height="180">
+  </a>
 </p>
 
