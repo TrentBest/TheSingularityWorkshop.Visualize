@@ -1,0 +1,18 @@
+{
+  "repository": "TrentBest/TheSingularityWorkshop.Visualize",
+  "policy": "exactly-master-and-development",
+  "required_branches": [
+    "development",
+    "master"
+  ],
+  "actual_branches": [
+    "development",
+    "master",
+    "work/renderer-visualize-triview-proof"
+  ],
+  "branch_count": 3,
+  "status": "NON-COMPLIANT",
+  "evaluated_at": "2026-11-05T04:31:20Z",
+  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/41968300576",
+  "triggering_commit": "d766724e123d414d1241f795ebce1b72737a30d0"
+}
