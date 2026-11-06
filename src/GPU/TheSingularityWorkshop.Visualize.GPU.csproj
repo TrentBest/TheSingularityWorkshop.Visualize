@@ -19,6 +19,10 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../TheSingularityWorkshop.Visualize.csproj" />
-    <PackageReference Include="Silk.NET.Vulkan" Version="2.23.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Native API implementations compile only in their isolated adapter projects. -->
+    <Compile Remove="Vulkan/**/*.cs" />
   </ItemGroup>
 </Project>
