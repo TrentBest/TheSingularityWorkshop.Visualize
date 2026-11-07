@@ -126,6 +126,9 @@ await File.WriteAllTextAsync(rendererJsonPath,
 await using (var documentationVisualizer = new Visualizer(new GuiSvgVisualizerBackend(output), catalog))
 {
     var documentationResult = await documentationVisualizer.RenderAsync(visualizerFrame);
+    if (documentationResult.SubmittedDrawCount != renderFrame.Commands.Count)
+        throw new InvalidOperationException(
+            $"GUI.SVG submitted {documentationResult.SubmittedDrawCount} of {renderFrame.Commands.Count} Renderer commands.");
     Console.WriteLine($"Documentation SVG (GUI.SVG): {documentationResult.SubmittedDrawCount} commands -> {output}");
 }
 
@@ -134,6 +137,9 @@ await using (var visualizeBackend = new SvgVisualizerBackend(svg => File.WriteAl
 await using (var visualizer = new Visualizer(visualizeBackend, catalog))
 {
     var visualizeResult = await visualizer.RenderAsync(visualizerFrame);
+    if (visualizeResult.SubmittedDrawCount != renderFrame.Commands.Count)
+        throw new InvalidOperationException(
+            $"Visualize submitted {visualizeResult.SubmittedDrawCount} of {renderFrame.Commands.Count} Renderer commands.");
     Console.WriteLine($"Visualization output (Visualize SVG/CPU): {visualizeResult.SubmittedDrawCount} commands -> {visualizeSvgPath}");
 }
 
