@@ -4,7 +4,7 @@ This roadmap separates architectural preparation from evidence of a functioning 
 
 ## Milestone 0 — Array-first backend decision
 
-- Verify the existing Renderer public API and package version.
+- Verify the Renderer MicroBundle ontology identity, artifact version, and adapter contract; do not bind the runtime to a NuGet package version.
 - Verify AnyApp's actual WPF lifecycle and target framework.
 - Record dependencies, licensing, CI, release-gate conventions, and current package/runtime footprints.
 - Define the initial data-oriented workload: contiguous geometry/index arrays, revisioned instance-transform/color arrays, visibility/material indices, bulk updates, and compute output consumed by rendering. The initial backend-neutral geometry and instance-buffer contracts now exist; concrete GPU upload, indexed/instanced execution, and compute-to-render remain unimplemented.
