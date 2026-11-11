@@ -12,6 +12,14 @@ Visualizer asks: *How do we efficiently execute the resulting presentation work 
 
 This separation is important to the Workshop's core hypothesis: reduce cost by reducing unnecessary computational detail before drawing, then execute the remaining parallel presentation work efficiently.
 
+## MicroBundle delivery and composition
+
+Visualize and Renderer are runtime capabilities composed by **FSM_COS as MicroBundles**, not capabilities consumed through NuGet package references. NuGet may remain appropriate for ordinary implementation dependencies, but it is not the capability-distribution contract for either project.
+
+Renderer's portable artifact identity is `(ontology string, version, SHA-256)`; its canonical semantic identity is the string `TheSingularityWorkshop.Renderer`. Any numeric handle is local to the repository that maps the portable identity to stored blob data. Visualize consumes Renderer capability output through its neutral frame/adapter contracts after FSM_COS has composed the required MicroBundles.
+
+The Renderer adapter project in this repository has a source `ProjectReference` solely so the compiler and integration tests can validate the adapter against the current Renderer API. That is a development/test dependency, not runtime composition. The project intentionally has no Renderer NuGet package fallback. A successful source build or SVG proof does not demonstrate MicroBundle discovery, artifact verification, runtime loading, or FSM_COS composition; those remain explicit integration milestones.
+
 ## 2. Data flow
 
 ~~~text

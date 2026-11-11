@@ -5,19 +5,7 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageId>TheSingularityWorkshop.Visualize</PackageId>
-    <Version>0.1.0-alpha.1</Version>
-    <Authors>TheSingularityWorkshop</Authors>
-    <Company>The Singularity Workshop</Company>
-    <Description>GPU-facing presentation contracts for the Workshop Renderer, procedural Gesture output, and host-independent visualization.</Description>
-    <PackageTags>visualizer;gpu;graphics;compute;renderer;gesture;microbundle;performance</PackageTags>
-    <RepositoryUrl>https://github.com/TrentBest/TheSingularityWorkshop.Visualize</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/TrentBest/TheSingularityWorkshop.Visualize</PackageProjectUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
@@ -28,12 +16,5 @@
     <!-- Keep standalone WPF sample XAML in its own project even when UseWPF flows from a referencing host. -->
     <Page Remove="samples/**/*.xaml" />
     <ApplicationDefinition Remove="samples/**/*.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="" />
-    <None Include="LICENSE" Pack="true" PackagePath="" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="docs/assets/moniker.svg" Pack="true" PackagePath="docs/assets/" />
   </ItemGroup>
 </Project>

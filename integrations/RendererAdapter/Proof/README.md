@@ -14,7 +14,7 @@ Run from the Visualize repository root:
 dotnet run --project integrations/RendererAdapter/Proof/RendererFrameToSvgProof.csproj --configuration Release -- ./samples/PrimitiveGallery/generated/10-renderer-selected-frame.svg
 ```
 
-The project uses the source checkout path in CI when available, the shared sibling Renderer repository when `WorkshopUseRepositorySources=true`, and the declared Renderer package when neither source path is available.
+The proof build requires the Renderer source checkout (the sibling repository or the CI checkout under `RendererSource`). This source `ProjectReference` exists only to compile and test the adapter against Renderer contracts; it is not the runtime capability-consumption mechanism. There is deliberately no NuGet fallback. At runtime, FSM_COS must discover, resolve, verify, load, and compose the Renderer MicroBundle using its portable semantic identity.
 
 ## What this proves—and what it does not
 
