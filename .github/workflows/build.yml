@@ -9,12 +9,6 @@ on:
       - master
       - development
   workflow_dispatch:
-    inputs:
-      publish:
-        description: "Publish the verified package to NuGet.org"
-        required: true
-        default: false
-        type: boolean
 
 permissions:
   contents: read
@@ -434,15 +428,6 @@ jobs:
           files: ./TestResults/coverage.cobertura.xml
           fail_ci_if_error: true
 
-      - name: Pack
-        run: dotnet pack TheSingularityWorkshop.Visualize.csproj --configuration Release --no-build --output ./artifacts
-
-      - name: Upload NuGet package artifact
-        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
-        with:
-          name: visualize-nuget-package
-          path: ./artifacts/*.nupkg
-
       - name: Upload test and coverage artifacts
         uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
         with:
@@ -530,26 +515,3 @@ jobs:
             ./artifacts/drone-construction-frame.svg
             ./artifacts/drone-construction-frame.manifest.txt
           if-no-files-found: error
-
-  publish_nuget:
-    needs: [build-and-test, gui-svg-package-proof]
-    runs-on: ubuntu-24.04
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true && github.ref == 'refs/heads/development' }}
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Download NuGet package
-        uses: actions/download-artifact@e455989ae00f5bdd4054f05d3e972c6bf8a62dc5 # v8.0.2
-        with:
-          name: visualize-nuget-package
-          path: ./artifacts
-
-      - name: Authenticate with NuGet Trusted Publishing
-        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
-        id: login
-        with:
-          user: TheSingularityWorkshop
-
-      - name: Publish package to NuGet.org
-        run: dotnet nuget push "./artifacts/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --skip-duplicate
