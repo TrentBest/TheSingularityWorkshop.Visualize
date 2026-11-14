@@ -303,7 +303,7 @@ jobs:
           for entry in report:
               assert entry["stableBuildingEntityIds"] == entry["buildings"], entry
               svg = (root / entry["outputFile"]).read_text(encoding="utf-8")
-              ids = {int(value) for value in re.findall(r'data-entity-id="(\\d+)"', svg)}
+              ids = {int(value) for value in re.findall(r'data-entity-id="(\d+)"', svg)}
               assert 1 in ids, f"Missing road-network entity in {entry['outputFile']}"
               assert len(ids - {1}) == entry["buildings"], (
                   f"Building identity count mismatch in {entry['outputFile']}: "
