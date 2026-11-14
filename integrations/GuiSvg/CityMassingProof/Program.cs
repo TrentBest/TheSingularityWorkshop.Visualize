@@ -1,6 +1,5 @@
 using System.Numerics;
 using TheSingularityWorkshop.Visualize;
-using TheSingularityWorkshop.Visualize.GuiSvg;
 using TheSingularityWorkshop.Renderer;
 using TheSingularityWorkshop.Renderer.VisualizeAdapter;
 
@@ -62,7 +61,11 @@ foreach (var skin in skins)
             $"The {skin.Name} proof failed to reduce distant detail: source={scene.Faces.Count}, " +
             $"submitted={submittedFaces.Length}, omittedWindowFaces={omittedWindowFaces}.");
 
-    var renderCommands = submittedFaces.Select((item, commandIndex) => new RenderDrawCommand(
+    var buildingEntityCount = scene.Faces.Where(face => face.EntityId != 1).Select(face => face.EntityId).Distinct().Count();
+    if (buildingEntityCount != scene.BuildingCount)
+        throw new InvalidOperationException($"Stable building identity mismatch: expected {scene.BuildingCount}, found {buildingEntityCount}.");
+
+    var renderCommands = submittedFaces.Select(item => new RenderDrawCommand(
         new RenderResourceId(geometryId.Value),
         new RenderResourceId(materialIds[item.Face.MaterialSlot].Value),
         Matrix4x4.Identity,
@@ -70,7 +73,7 @@ foreach (var skin in skins)
         item.Face.FirstIndex,
         0,
         ToRendererRepresentation(item.Target),
-        entity: new RenderEntityId((ulong)(commandIndex + 1))))
+        entity: new RenderEntityId(item.Face.EntityId)))
         .ToArray();
 
     var renderFrame = new RenderFrame(
@@ -81,12 +84,7 @@ foreach (var skin in skins)
 
     var output = Path.Combine(outputDirectory, $"singularity-city-{skin.Name}.svg");
     await using var visualizer = new Visualizer(
-        new GuiSvgVisualizerBackend(
-            output,
-            backgroundColor: skin.Background,
-            gridColor: skin.Grid,
-            sceneLabel: $"Singularity City / {skin.Name.ToUpperInvariant()} / Renderer policy → Visualize → GUI.SVG",
-            drawGrid: false),
+        new SvgVisualizerBackend(svg => File.WriteAllText(output, svg), background: skin.Background),
         catalog);
     var result = await visualizer.RenderAsync(frame);
     var counts = renderCommands.GroupBy(command => command.Representation)
@@ -99,6 +97,7 @@ foreach (var skin in skins)
     {
         skin = skin.Name,
         buildings = scene.BuildingCount,
+        stableBuildingEntityIds = buildingEntityCount,
         sourceFaces = scene.Faces.Count,
         submittedFaces = submittedFaces.Length,
         omittedWindowDetailFaces = omittedWindowFaces,
@@ -106,7 +105,7 @@ foreach (var skin in skins)
         adapterCommandOrderAndIdentityPreserved = true,
         representationCounts,
         outputFile = Path.GetFileName(output),
-        backend = "CPU/SVG"
+        backend = "Visualize.SvgVisualizerBackend (CPU/static SVG)"
     });
     Console.WriteLine($"{skin.Name}: {scene.BuildingCount} buildings; source faces={scene.Faces.Count}, " +
         $"submitted faces={submittedFaces.Length}, omitted window-detail faces={omittedWindowFaces}, " +
@@ -171,7 +170,7 @@ static RendererRepresentation ToRendererRepresentation(RepresentationTarget targ
     _ => throw new ArgumentOutOfRangeException(nameof(target), target, "Unknown representation target.")
 };
 
-internal sealed record CityFace(int FirstIndex, int IndexCount, string MaterialSlot);
+internal sealed record CityFace(int FirstIndex, int IndexCount, string MaterialSlot, ulong EntityId);
 internal sealed record CityScene(IReadOnlyList<VisualizerVertex> Vertices, IReadOnlyList<uint> Indices, IReadOnlyList<CityFace> Faces, int BuildingCount);
 internal sealed record CitySkin(string Name, string Background, string Grid, string Left, string Right, string Roof, string Window, string Road)
 {
@@ -236,6 +235,7 @@ internal sealed class CityMassing
                 var x = 50 + (col - row) * 1.45f + (local - 1) * .4f;
                 var y = 4 + (col + row) * 1.22f + (local % 2) * .18f;
                 var floors = 3 + localHash % 58;
+                var entityId = 10_000_000UL + (ulong)row * 100_000UL + (ulong)col * 100UL + (ulong)local + 1UL;
                 var landmark = (col == 10 && row == 8 && local == 0) ||
                     (col == 14 && row == 5 && local == 0) ||
                     (col == 5 && row == 13 && local == 0);
@@ -261,25 +261,25 @@ internal sealed class CityMassing
                     new Vector2(x, y + depth), new Vector2(x + width, y)
                 };
 
-                AddQuad(left, "left");
-                AddQuad(right, "right");
-                AddQuad(roof, "roof");
-                AddStrip(x - width * .48f, y - height + .12f, x - width * .48f, y - .05f, .035f, "window");
-                AddStrip(x + width * .45f, y - height + .12f, x + width * .45f, y - .05f, .035f, "window");
+                AddQuad(left, "left", entityId);
+                AddQuad(right, "right", entityId);
+                AddQuad(roof, "roof", entityId);
+                AddStrip(x - width * .48f, y - height + .12f, x - width * .48f, y - .05f, .035f, "window", entityId);
+                AddStrip(x + width * .45f, y - height + .12f, x + width * .45f, y - .05f, .035f, "window", entityId);
                 if (landmark)
                 {
                     AddTriangle(
                         new Vector2(x - width * .45f, y - height),
                         new Vector2(x, y - height - depth - .42f),
                         new Vector2(x + width * .45f, y - height),
-                        "crown");
+                        "crown", entityId);
                 }
                 _buildings++;
             }
         }
     }
 
-    private void AddStrip(float x1, float y1, float x2, float y2, float width, string material)
+    private void AddStrip(float x1, float y1, float x2, float y2, float width, string material, ulong entityId = 1)
     {
         var dx = x2 - x1;
         var dy = y2 - y1;
@@ -291,10 +291,10 @@ internal sealed class CityMassing
         [
             new Vector2(x1 + px, y1 + py), new Vector2(x2 + px, y2 + py),
             new Vector2(x2 - px, y2 - py), new Vector2(x1 - px, y1 - py)
-        ], material);
+        ], material, entityId);
     }
 
-    private void AddQuad(IReadOnlyList<Vector2> points, string material)
+    private void AddQuad(IReadOnlyList<Vector2> points, string material, ulong entityId = 1)
     {
         var firstIndex = _indices.Count;
         var firstVertex = (uint)_vertices.Count;
@@ -306,10 +306,10 @@ internal sealed class CityMassing
         _indices.Add(firstVertex);
         _indices.Add(firstVertex + 2);
         _indices.Add(firstVertex + 3);
-        _faces.Add(new CityFace(firstIndex, 6, material));
+        _faces.Add(new CityFace(firstIndex, 6, material, entityId));
     }
 
-    private void AddTriangle(Vector2 a, Vector2 b, Vector2 c, string material)
+    private void AddTriangle(Vector2 a, Vector2 b, Vector2 c, string material, ulong entityId)
     {
         var firstIndex = _indices.Count;
         var firstVertex = (uint)_vertices.Count;
@@ -318,7 +318,7 @@ internal sealed class CityMassing
         _indices.Add(firstVertex);
         _indices.Add(firstVertex + 1);
         _indices.Add(firstVertex + 2);
-        _faces.Add(new CityFace(firstIndex, 3, material));
+        _faces.Add(new CityFace(firstIndex, 3, material, entityId));
     }
 
     private static Vector3 ToWorld(Vector2 svgPoint) =>
