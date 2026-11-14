@@ -282,9 +282,7 @@ jobs:
           path: ./artifacts/renderer-selected-frame.svg
           if-no-files-found: error
 
-      - name: Generate the same city scene through Visualizer for three material skins
-        env:
-          WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
+      - name: Generate the same city scene through Visualize SVG backend for three material skins
         run: >
           dotnet run --project integrations/GuiSvg/CityMassingProof/CityMassingProof.csproj
           --configuration Release
