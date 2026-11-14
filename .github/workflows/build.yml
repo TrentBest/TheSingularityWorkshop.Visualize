@@ -288,6 +288,29 @@ jobs:
           --configuration Release
           -- ./samples/CityMassing/generated
 
+      - name: Verify city SVG artifacts and stable semantic identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          root = Path("samples/CityMassing/generated")
+          report = json.loads((root / "city-massing-report.json").read_text(encoding="utf-8"))
+          assert len(report) == 3, f"Expected three skin outputs, found {len(report)}"
+          for entry in report:
+              assert entry["stableBuildingEntityIds"] == entry["buildings"], entry
+              svg = (root / entry["outputFile"]).read_text(encoding="utf-8")
+              ids = {int(value) for value in re.findall(r'data-entity-id="(\\d+)"', svg)}
+              assert 1 in ids, f"Missing road-network entity in {entry['outputFile']}"
+              assert len(ids - {1}) == entry["buildings"], (
+                  f"Building identity count mismatch in {entry['outputFile']}: "
+                  f"{len(ids - {1})} != {entry['buildings']}"
+              )
+          PY
+
       - name: Generate deterministic Extremus crowd instance SVG proof
         env:
           WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
