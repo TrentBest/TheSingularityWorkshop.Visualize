@@ -10,7 +10,7 @@ Open the [Visualize proof workflow](https://github.com/TrentBest/TheSingularityW
 
 ## What is checked
 
-The proof asserts command count and order, geometry/material IDs, world transforms, index ranges, representation, and entity IDs survive the adapter. The report marks `adapterCommandOrderAndIdentityPreserved` only after the assertion passes.
+The proof asserts command count and order, geometry/material IDs, world transforms, index ranges, representation, and building entity IDs survive the adapter. It also validates a deterministic district → parcel → building hierarchy: identities are unique, each parcel references an existing district, and each building references exactly one existing parcel and its matching district. District and parcel IDs are serialized as SVG root metadata and every building membership is recorded in the JSON report. These are synthetic fixture identities, not authoritative MyCity records. The report marks `adapterCommandOrderAndIdentityPreserved` and `semanticHierarchyValidated` only after their respective assertions pass.
 
 ## Evidence boundary
 
