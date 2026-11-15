@@ -26,6 +26,13 @@ public sealed class VisualizerFrame
         var compositions = imageCompositions?.ToArray() ?? [];
         if (compositions.Any(composition => !composition.Image.IsValid))
             throw new ArgumentException("Every image composition must reference a valid retained image.", nameof(imageCompositions));
+        for (var index = 1; index < compositions.Length; index++)
+        {
+            if (compositions[index].Layer < compositions[index - 1].Layer)
+                throw new ArgumentException(
+                    "Image compositions must be supplied in back-to-front layer order.",
+                    nameof(imageCompositions));
+        }
 
         View = view;
         Commands = Array.AsReadOnly(commands.ToArray());
