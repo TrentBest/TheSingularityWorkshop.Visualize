@@ -63,9 +63,9 @@ public sealed class VisualizerSceneSnapshotTests
     {
         var snapshot = new VisualizerSceneSnapshot("scene", 1,
         [
-            Object(1, layer: 0, visible: true, Draw(1)),
-            Object(2, layer: 1, visible: false, Draw(2)),
-            Object(3, layer: 2, visible: true, Draw(3))
+            Object(1, layer: 0, visible: true, commands: [Draw(1)]),
+            Object(2, layer: 1, visible: false, commands: [Draw(2)]),
+            Object(3, layer: 2, visible: true, commands: [Draw(3)])
         ]);
 
         var allVisibleLayers = snapshot.CreateFrame(View());
@@ -85,7 +85,7 @@ public sealed class VisualizerSceneSnapshotTests
 
         Assert.Equal(12UL, snapshot.Revision);
         Assert.Equal(first.Commands[0].WorldTransform, second.Commands[0].WorldTransform);
-        Assert.Equal(first.Commands[0].WorldTransform, Matrix4x4.Identity);
+        Assert.Equal(Matrix4x4.CreateTranslation(4, 0, 0), first.Commands[0].WorldTransform);
         Assert.NotEqual(first.View.View, second.View.View);
     }
 
