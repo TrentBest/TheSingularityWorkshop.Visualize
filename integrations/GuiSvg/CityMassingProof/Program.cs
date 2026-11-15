@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Xml.Linq;
 using TheSingularityWorkshop.Visualize;
 using TheSingularityWorkshop.Renderer;
 using TheSingularityWorkshop.Renderer.VisualizeAdapter;
@@ -76,6 +77,18 @@ foreach (var skin in skins)
         entity: new RenderEntityId(item.Face.EntityId)))
         .ToArray();
 
+    var sourceRoadCommands = renderCommands.Count(command => command.Entity.IsValid && command.Entity.Value == 1);
+    var sourceBuildingIds = renderCommands
+        .Where(command => command.Entity.IsValid && command.Entity.Value != 1)
+        .Select(command => command.Entity.Value)
+        .Distinct()
+        .ToHashSet();
+    if (sourceRoadCommands == 0 || sourceBuildingIds.Count != scene.BuildingCount)
+        throw new InvalidOperationException(
+            $"Renderer source identity boundary failed before adaptation: validRoadCommands={sourceRoadCommands}, " +
+            $"distinctBuildingIds={sourceBuildingIds.Count}, expectedBuildings={scene.BuildingCount}, " +
+            $"totalCommands={renderCommands.Length}, validEntityCommands={renderCommands.Count(command => command.Entity.IsValid)}.");
+
     var renderFrame = new RenderFrame(
         new RenderView(observer, Matrix4x4.Identity, Matrix4x4.Identity),
         renderCommands);
@@ -87,6 +100,20 @@ foreach (var skin in skins)
         new SvgVisualizerBackend(svg => File.WriteAllText(output, svg), background: skin.Background),
         catalog);
     var result = await visualizer.RenderAsync(frame);
+    var svgDocument = XDocument.Load(output);
+    var serializedEntityIds = svgDocument
+        .Descendants()
+        .Attributes("data-entity-id")
+        .Select(attribute => ulong.TryParse(attribute.Value, out var value) ? value : 0UL)
+        .Where(value => value != 0)
+        .ToHashSet();
+    if (!serializedEntityIds.Contains(1) || !sourceBuildingIds.IsSubsetOf(serializedEntityIds))
+        throw new InvalidOperationException(
+            $"Visualize SVG identity serialization failed for {skin.Name}: " +
+            $"roadNetworkPresent={serializedEntityIds.Contains(1)}, " +
+            $"serializedBuildingIds={serializedEntityIds.Count(value => value != 1)}, " +
+            $"expectedBuildingIds={sourceBuildingIds.Count}, " +
+            $"missingBuildingIds={sourceBuildingIds.Count(id => !serializedEntityIds.Contains(id))}.");
     var counts = renderCommands.GroupBy(command => command.Representation)
         .OrderBy(group => group.Key)
         .Select(group => $"{group.Key}={group.Count()}");
