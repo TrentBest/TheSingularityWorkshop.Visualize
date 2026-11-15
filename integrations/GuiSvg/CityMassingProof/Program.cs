@@ -8,6 +8,7 @@ var outputDirectory = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.GetFull
 Directory.CreateDirectory(outputDirectory);
 
 var scene = CityMassing.Build();
+scene.ValidateSemanticHierarchy();
 var proofReport = new List<object>();
 var skins = new[]
 {
@@ -101,6 +102,11 @@ foreach (var skin in skins)
         catalog);
     var result = await visualizer.RenderAsync(frame);
     var svgDocument = XDocument.Load(output);
+    var svgRoot = svgDocument.Root ?? throw new InvalidOperationException("SVG backend produced no root element.");
+    svgRoot.SetAttributeValue("data-district-ids", string.Join(",", scene.Districts.Select(item => item.Id)));
+    svgRoot.SetAttributeValue("data-parcel-ids", string.Join(",", scene.Parcels.Select(item => item.Id)));
+    svgRoot.SetAttributeValue("data-building-count", scene.Buildings.Count);
+    svgDocument.Save(output);
     var serializedEntityIds = svgDocument
         .Descendants()
         .Attributes("data-entity-id")
@@ -125,6 +131,12 @@ foreach (var skin in skins)
         skin = skin.Name,
         buildings = scene.BuildingCount,
         stableBuildingEntityIds = buildingEntityCount,
+        districts = scene.Districts.Count,
+        stableDistrictIds = scene.Districts.Select(item => item.Id).ToArray(),
+        parcels = scene.Parcels.Count,
+        stableParcelIds = scene.Parcels.Select(item => item.Id).ToArray(),
+        buildingMemberships = scene.Buildings.Select(item => new { buildingId = item.Id, parcelId = item.ParcelId, districtId = item.DistrictId }).ToArray(),
+        semanticHierarchyValidated = true,
         sourceFaces = scene.Faces.Count,
         submittedFaces = submittedFaces.Length,
         omittedWindowDetailFaces = omittedWindowFaces,
@@ -198,7 +210,35 @@ static RendererRepresentation ToRendererRepresentation(RepresentationTarget targ
 };
 
 internal sealed record CityFace(int FirstIndex, int IndexCount, string MaterialSlot, ulong EntityId);
-internal sealed record CityScene(IReadOnlyList<VisualizerVertex> Vertices, IReadOnlyList<uint> Indices, IReadOnlyList<CityFace> Faces, int BuildingCount);
+internal sealed record CityDistrict(ulong Id, int Row, int Column);
+internal sealed record CityParcel(ulong Id, ulong DistrictId, int Row, int Column);
+internal sealed record CityBuilding(ulong Id, ulong ParcelId, ulong DistrictId);
+internal sealed record CityScene(IReadOnlyList<VisualizerVertex> Vertices, IReadOnlyList<uint> Indices, IReadOnlyList<CityFace> Faces, IReadOnlyList<CityDistrict> Districts, IReadOnlyList<CityParcel> Parcels, IReadOnlyList<CityBuilding> Buildings)
+{
+    public int BuildingCount => Buildings.Count;
+
+    public void ValidateSemanticHierarchy()
+    {
+        if (Districts.Count == 0 || Parcels.Count == 0 || Buildings.Count == 0)
+            throw new InvalidOperationException("City semantic hierarchy must contain districts, parcels, and buildings.");
+        if (Districts.Select(item => item.Id).Distinct().Count() != Districts.Count ||
+            Parcels.Select(item => item.Id).Distinct().Count() != Parcels.Count ||
+            Buildings.Select(item => item.Id).Distinct().Count() != Buildings.Count)
+            throw new InvalidOperationException("City semantic hierarchy contains duplicate identities.");
+        var districts = Districts.Select(item => item.Id).ToHashSet();
+        var parcels = Parcels.ToDictionary(item => item.Id);
+        foreach (var parcel in Parcels)
+            if (!districts.Contains(parcel.DistrictId))
+                throw new InvalidOperationException($"Parcel {parcel.Id} references missing district {parcel.DistrictId}.");
+        foreach (var building in Buildings)
+        {
+            if (!parcels.TryGetValue(building.ParcelId, out var parcel))
+                throw new InvalidOperationException($"Building {building.Id} references missing parcel {building.ParcelId}.");
+            if (parcel.DistrictId != building.DistrictId)
+                throw new InvalidOperationException($"Building {building.Id} district does not match its parcel.");
+        }
+    }
+}
 internal sealed record CitySkin(string Name, string Background, string Grid, string Left, string Right, string Roof, string Window, string Road)
 {
     public string ColorFor(string slot) => slot switch
@@ -213,19 +253,23 @@ internal sealed class CityMassing
     private readonly List<VisualizerVertex> _vertices = [];
     private readonly List<uint> _indices = [];
     private readonly List<CityFace> _faces = [];
-    private int _buildings;
+    private readonly Dictionary<(int Row, int Column), CityDistrict> _districts = [];
+    private readonly Dictionary<(int Row, int Column), CityParcel> _parcels = [];
+    private readonly List<CityBuilding> _buildings = [];
 
     public IReadOnlyList<VisualizerVertex> Vertices => _vertices;
     public IReadOnlyList<uint> Indices => _indices;
     public IReadOnlyList<CityFace> Faces => _faces;
-    public int BuildingCount => _buildings;
+    public IReadOnlyList<CityDistrict> Districts => _districts.Values.OrderBy(item => item.Id).ToArray();
+    public IReadOnlyList<CityParcel> Parcels => _parcels.Values.OrderBy(item => item.Id).ToArray();
+    public IReadOnlyList<CityBuilding> Buildings => _buildings;
 
     public static CityScene Build()
     {
         var city = new CityMassing();
         city.AddRoadNetwork();
         city.AddBuildings();
-        return new CityScene(city.Vertices, city.Indices, city.Faces, city.BuildingCount);
+        return new CityScene(city.Vertices, city.Indices, city.Faces, city.Districts, city.Parcels, city.Buildings);
     }
 
     public static Vector4 Color(string hex)
@@ -263,6 +307,21 @@ internal sealed class CityMassing
                 var y = 4 + (col + row) * 1.22f + (local % 2) * .18f;
                 var floors = 3 + localHash % 58;
                 var entityId = 10_000_000UL + (ulong)row * 100_000UL + (ulong)col * 100UL + (ulong)local + 1UL;
+                var districtRow = row / 6;
+                var districtColumn = col / 8;
+                var districtKey = (districtRow, districtColumn);
+                if (!_districts.TryGetValue(districtKey, out var district))
+                {
+                    district = new CityDistrict(20_000_000UL + (ulong)districtRow * 100UL + (ulong)districtColumn + 1UL, districtRow, districtColumn);
+                    _districts.Add(districtKey, district);
+                }
+                var parcelKey = (row, col);
+                if (!_parcels.TryGetValue(parcelKey, out var parcel))
+                {
+                    parcel = new CityParcel(30_000_000UL + (ulong)row * 100UL + (ulong)col + 1UL, district.Id, row, col);
+                    _parcels.Add(parcelKey, parcel);
+                }
+                _buildings.Add(new CityBuilding(entityId, parcel.Id, district.Id));
                 var landmark = (col == 10 && row == 8 && local == 0) ||
                     (col == 14 && row == 5 && local == 0) ||
                     (col == 5 && row == 13 && local == 0);
@@ -301,7 +360,6 @@ internal sealed class CityMassing
                         new Vector2(x + width * .45f, y - height),
                         "crown", entityId);
                 }
-                _buildings++;
             }
         }
     }
