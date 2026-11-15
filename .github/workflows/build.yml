@@ -282,6 +282,56 @@ jobs:
           path: ./artifacts/renderer-selected-frame.svg
           if-no-files-found: error
 
+      - name: Generate deterministic environment scene fixture
+        run: >
+          dotnet run --project samples/EnvironmentSceneProof/EnvironmentSceneProof.csproj
+          --configuration Release
+          -- ./samples/EnvironmentSceneProof/generated
+
+      - name: Verify environment scene identity, movement, and CPU/SVG boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          root = Path("samples/EnvironmentSceneProof/generated")
+          manifest = json.loads((root / "environment-scene-manifest.json").read_text(encoding="utf-8"))
+          assert manifest["schemaVersion"] == 1
+          assert manifest["fixture"] == "floor-platform-box-ball-articulated-placeholder"
+          assert manifest["fixtureKind"] == "illustrative-not-physics-simulation"
+          assert manifest["sceneIdentity"] == "workshop://visualize/environment-fixture/v1"
+          assert manifest["revisions"] == [1, 2]
+          assert manifest["stableEntityIds"] == [100, 200, 300, 400, 500]
+          assert manifest["objectCount"] == 5
+          assert manifest["drawCommandCount"] == 10
+          assert manifest["backend"] == "SvgVisualizerBackend"
+          assert manifest["execution"] == "CPU/static SVG"
+          assert manifest["gpuExecution"] is False
+          assert manifest["deterministicRepeat"] is True
+          assert manifest["movementChangesOutput"] is True
+          first = (root / "environment-scene.svg").read_text(encoding="utf-8")
+          moved = (root / "environment-scene-moved.svg").read_text(encoding="utf-8")
+          for entity_id in manifest["stableEntityIds"]:
+              assert f'data-entity-id="{entity_id}"' in first, entity_id
+              assert f'data-entity-id="{entity_id}"' in moved, entity_id
+          assert first != moved
+          for shape in ("floor", "platform", "box", "ball", "articulated-placeholder"):
+              assert shape not in manifest["fixture"], shape
+          print(json.dumps(manifest, indent=2))
+          PY
+
+      - name: Upload environment scene fixture
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-environment-scene-proof
+          path: |
+            ./samples/EnvironmentSceneProof/generated/*.svg
+            ./samples/EnvironmentSceneProof/generated/*.json
+          if-no-files-found: error
+
       - name: Generate the same city scene through Visualize SVG backend for three material skins
         run: >
           dotnet run --project integrations/GuiSvg/CityMassingProof/CityMassingProof.csproj
