@@ -371,7 +371,7 @@ jobs:
           grep -q 'fill="#edf4e9"' ./samples/CityMassing/generated/singularity-city-harmony.svg
           report="./samples/CityMassing/generated/city-massing-report.json"
           test -s "$report" || { echo "Missing machine-readable city proof report."; exit 1; }
-          python -c 'import json; p="'"$report"'"; rows=json.load(open(p)); assert len(rows)==3, rows; assert all(r["sourceFaces"] > r["submittedFaces"] for r in rows), rows; assert all(r["omittedWindowDetailFaces"] > 0 for r in rows), rows; assert all(r["backend"] == "CPU/SVG" for r in rows), rows; print(json.dumps(rows, indent=2))'
+          python -c 'import json; p="'"$report"'"; rows=json.load(open(p)); assert len(rows)==3, rows; assert all(r["sourceFaces"] > r["submittedFaces"] for r in rows), rows; assert all(r["omittedWindowDetailFaces"] > 0 for r in rows), rows; assert all(r["backend"] == "Visualize.SvgVisualizerBackend (CPU/static SVG)" for r in rows), rows; print(json.dumps(rows, indent=2))'
           crowd_dir="./samples/ExtremusCrowd/generated"
           crowd_svg="$crowd_dir/extremus-crowd.svg"
           crowd_manifest="$crowd_dir/extremus-crowd-manifest.json"
