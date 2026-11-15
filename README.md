@@ -134,7 +134,7 @@ The illustration above is the no-launch overview. For deeper inspection, the doc
 - **[Primitive Gallery page](samples/PrimitiveGallery/index.html)** — inspect the experiment's actual HTML, SVG, and JavaScript.
 - **[Surface Normals & Light lab](samples/NormalLightingLab/index.html)** — change light direction, ambient contribution, diffuse strength, sample density, and normal overlays in a live SVG study.
 
-To run the current .NET test suite, you need the **.NET 8 SDK**. From the repository root:
+To run the current .NET test suite, you need the **.NET 10 SDK**. From the repository root:
 
 ```powershell
 dotnet restore TheSingularityWorkshop.Visualize.slnx
@@ -170,7 +170,7 @@ The tests verify the current contracts. To explore the first visible SVG sequenc
 
 ![](docs/assets/dividers/green.svg)
 
-The commands above use the solution file and the installed .NET 8 SDK. CI also collects Cobertura coverage and uploads build, test, and package artifacts for review.
+The commands above use the solution file and the installed .NET 10 SDK. CI also collects Cobertura coverage and uploads build, test, and package artifacts for review.
 
 ## 🟣 Release discipline
 
