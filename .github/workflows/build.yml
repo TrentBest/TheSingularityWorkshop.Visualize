@@ -365,8 +365,8 @@ jobs:
           for skin in noir metro harmony; do
             file="./samples/CityMassing/generated/singularity-city-$skin.svg"
             test -s "$file" || { echo "Missing city skin output: $file"; exit 1; }
-            grep -q 'Singularity City /' "$file"
-            grep -q 'draw-' "$file"
+            grep -q 'data-entity-id="' "$file"
+            grep -q 'data-representation="' "$file"
           done
           grep -q 'fill="#050a12"' ./samples/CityMassing/generated/singularity-city-noir.svg
           grep -q 'fill="#edf4e9"' ./samples/CityMassing/generated/singularity-city-harmony.svg
