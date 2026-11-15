@@ -53,8 +53,8 @@ public sealed class VisualizerSceneSnapshotTests
             Object(3, layer: 1, commands: [Draw(3)])
         ]);
 
-        Assert.Equal([3UL, 8UL, 9UL], snapshot.Objects.Select(item => item.Entity.Value));
-        Assert.Equal([3UL, 8UL, 9UL],
+        Assert.Equal(new ulong[] { 3, 8, 9 }, snapshot.Objects.Select(item => item.Entity.Value));
+        Assert.Equal(new ulong[] { 3, 8, 9 },
             snapshot.CreateFrame(View()).Commands.Select(command => command.Entity.Value));
     }
 
@@ -71,14 +71,13 @@ public sealed class VisualizerSceneSnapshotTests
         var allVisibleLayers = snapshot.CreateFrame(View());
         var selectedLayer = snapshot.CreateFrame(View(), new HashSet<int> { 2 });
 
-        Assert.Equal([1UL, 3UL], allVisibleLayers.Commands.Select(command => command.Entity.Value));
-        Assert.Equal([3UL], selectedLayer.Commands.Select(command => command.Entity.Value));
+        Assert.Equal(new ulong[] { 1, 3 }, allVisibleLayers.Commands.Select(command => command.Entity.Value));
+        Assert.Equal(new ulong[] { 3 }, selectedLayer.Commands.Select(command => command.Entity.Value));
     }
 
     [Fact]
     public void ViewChangesDoNotMutateSnapshotOrWorldTransforms()
     {
-        var transform = Matrix4x4.CreateTranslation(4, 5, 0);
         var snapshot = new VisualizerSceneSnapshot("scene", 12,
             [Object(5, commands: [Draw(5)])]);
         var first = snapshot.CreateFrame(View());
@@ -88,7 +87,6 @@ public sealed class VisualizerSceneSnapshotTests
         Assert.Equal(first.Commands[0].WorldTransform, second.Commands[0].WorldTransform);
         Assert.Equal(first.Commands[0].WorldTransform, Matrix4x4.Identity);
         Assert.NotEqual(first.View.View, second.View.View);
-        Assert.Equal(transform.M41, 4); // World-space transforms remain independent of camera state.
     }
 
     [Fact]
