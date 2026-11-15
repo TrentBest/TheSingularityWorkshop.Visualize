@@ -329,6 +329,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          trap 'echo "SVG proof verification failed at line ${LINENO}: ${BASH_COMMAND}" >&2' ERR
           for sample in \
             01-one-point.svg \
             02-point-cloud-100.svg \
