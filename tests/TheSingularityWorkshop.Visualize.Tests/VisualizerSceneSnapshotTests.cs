@@ -27,6 +27,38 @@ public sealed class VisualizerSceneSnapshotTests
     private static VisualizerView View(Matrix4x4? view = null) =>
         new(Vector3.Zero, view ?? Matrix4x4.Identity, Matrix4x4.Identity);
 
+
+    [Fact]
+    public void CompleteSceneSnapshotProducesDeterministicMultiObjectSvgArtifact()
+    {
+        var resources = new VisualizerResourceCatalog();
+        resources.SetGeometry(new VisualizerResourceId(1), new VisualizerGeometry(
+            1,
+            [
+                new VisualizerVertex(new Vector3(-0.2f, -0.2f, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One),
+                new VisualizerVertex(new Vector3(0.2f, -0.2f, 0), Vector3.UnitZ, Vector2.UnitX, Vector4.One),
+                new VisualizerVertex(new Vector3(0, 0.2f, 0), Vector3.UnitZ, Vector2.UnitY, Vector4.One)
+            ],
+            [0, 1, 2]));
+        resources.SetMaterial(new VisualizerResourceId(2), new VisualizerMaterial(1, Vector4.One));
+
+        var snapshot = new VisualizerSceneSnapshot("scene:svg-proof", 1,
+        [
+            Object(101, layer: 0, commands: [Draw(101, -0.5f)]),
+            Object(202, layer: 1, commands: [Draw(202, 0.5f)])
+        ]);
+        var backend = new SvgVisualizerBackend(_ => { }, width: 320, height: 200);
+        var frame = snapshot.CreateFrame(View());
+
+        var first = backend.BuildSvg(frame, resources);
+        var second = backend.BuildSvg(frame, resources);
+
+        Assert.Equal(first, second);
+        Assert.Equal(2, first.Split("<polygon", StringSplitOptions.None).Length - 1);
+        Assert.Contains("data-entity-id=" + (char)34 + "101" + (char)34, first, StringComparison.Ordinal);
+        Assert.Contains("data-entity-id=" + (char)34 + "202" + (char)34, first, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void SnapshotKeepsSceneIdentityAcrossIncreasingCompleteRevisions()
     {
