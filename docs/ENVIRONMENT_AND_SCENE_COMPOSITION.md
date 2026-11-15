@@ -141,7 +141,17 @@ The update model is deliberately **full snapshot replacement**, not incremental 
 
 Executable coverage is in [VisualizerSceneSnapshotTests](../tests/TheSingularityWorkshop.Visualize.Tests/VisualizerSceneSnapshotTests.cs). It verifies identity across revisions and changing command topology, deterministic ordering, visibility/layer filtering, camera/world-transform separation, and invalid/duplicate identity rejection. The contract does not yet provide a built-in primitive authoring vocabulary, scene persistence, incremental mutation API, diagnostics for missing resources (existing `Visualizer.RenderAsync` validates frame resources), or a new backend. The existing CPU/static SVG backend is the current manifestation path; it is not GPU execution.
 
-## 10. Acceptance principles
+## 10. Deterministic environment-scene fixture
+
+**Status: executable CPU/static-SVG proof; illustrative geometry only.**
+
+The repeatable sample at [EnvironmentSceneProof](../samples/EnvironmentSceneProof/Program.cs) builds a small 2D environment from the public VisualizerSceneSnapshot, VisualizerSceneObject, frame, resource, and SVG backend contracts. Its fixture contains a floor, raised platform, box, ball, and a multi-command articulated placeholder. Each logical object has a stable semantic entity ID; the articulated placeholder keeps one object identity across its six manifestation commands.
+
+The sample generates two complete revisions with the same scene identity. Revision 1 is rendered twice and must produce byte-identical SVG. Revision 2 moves only the ball; the resulting SVG must differ while all five semantic IDs remain present. CI verifies the manifest, entity identity preservation, deterministic repeat, movement response, and explicit CPU/static-SVG execution label, then uploads both SVG artifacts and the manifest.
+
+The articulated figure is a geometric placeholder, not a Gestures controller or kinematic simulation. The ball movement is an authored transform change, not Physics output. The floor and platform are static triangles, not collision surfaces. This proof does not claim GPU execution, interactive editing, authoritative AnyApp environment documents, FSM_COS MicroBundle composition, or a Physics/Gestures integration.
+
+## 11. Acceptance principles
 
 - The Environment is a composition of capabilities, not a monolithic subsystem.
 - Visualize can evolve toward surfaces and volumes without taking ownership of physics, story logic, audio, haptics, or persistence.
