@@ -353,6 +353,12 @@ jobs:
               assert entry["semanticHierarchyValidated"] is True, entry
               assert entry["districts"] == len(entry["stableDistrictIds"]) > 0, entry
               assert entry["parcels"] == len(entry["stableParcelIds"]) > 0, entry
+              parcel_memberships = entry["parcelMemberships"]
+              assert len(parcel_memberships) == entry["parcels"], entry
+              assert {item["parcelId"] for item in parcel_memberships} == parcel_ids, entry
+              assert {item["districtId"] for item in parcel_memberships} == district_ids, entry
+              parcel_parent = {item["parcelId"]: item["districtId"] for item in parcel_memberships}
+              assert len(parcel_parent) == entry["parcels"], entry
               memberships = entry["buildingMemberships"]
               assert len(memberships) == entry["buildings"], entry
               assert len({item["buildingId"] for item in memberships}) == entry["buildings"], entry
@@ -362,6 +368,7 @@ jobs:
               for item in memberships:
                   assert item["parcelId"] in parcel_ids, item
                   assert item["districtId"] in district_ids, item
+                  assert parcel_parent[item["parcelId"]] == item["districtId"], item
                   parcel_districts.setdefault(item["parcelId"], item["districtId"])
                   assert parcel_districts[item["parcelId"]] == item["districtId"], item
               svg = (root / entry["outputFile"]).read_text(encoding="utf-8")
