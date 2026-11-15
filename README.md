@@ -13,6 +13,10 @@
 
 **[Gallery](docs/GALLERY.md)** — short visual index · [Visualize-owned SVG backend](docs/STATIC_SVG_BACKEND.md) · [Detailed SVG proof guide](docs/SVG_LIVING_DOCUMENTATION.md) · [GUI panel handoff](docs/GUI_PANEL_HANDOFF.md) — panel routing boundary and staged multi-panel plan
 
+## Deterministic environment-scene proof
+
+The [environment-scene fixture](samples/EnvironmentSceneProof/README.md) builds a floor, platform, box, ball, and articulated placeholder through the public scene snapshot contract. CI renders two revisions, verifies repeatable output and stable semantic identities after the ball moves, and uploads the CPU/static-SVG artifacts. The articulated figure is illustrative geometry—not a Gestures controller or physics simulation.
+
 ## Living visual showcase
 
 Visualize owns a direct SVG artifact backend for `VisualizerFrame` plus its geometry/material resources. This is the default path for general scene-to-SVG output and does not depend on GUI.Core or GUI.SVG. The [static SVG backend contract](docs/STATIC_SVG_BACKEND.md) documents the supported indexed-triangle path, validation behavior, and explicit CPU/not-presented limitations.
