@@ -6,24 +6,30 @@ namespace TheSingularityWorkshop.Visualize;
 /// <remarks>A thin adapter maps the Workshop Renderer frame to this backend-neutral contract.</remarks>
 public sealed class VisualizerFrame
 {
-    /// <summary>Creates a frame snapshot from a view and ordered draw commands.</summary>
-    public VisualizerFrame(VisualizerView view, IEnumerable<VisualizerDrawCommand> commands)
+    /// <summary>Creates a frame snapshot from a view, ordered draws, and ordered retained-image compositions.</summary>
+    public VisualizerFrame(
+        VisualizerView view,
+        IEnumerable<VisualizerDrawCommand> commands,
+        IEnumerable<VisualizerImageComposition>? imageCompositions = null)
     {
         ArgumentNullException.ThrowIfNull(commands);
         if (!float.IsFinite(view.ObserverPosition.X) ||
             !float.IsFinite(view.ObserverPosition.Y) ||
             !float.IsFinite(view.ObserverPosition.Z))
-        {
             throw new ArgumentOutOfRangeException(nameof(view), "Observer position components must be finite.");
-        }
 
         if (!VisualizerMatrixValidation.IsFinite(view.View))
             throw new ArgumentOutOfRangeException(nameof(view), "View matrix components must be finite.");
         if (!VisualizerMatrixValidation.IsFinite(view.Projection))
             throw new ArgumentOutOfRangeException(nameof(view), "Projection matrix components must be finite.");
 
+        var compositions = imageCompositions?.ToArray() ?? [];
+        if (compositions.Any(composition => !composition.Image.IsValid))
+            throw new ArgumentException("Every image composition must reference a valid retained image.", nameof(imageCompositions));
+
         View = view;
         Commands = Array.AsReadOnly(commands.ToArray());
+        ImageCompositions = Array.AsReadOnly(compositions);
     }
 
     /// <summary>Gets the view state for this frame.</summary>
@@ -31,6 +37,9 @@ public sealed class VisualizerFrame
 
     /// <summary>Gets the immutable ordered draw-command snapshot.</summary>
     public IReadOnlyList<VisualizerDrawCommand> Commands { get; }
+
+    /// <summary>Gets retained-image composition operations in back-to-front order.</summary>
+    public IReadOnlyList<VisualizerImageComposition> ImageCompositions { get; }
 }
 
 /// <summary>Describes observer/view transforms for a presentation frame.</summary>
