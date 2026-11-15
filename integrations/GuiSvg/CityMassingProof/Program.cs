@@ -135,6 +135,7 @@ foreach (var skin in skins)
         stableDistrictIds = scene.Districts.Select(item => item.Id).ToArray(),
         parcels = scene.Parcels.Count,
         stableParcelIds = scene.Parcels.Select(item => item.Id).ToArray(),
+        parcelMemberships = scene.Parcels.Select(item => new { parcelId = item.Id, districtId = item.DistrictId }).ToArray(),
         buildingMemberships = scene.Buildings.Select(item => new { buildingId = item.Id, parcelId = item.ParcelId, districtId = item.DistrictId }).ToArray(),
         semanticHierarchyValidated = true,
         sourceFaces = scene.Faces.Count,
