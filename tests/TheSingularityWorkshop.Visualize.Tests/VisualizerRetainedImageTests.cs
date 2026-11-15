@@ -54,8 +54,8 @@ public sealed class VisualizerRetainedImageTests
     {
         var compositions = new[]
         {
-            new VisualizerImageComposition(new VisualizerImageId(2), 20),
-            new VisualizerImageComposition(new VisualizerImageId(1), 10)
+            new VisualizerImageComposition(new VisualizerImageId(1), 10),
+            new VisualizerImageComposition(new VisualizerImageId(2), 20)
         };
 
         var frame = new VisualizerFrame(
@@ -64,6 +64,18 @@ public sealed class VisualizerRetainedImageTests
             compositions);
 
         Assert.Equal(compositions, frame.ImageCompositions);
+    }
+
+    [Fact]
+    public void Frame_RejectsCompositionOutsideBackToFrontLayerOrder()
+    {
+        Assert.Throws<ArgumentException>(() => new VisualizerFrame(
+            new VisualizerView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity),
+            [],
+            [
+                new VisualizerImageComposition(new VisualizerImageId(2), 20),
+                new VisualizerImageComposition(new VisualizerImageId(1), 10)
+            ]));
     }
 
     [Fact]
