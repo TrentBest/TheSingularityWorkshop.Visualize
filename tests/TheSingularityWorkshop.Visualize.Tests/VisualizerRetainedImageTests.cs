@@ -91,4 +91,77 @@ public sealed class VisualizerRetainedImageTests
         ulong image, ulong contentRevision, ulong sourceRevision, ulong observerRevision) =>
         new(new VisualizerImageId(image), sourceBucket: 99, contentRevision, sourceRevision,
             observerRevision, width: 1024, height: 512);
-}
+
+    [Fact]
+    public void Coverage_ReprojectsAnUnchangedViewWithoutLosingSamples()
+    {
+        var coverage = new VisualizerRetainedImageCoverage(2, 1,
+        [
+            new(true, new Vector3(-0.5f, 0f, 0.5f)),
+            new(true, new Vector3(0.5f, 0f, 0.5f))
+        ]);
+
+        var result = coverage.Reproject(Matrix4x4.Identity, Matrix4x4.Identity, 2, 1);
+
+        Assert.True(result.IsComplete);
+        Assert.Equal(2, result.CoveredPixelCount);
+        Assert.True(result.TryGetSourcePixelIndex(0, 0, out var left));
+        Assert.True(result.TryGetSourcePixelIndex(1, 0, out var right));
+        Assert.Equal(0, left);
+        Assert.Equal(1, right);
+    }
+
+    [Fact]
+    public void Coverage_ReportsDisocclusionInsteadOfClaimingCompleteReprojection()
+    {
+        var coverage = new VisualizerRetainedImageCoverage(2, 1,
+        [
+            new(true, new Vector3(-0.5f, 0f, 0.5f)),
+            new(true, new Vector3(0.5f, 0f, 0.5f))
+        ]);
+
+        var movedView = Matrix4x4.CreateTranslation(-1f, 0f, 0f);
+        var result = coverage.Reproject(movedView, Matrix4x4.Identity, 2, 1);
+
+        Assert.False(result.IsComplete);
+        Assert.Equal(1, result.CoveredPixelCount);
+        Assert.False(result.TryGetSourcePixelIndex(1, 0, out _));
+    }
+
+    [Fact]
+    public void Coverage_ResolvesOverlappingSamplesToNearestDepth()
+    {
+        var coverage = new VisualizerRetainedImageCoverage(2, 1,
+        [
+            new(true, new Vector3(0f, 0f, 0.8f)),
+            new(true, new Vector3(0f, 0f, 0.2f))
+        ]);
+
+        var result = coverage.Reproject(Matrix4x4.Identity, Matrix4x4.Identity, 1, 1);
+
+        Assert.True(result.TryGetSourcePixelIndex(0, 0, out var sourceIndex));
+        Assert.Equal(1, sourceIndex);
+        Assert.True(result.TryGetDepth(0, 0, out var depth));
+        Assert.Equal(0.2f, depth, precision: 5);
+    }
+
+    [Fact]
+    public void Coverage_RejectsIncorrectSampleCountAndNonFiniteCoveredPositions()
+    {
+        Assert.Throws<ArgumentException>(() => new VisualizerRetainedImageCoverage(
+            2, 1, [new(true, Vector3.Zero)]));
+
+        Assert.Throws<ArgumentException>(() => new VisualizerRetainedImageCoverage(
+            1, 1, [new(true, new Vector3(float.NaN, 0f, 0f))]));
+    }
+
+    [Fact]
+    public void Coverage_RejectsNonFiniteTargetTransforms()
+    {
+        var coverage = new VisualizerRetainedImageCoverage(1, 1, [new(true, Vector3.Zero)]);
+        var invalidView = Matrix4x4.Identity;
+        invalidView.M11 = float.NaN;
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            coverage.Reproject(invalidView, Matrix4x4.Identity, 1, 1));
+    }
