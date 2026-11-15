@@ -156,7 +156,7 @@ The tests verify the current contracts. To explore the first visible SVG sequenc
 - [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md) — see the engineering milestones and their current boundaries.
 - [Singularity City rendering handoff](docs/integrations/SINGULARITY_CITY_RENDERING_HANDOFF.md) — coordinate the Renderer / Visualize vertical slice with WebPage, from city plan view toward street-level exploration.
 - [Performance and benchmark rules](docs/PERFORMANCE.md) — understand how performance evidence must be collected and reported.
-- [Environment and scene composition](docs/ENVIRONMENT_AND_SCENE_COMPOSITION.md) — define the composable scene across surfaces, volumetric media, weather, sound, haptics, persistence, and staged proofs.
+- [Environment and scene composition](docs/ENVIRONMENT_AND_SCENE_COMPOSITION.md) — define the composable scene across surfaces, volumetric media, weather, sound, haptics, persistence, and staged proofs. The first implemented [complete scene snapshot contract](docs/ENVIRONMENT_AND_SCENE_COMPOSITION.md#9-implemented-first-scene-snapshot-contract) documents stable object identity, deterministic full replacement, visibility/layers, and camera separation.
 - [Formation field presentation](docs/FORMATION_FIELD_PRESENTATION.md) — define the isometric drill-field concept, row-by-row Fall In, orderly Fall Out, and visual scaling from soldiers to squads and platoons.
 - [Physics-based lighting, shadows, and extensible math](docs/LIGHTING_AND_SHADOWS.md) — understand physical light-source meaning, independent horizon work buckets, MicroBundle arbitration, cache invalidation, and the staged plan for optional math optimizations.
 - [Open questions](docs/OPEN_QUESTIONS.md) — review unresolved design decisions.
