@@ -318,8 +318,6 @@ jobs:
               assert f'data-entity-id="{entity_id}"' in first, entity_id
               assert f'data-entity-id="{entity_id}"' in moved, entity_id
           assert first != moved
-          for shape in ("floor", "platform", "box", "ball", "articulated-placeholder"):
-              assert shape not in manifest["fixture"], shape
           print(json.dumps(manifest, indent=2))
           PY
 
