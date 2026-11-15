@@ -79,7 +79,7 @@ public sealed class VisualizerSceneSnapshotTests
     public void ViewChangesDoNotMutateSnapshotOrWorldTransforms()
     {
         var snapshot = new VisualizerSceneSnapshot("scene", 12,
-            [Object(5, commands: [Draw(5)])]);
+            [Object(5, commands: [Draw(5, 4)])]);
         var first = snapshot.CreateFrame(View());
         var second = snapshot.CreateFrame(View(Matrix4x4.CreateTranslation(-10, 0, 0)));
 
