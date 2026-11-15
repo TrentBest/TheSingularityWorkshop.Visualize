@@ -165,3 +165,4 @@ public sealed class VisualizerRetainedImageTests
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             coverage.Reproject(invalidView, Matrix4x4.Identity, 1, 1));
     }
+}
