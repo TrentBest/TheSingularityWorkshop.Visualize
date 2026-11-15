@@ -359,6 +359,7 @@ jobs:
               assert {item["districtId"] for item in parcel_memberships} == district_ids, entry
               parcel_parent = {item["parcelId"]: item["districtId"] for item in parcel_memberships}
               assert len(parcel_parent) == entry["parcels"], entry
+              assert {item["parcelId"] for item in entry["buildingMemberships"]} == parcel_ids, entry
               memberships = entry["buildingMemberships"]
               assert len(memberships) == entry["buildings"], entry
               assert len({item["buildingId"] for item in memberships}) == entry["buildings"], entry
