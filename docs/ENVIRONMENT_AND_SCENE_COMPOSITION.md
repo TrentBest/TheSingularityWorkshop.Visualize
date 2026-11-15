@@ -127,7 +127,21 @@ Build evidence in small slices rather than declaring the entire environment solv
 
 Every proof must say whether it is a diagram, browser-side experiment, CPU-side artifact, or real GPU/audio/haptic execution. A storyboard is not a renderer; a successful frame conversion is not proof of pixels on a device.
 
-## 9. Acceptance principles
+## 9. Implemented first scene-snapshot contract
+
+**Status: implemented contract and unit tests; no scene authoring runtime or GPU scene renderer is implied.**
+
+`VisualizerSceneSnapshot` is the first small, renderer-neutral scene surface. It represents a complete immutable snapshot with a caller-owned stable string identity and a positive revision. The owner advances the revision when world content changes and submits the replacement snapshot; Visualize does not infer revisions or maintain an authoritative scene database.
+
+Each `VisualizerSceneObject` has a persistent `VisualizerEntityId`, a non-negative compositing layer, visibility, and one or more ordered manifestation commands. Commands must carry their owning object's identity. Command count and topology may change between revisions while the object identity remains stable. Snapshot construction rejects duplicate object identities and deterministically orders objects by layer, then numeric entity identity.
+
+`CreateFrame(view, visibleLayers)` creates an observer-specific `VisualizerFrame`. It omits hidden objects and, when supplied, layers outside the requested set. The view is supplied separately; changing camera/view matrices does not rewrite the scene snapshot or its world transforms. Lower layers are emitted first. The frame remains the existing renderer/backend boundary and does not introduce GUI, Physics, AnyApp, Gestures, or Hermit dependencies.
+
+The update model is deliberately **full snapshot replacement**, not incremental patches: the next revision is the complete object set, and an object omitted from it is absent. This gives consumers deterministic replacement semantics without prematurely adding patch ordering, deletion messages, or stale-update arbitration. The scene owner is responsible for monotonically increasing revisions; this contract validates positive revisions but cannot compare snapshots that are submitted independently.
+
+Executable coverage is in [VisualizerSceneSnapshotTests](../tests/TheSingularityWorkshop.Visualize.Tests/VisualizerSceneSnapshotTests.cs). It verifies identity across revisions and changing command topology, deterministic ordering, visibility/layer filtering, camera/world-transform separation, and invalid/duplicate identity rejection. The contract does not yet provide a built-in primitive authoring vocabulary, scene persistence, incremental mutation API, diagnostics for missing resources (existing `Visualizer.RenderAsync` validates frame resources), or a new backend. The existing CPU/static SVG backend is the current manifestation path; it is not GPU execution.
+
+## 10. Acceptance principles
 
 - The Environment is a composition of capabilities, not a monolithic subsystem.
 - Visualize can evolve toward surfaces and volumes without taking ownership of physics, story logic, audio, haptics, or persistence.
