@@ -341,7 +341,7 @@ jobs:
             09-gui-svg-feature-gallery.svg; do
             file="./samples/PrimitiveGallery/generated/$sample"
             test -s "$file" || { echo "Missing or empty Visualizer output: $file"; exit 1; }
-            grep -q '<path' "$file" || { echo "No rendered paths in: $file"; exit 1; }
+            grep -Eq '<(path|circle|line|polygon|polyline|rect|ellipse|use)([ >])' "$file" || { echo "No visible SVG geometry element in: $file"; exit 1; }
           done
           grep -q 'stroke="#7ee0bd"' ./samples/PrimitiveGallery/generated/06-lit-hemisphere-normals.svg
           grep -q 'attributeName="r"' ./samples/PrimitiveGallery/generated/07-gui-svg-connected-points.svg
