@@ -105,7 +105,7 @@ Console.WriteLine($"Generated {initialPath}");
 Console.WriteLine($"Generated {movedPath}");
 Console.WriteLine($"Generated {manifestPath}");
 
-VisualizerMaterial Material(ulong id, Vector4 color) => new(1, color);
+(ulong Id, VisualizerMaterial Value) Material(ulong id, Vector4 color) => (id, new VisualizerMaterial(1, color));
 VisualizerDrawCommand Command((int First, int Count) range, ulong material, ulong entity, Matrix4x4? transform = null) =>
     new(geometryId, new VisualizerResourceId(material), transform ?? Matrix4x4.Identity,
         range.Count, range.First, 0, VisualizerRepresentation.Near, entity: new VisualizerEntityId(entity));
