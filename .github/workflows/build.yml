@@ -350,13 +350,34 @@ jobs:
           assert len(report) == 3, f"Expected three skin outputs, found {len(report)}"
           for entry in report:
               assert entry["stableBuildingEntityIds"] == entry["buildings"], entry
+              assert entry["semanticHierarchyValidated"] is True, entry
+              assert entry["districts"] == len(entry["stableDistrictIds"]) > 0, entry
+              assert entry["parcels"] == len(entry["stableParcelIds"]) > 0, entry
+              memberships = entry["buildingMemberships"]
+              assert len(memberships) == entry["buildings"], entry
+              assert len({item["buildingId"] for item in memberships}) == entry["buildings"], entry
+              district_ids = set(entry["stableDistrictIds"])
+              parcel_ids = set(entry["stableParcelIds"])
+              parcel_districts = {}
+              for item in memberships:
+                  assert item["parcelId"] in parcel_ids, item
+                  assert item["districtId"] in district_ids, item
+                  parcel_districts.setdefault(item["parcelId"], item["districtId"])
+                  assert parcel_districts[item["parcelId"]] == item["districtId"], item
               svg = (root / entry["outputFile"]).read_text(encoding="utf-8")
-              ids = {int(value) for value in re.findall(r'data-entity-id="(\d+)"', svg)}
+              ids = {int(value) for value in re.findall(r'data-entity-id="(\\d+)"', svg)}
               assert 1 in ids, f"Missing road-network entity in {entry['outputFile']}"
               assert len(ids - {1}) == entry["buildings"], (
                   f"Building identity count mismatch in {entry['outputFile']}: "
                   f"{len(ids - {1})} != {entry['buildings']}"
               )
+              assert 'data-district-ids="' in svg, entry["outputFile"]
+              assert 'data-parcel-ids="' in svg, entry["outputFile"]
+              assert f'data-building-count="{entry["buildings"]}"' in svg, entry["outputFile"]
+              district_attr = re.search(r'data-district-ids="([^"]+)"', svg)
+              parcel_attr = re.search(r'data-parcel-ids="([^"]+)"', svg)
+              assert district_attr and {int(value) for value in district_attr.group(1).split(",")} == district_ids, entry["outputFile"]
+              assert parcel_attr and {int(value) for value in parcel_attr.group(1).split(",")} == parcel_ids, entry["outputFile"]
           PY
 
       - name: Generate deterministic Extremus crowd instance SVG proof
