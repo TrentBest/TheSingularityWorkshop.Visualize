@@ -106,6 +106,41 @@ foreach (var skin in skins)
     svgRoot.SetAttributeValue("data-district-ids", string.Join(",", scene.Districts.Select(item => item.Id)));
     svgRoot.SetAttributeValue("data-parcel-ids", string.Join(",", scene.Parcels.Select(item => item.Id)));
     svgRoot.SetAttributeValue("data-building-count", scene.Buildings.Count);
+
+    // Preserve the full city ontology in the SVG without fabricating geometry for
+    // vacant parcels. These nested groups are semantic records, not rendered shapes.
+    XNamespace svgNamespace = "http://www.w3.org/2000/svg";
+    var semanticHierarchy = new XElement(svgNamespace + "g",
+        new XAttribute("id", "city-semantic-hierarchy"),
+        new XAttribute("data-semantic-layer", "city"));
+    var buildingsByParcel = scene.Buildings
+        .GroupBy(building => building.ParcelId)
+        .ToDictionary(group => group.Key, group => group.Select(item => item.Id).Order().ToArray());
+    foreach (var district in scene.Districts.OrderBy(item => item.Id))
+    {
+        var districtElement = new XElement(svgNamespace + "g",
+            new XAttribute("id", $"district-{district.Id}"),
+            new XAttribute("data-semantic-type", "district"),
+            new XAttribute("data-district-id", district.Id),
+            new XAttribute("data-row", district.Row),
+            new XAttribute("data-column", district.Column));
+        foreach (var parcel in scene.Parcels.Where(item => item.DistrictId == district.Id).OrderBy(item => item.Id))
+        {
+            var parcelElement = new XElement(svgNamespace + "g",
+                new XAttribute("id", $"parcel-{parcel.Id}"),
+                new XAttribute("data-semantic-type", "parcel"),
+                new XAttribute("data-parcel-id", parcel.Id),
+                new XAttribute("data-district-id", parcel.DistrictId),
+                new XAttribute("data-occupancy", buildingsByParcel.ContainsKey(parcel.Id) ? "occupied" : "vacant"),
+                new XAttribute("data-row", parcel.Row),
+                new XAttribute("data-column", parcel.Column));
+            if (buildingsByParcel.TryGetValue(parcel.Id, out var buildingIds))
+                parcelElement.SetAttributeValue("data-building-ids", string.Join(",", buildingIds));
+            districtElement.Add(parcelElement);
+        }
+        semanticHierarchy.Add(districtElement);
+    }
+    svgRoot.Add(semanticHierarchy);
     svgDocument.Save(output);
     var serializedEntityIds = svgDocument
         .Descendants()
