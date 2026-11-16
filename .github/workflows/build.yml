@@ -353,18 +353,20 @@ jobs:
               assert entry["semanticHierarchyValidated"] is True, entry
               assert entry["districts"] == len(entry["stableDistrictIds"]) > 0, entry
               assert entry["parcels"] == len(entry["stableParcelIds"]) > 0, entry
+              district_ids = set(entry["stableDistrictIds"])
+              parcel_ids = set(entry["stableParcelIds"])
               parcel_memberships = entry["parcelMemberships"]
               assert len(parcel_memberships) == entry["parcels"], entry
               assert {item["parcelId"] for item in parcel_memberships} == parcel_ids, entry
               assert {item["districtId"] for item in parcel_memberships} == district_ids, entry
               parcel_parent = {item["parcelId"]: item["districtId"] for item in parcel_memberships}
               assert len(parcel_parent) == entry["parcels"], entry
-              assert {item["parcelId"] for item in entry["buildingMemberships"]} == parcel_ids, entry
               memberships = entry["buildingMemberships"]
               assert len(memberships) == entry["buildings"], entry
               assert len({item["buildingId"] for item in memberships}) == entry["buildings"], entry
-              district_ids = set(entry["stableDistrictIds"])
-              parcel_ids = set(entry["stableParcelIds"])
+              occupied_parcel_ids = {item["parcelId"] for item in memberships}
+              assert occupied_parcel_ids <= parcel_ids, entry
+              assert entry["vacantParcelCount"] == len(parcel_ids - occupied_parcel_ids), entry
               parcel_districts = {}
               for item in memberships:
                   assert item["parcelId"] in parcel_ids, item
