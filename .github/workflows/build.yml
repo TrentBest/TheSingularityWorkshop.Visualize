@@ -378,7 +378,36 @@ jobs:
                   assert parcel_parent[item["parcelId"]] == item["districtId"], item
                   parcel_districts.setdefault(item["parcelId"], item["districtId"])
                   assert parcel_districts[item["parcelId"]] == item["districtId"], item
-              svg = (root / entry["outputFile"]).read_text(encoding="utf-8")
+              svg_path = root / entry["outputFile"]
+              svg = svg_path.read_text(encoding="utf-8")
+              import xml.etree.ElementTree as ET
+              svg_tree = ET.parse(svg_path)
+              svg_ns = "{http://www.w3.org/2000/svg}"
+              semantic_root = svg_tree.getroot().find(f"{svg_ns}g[@id='city-semantic-hierarchy']")
+              assert semantic_root is not None, entry["outputFile"]
+              district_groups = semantic_root.findall(f"{svg_ns}g[@data-semantic-type='district']")
+              parcel_groups = semantic_root.findall(f".//{svg_ns}g[@data-semantic-type='parcel']")
+              svg_district_ids = {int(node.attrib["data-district-id"]) for node in district_groups}
+              svg_parcel_ids = {int(node.attrib["data-parcel-id"]) for node in parcel_groups}
+              assert svg_district_ids == district_ids, entry["outputFile"]
+              assert svg_parcel_ids == parcel_ids, entry["outputFile"]
+              assert len(district_groups) == len(district_ids), entry["outputFile"]
+              assert len(parcel_groups) == len(parcel_ids), entry["outputFile"]
+              svg_parcel_parent = {
+                  int(node.attrib["data-parcel-id"]): int(node.attrib["data-district-id"])
+                  for node in parcel_groups
+              }
+              assert svg_parcel_parent == parcel_parent, entry["outputFile"]
+              svg_vacant_ids = {
+                  int(node.attrib["data-parcel-id"])
+                  for node in parcel_groups
+                  if node.attrib.get("data-occupancy") == "vacant"
+              }
+              assert svg_vacant_ids == vacant_parcel_ids, entry["outputFile"]
+              assert all(node.attrib.get("data-building-ids") for node in parcel_groups
+                         if node.attrib.get("data-occupancy") == "occupied"), entry["outputFile"]
+              assert all("data-building-ids" not in node.attrib for node in parcel_groups
+                         if node.attrib.get("data-occupancy") == "vacant"), entry["outputFile"]
               ids = {int(value) for value in re.findall(r'data-entity-id="(\d+)"', svg)}
               assert 1 in ids, f"Missing road-network entity in {entry['outputFile']}"
               assert {item["buildingId"] for item in memberships} == ids - {1}, entry["outputFile"]
