@@ -136,6 +136,7 @@ foreach (var skin in skins)
         parcels = scene.Parcels.Count,
         stableParcelIds = scene.Parcels.Select(item => item.Id).ToArray(),
         parcelMemberships = scene.Parcels.Select(item => new { parcelId = item.Id, districtId = item.DistrictId }).ToArray(),
+        vacantParcelCount = scene.Parcels.Count(parcel => !scene.Buildings.Any(building => building.ParcelId == parcel.Id)),
         buildingMemberships = scene.Buildings.Select(item => new { buildingId = item.Id, parcelId = item.ParcelId, districtId = item.DistrictId }).ToArray(),
         semanticHierarchyValidated = true,
         sourceFaces = scene.Faces.Count,
@@ -220,8 +221,10 @@ internal sealed record CityScene(IReadOnlyList<VisualizerVertex> Vertices, IRead
 
     public void ValidateSemanticHierarchy()
     {
-        if (Districts.Count == 0 || Parcels.Count == 0 || Buildings.Count == 0)
-            throw new InvalidOperationException("City semantic hierarchy must contain districts, parcels, and buildings.");
+        if (Districts.Count == 0 || Parcels.Count == 0)
+            throw new InvalidOperationException("City semantic hierarchy must contain districts and parcels.");
+        if (Buildings.Count == 0)
+            throw new InvalidOperationException("City fixture must contain at least one building.");
         if (Districts.Select(item => item.Id).Distinct().Count() != Districts.Count ||
             Parcels.Select(item => item.Id).Distinct().Count() != Parcels.Count ||
             Buildings.Select(item => item.Id).Distinct().Count() != Buildings.Count)
@@ -295,6 +298,26 @@ internal sealed class CityMassing
 
     private void AddBuildings()
     {
+        // Districts and parcels exist independently of occupancy. Vacant parcels are
+        // first-class city records and must not disappear merely because no building
+        // geometry is authored for their grid cell.
+        for (var districtRow = 0; districtRow < 3; districtRow++)
+        for (var districtColumn = 0; districtColumn < 3; districtColumn++)
+        {
+            var districtId = 20_000_000UL + (ulong)districtRow * 100UL + (ulong)districtColumn + 1UL;
+            _districts.Add((districtRow, districtColumn), new CityDistrict(districtId, districtRow, districtColumn));
+        }
+
+        for (var row = 0; row < 18; row++)
+        for (var col = 0; col < 22; col++)
+        {
+            var districtRow = row / 6;
+            var districtColumn = col / 8;
+            var district = _districts[(districtRow, districtColumn)];
+            var parcelId = 30_000_000UL + (ulong)row * 100UL + (ulong)col + 1UL;
+            _parcels.Add((row, col), new CityParcel(parcelId, district.Id, row, col));
+        }
+
         for (var row = 0; row < 18; row++)
         for (var col = 0; col < 22; col++)
         {
@@ -310,18 +333,8 @@ internal sealed class CityMassing
                 var entityId = 10_000_000UL + (ulong)row * 100_000UL + (ulong)col * 100UL + (ulong)local + 1UL;
                 var districtRow = row / 6;
                 var districtColumn = col / 8;
-                var districtKey = (districtRow, districtColumn);
-                if (!_districts.TryGetValue(districtKey, out var district))
-                {
-                    district = new CityDistrict(20_000_000UL + (ulong)districtRow * 100UL + (ulong)districtColumn + 1UL, districtRow, districtColumn);
-                    _districts.Add(districtKey, district);
-                }
-                var parcelKey = (row, col);
-                if (!_parcels.TryGetValue(parcelKey, out var parcel))
-                {
-                    parcel = new CityParcel(30_000_000UL + (ulong)row * 100UL + (ulong)col + 1UL, district.Id, row, col);
-                    _parcels.Add(parcelKey, parcel);
-                }
+                var district = _districts[(districtRow, districtColumn)];
+                var parcel = _parcels[(row, col)];
                 _buildings.Add(new CityBuilding(entityId, parcel.Id, district.Id));
                 var landmark = (col == 10 && row == 8 && local == 0) ||
                     (col == 14 && row == 5 && local == 0) ||
