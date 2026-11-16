@@ -354,6 +354,8 @@ jobs:
               assert entry["districts"] == len(entry["stableDistrictIds"]) == 9, entry
               assert entry["parcels"] == len(entry["stableParcelIds"]) == 396, entry
               assert entry["vacantParcelCount"] > 0, entry
+              vacant_parcel_ids = set(entry["stableVacantParcelIds"])
+              assert len(vacant_parcel_ids) == entry["vacantParcelCount"], entry
               district_ids = set(entry["stableDistrictIds"])
               parcel_ids = set(entry["stableParcelIds"])
               parcel_memberships = entry["parcelMemberships"]
@@ -368,6 +370,7 @@ jobs:
               occupied_parcel_ids = {item["parcelId"] for item in memberships}
               assert occupied_parcel_ids <= parcel_ids, entry
               assert entry["vacantParcelCount"] == len(parcel_ids - occupied_parcel_ids), entry
+              assert vacant_parcel_ids == parcel_ids - occupied_parcel_ids, entry
               parcel_districts = {}
               for item in memberships:
                   assert item["parcelId"] in parcel_ids, item
