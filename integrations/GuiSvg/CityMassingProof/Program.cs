@@ -126,6 +126,12 @@ foreach (var skin in skins)
     var representationCounts = renderCommands
         .GroupBy(command => command.Representation)
         .ToDictionary(group => group.Key.ToString(), group => group.Count());
+    var occupiedParcelIds = scene.Buildings.Select(building => building.ParcelId).ToHashSet();
+    var vacantParcelIds = scene.Parcels
+        .Where(parcel => !occupiedParcelIds.Contains(parcel.Id))
+        .Select(parcel => parcel.Id)
+        .ToArray();
+
     proofReport.Add(new
     {
         skin = skin.Name,
@@ -136,7 +142,8 @@ foreach (var skin in skins)
         parcels = scene.Parcels.Count,
         stableParcelIds = scene.Parcels.Select(item => item.Id).ToArray(),
         parcelMemberships = scene.Parcels.Select(item => new { parcelId = item.Id, districtId = item.DistrictId }).ToArray(),
-        vacantParcelCount = scene.Parcels.Count(parcel => !scene.Buildings.Any(building => building.ParcelId == parcel.Id)),
+        vacantParcelCount = vacantParcelIds.Length,
+        stableVacantParcelIds = vacantParcelIds,
         buildingMemberships = scene.Buildings.Select(item => new { buildingId = item.Id, parcelId = item.ParcelId, districtId = item.DistrictId }).ToArray(),
         semanticHierarchyValidated = true,
         sourceFaces = scene.Faces.Count,
