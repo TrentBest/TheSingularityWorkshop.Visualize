@@ -19,8 +19,20 @@ public sealed class VisualizerInstanceBuffer
         if (instances.Count == 0)
             throw new ArgumentException("At least one instance is required.", nameof(instances));
 
-        Revision = revision;
         _instances = instances.ToArray();
+        for (var index = 0; index < _instances.Length; index++)
+        {
+            var instance = _instances[index];
+            if (!VisualizerMatrixValidation.IsFinite(instance.WorldTransform))
+                throw new ArgumentOutOfRangeException(nameof(instances),
+                    $"Instance {index} world transform components must be finite.");
+            if (!float.IsFinite(instance.Color.X) || !float.IsFinite(instance.Color.Y) ||
+                !float.IsFinite(instance.Color.Z) || !float.IsFinite(instance.Color.W))
+                throw new ArgumentOutOfRangeException(nameof(instances),
+                    $"Instance {index} color components must be finite.");
+        }
+
+        Revision = revision;
         Instances = Array.AsReadOnly(_instances);
     }
 
