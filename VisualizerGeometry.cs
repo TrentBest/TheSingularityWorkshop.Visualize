@@ -17,16 +17,34 @@ public sealed class VisualizerGeometry
     {
         ArgumentNullException.ThrowIfNull(vertices);
         ArgumentNullException.ThrowIfNull(indices);
-        if (vertices.Count == 0)
+
+        // Validate the snapshots, not the caller-owned collections, so subsequent caller mutation
+        // cannot change which data was checked or introduce invalid data after construction.
+        _vertices = vertices.ToArray();
+        _indices = indices.ToArray();
+
+        if (_vertices.Length == 0)
             throw new ArgumentException("At least one vertex is required.", nameof(vertices));
-        if (indices.Count == 0)
+        if (_indices.Length == 0)
             throw new ArgumentException("At least one index is required.", nameof(indices));
-        if (indices.Any(index => index >= vertices.Count))
+
+        for (var index = 0; index < _vertices.Length; index++)
+        {
+            var vertex = _vertices[index];
+            if (!IsFinite(vertex.Position))
+                throw new ArgumentOutOfRangeException(nameof(vertices), $"Vertex {index} position components must be finite.");
+            if (!IsFinite(vertex.Normal))
+                throw new ArgumentOutOfRangeException(nameof(vertices), $"Vertex {index} normal components must be finite.");
+            if (!IsFinite(vertex.TextureCoordinate))
+                throw new ArgumentOutOfRangeException(nameof(vertices), $"Vertex {index} texture-coordinate components must be finite.");
+            if (!IsFinite(vertex.Color))
+                throw new ArgumentOutOfRangeException(nameof(vertices), $"Vertex {index} color components must be finite.");
+        }
+
+        if (_indices.Any(index => index >= _vertices.Length))
             throw new ArgumentException("Every index must refer to an existing vertex.", nameof(indices));
 
         Revision = revision;
-        _vertices = vertices.ToArray();
-        _indices = indices.ToArray();
         Vertices = Array.AsReadOnly(_vertices);
         Indices = Array.AsReadOnly(_indices);
     }
@@ -47,6 +65,16 @@ public sealed class VisualizerGeometry
     /// <summary>Gets contiguous read-only index memory for bulk backend uploads.</summary>
     /// <remarks>The memory is backed by the same private snapshot exposed through <see cref="Indices"/>.</remarks>
     public ReadOnlyMemory<uint> IndexMemory => _indices;
+
+    private static bool IsFinite(Vector2 value) =>
+        float.IsFinite(value.X) && float.IsFinite(value.Y);
+
+    private static bool IsFinite(Vector3 value) =>
+        float.IsFinite(value.X) && float.IsFinite(value.Y) && float.IsFinite(value.Z);
+
+    private static bool IsFinite(Vector4 value) =>
+        float.IsFinite(value.X) && float.IsFinite(value.Y) &&
+        float.IsFinite(value.Z) && float.IsFinite(value.W);
 }
 
 /// <summary>Initial backend-neutral vertex format for a first indexed-draw prototype.</summary>
