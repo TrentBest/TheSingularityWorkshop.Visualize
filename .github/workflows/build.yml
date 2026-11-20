@@ -424,6 +424,59 @@ jobs:
               assert parcel_attr and {int(value) for value in parcel_attr.group(1).split(",")} == parcel_ids, entry["outputFile"]
           PY
 
+      - name: Generate deterministic MyCity block scene
+        run: >
+          dotnet run --project samples/MyCityBlockProof/MyCityBlockProof.csproj
+          --configuration Release
+          -- ./artifacts/mycity-block
+
+      - name: Verify MyCity block revisions, identity, and CPU/SVG boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          root = Path("./artifacts/mycity-block")
+          manifest = json.loads((root / "mycity-block-manifest.json").read_text(encoding="utf-8"))
+          assert manifest["schemaVersion"] == 1
+          assert manifest["fixture"] == "mycity-block"
+          assert manifest["fixtureKind"] == "domain-neutral-presentation-proof"
+          assert manifest["sceneIdentity"] == "workshop://mycity/block/alpha"
+          assert manifest["revisions"] == [1, 2]
+          assert manifest["districtIds"] == [101, 102]
+          assert manifest["parcelIds"] == [201, 202, 203, 204, 205, 206, 207, 208]
+          assert manifest["buildingIds"] == [301, 302, 303, 304]
+          assert manifest["deterministicRepeat"] is True
+          assert manifest["representationChangePreservesIdentity"] is True
+          assert manifest["backend"] == "SvgVisualizerBackend"
+          assert manifest["execution"] == "CPU/static SVG"
+          assert manifest["gpuExecution"] is False
+          assert manifest["nearCommandCount"] > manifest["distantCommandCount"]
+          expected = set(manifest["stableEntityIds"])
+          for filename in ("mycity-block.svg", "mycity-block-distant.svg"):
+              svg = (root / filename).read_text(encoding="utf-8")
+              actual = {int(value) for value in re.findall(r'data-entity-id="(\\d+)"', svg)}
+              assert actual == expected, (filename, actual, expected)
+          near = (root / "mycity-block.svg").read_text(encoding="utf-8")
+          distant = (root / "mycity-block-distant.svg").read_text(encoding="utf-8")
+          assert near != distant
+          assert 'data-representation="near"' in near
+          assert 'data-representation="distant"' in distant
+          print(json.dumps(manifest, indent=2))
+          PY
+
+      - name: Upload MyCity block proof
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-mycity-block-proof
+          path: |
+            ./artifacts/mycity-block/*.svg
+            ./artifacts/mycity-block/*.json
+          if-no-files-found: error
+
       - name: Generate deterministic Extremus crowd instance SVG proof
         env:
           WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
