@@ -59,6 +59,18 @@ The city fixture sends a real Renderer `RenderFrame` through `RendererFrameAdapt
 
 **See:** [City massing recipe, adapter assertions, and limits](gallery/city-massing.md). Download `visualize-city-massing-proof` from the [proof workflow](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39369513107).
 
+## MyCity block — a focused city-scene slice
+
+The [MyCity block fixture](../samples/MyCityBlockProof/README.md) creates two districts, eight parcels, and four buildings from stable semantic IDs. Two complete scene revisions use the same geometry/material resource catalog: near representations include roof detail; distant representations reduce the building draw count while preserving entity identity.
+
+**Run it** from the repository root:
+
+```sh
+dotnet run --project samples/MyCityBlockProof/MyCityBlockProof.csproj --configuration Release -- ./artifacts/mycity-block
+```
+
+CI uploads `visualize-mycity-block-proof`. This is a deterministic CPU/static-SVG presentation proof, not authoritative MyCity data, an interactive city, or GPU execution.
+
 ## 06 — Observer-driven frame: the world responds to movement
 
 Two generated frames run the actual Renderer distance policy at observer X=0 and X=50, preserve entity identity and representation through `RendererFrameAdapter`, and draw the resulting detail choices through Visualize and GUI.SVG. This is an executable CPU/SVG integration proof, not GPU output or a performance benchmark.
