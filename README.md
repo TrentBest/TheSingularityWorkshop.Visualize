@@ -17,6 +17,10 @@
 
 The [environment-scene fixture](samples/EnvironmentSceneProof/README.md) builds a floor, platform, box, ball, and articulated placeholder through the public scene snapshot contract. CI renders two revisions, verifies repeatable output and stable semantic identities after the ball moves, and uploads the CPU/static-SVG artifacts. The articulated figure is illustrative geometry—not a Gestures controller or physics simulation.
 
+## Deterministic MyCity block proof
+
+The [MyCity block fixture](samples/MyCityBlockProof/README.md) adds a focused two-district, eight-parcel, four-building scene. It creates two complete revisions through `VisualizerSceneSnapshot` and Visualize's direct `SvgVisualizerBackend`, preserving stable semantic IDs while reducing building detail for the distant representation. CI checks deterministic repeat output, identity continuity, representation change, and the explicit CPU/static-SVG boundary. This is a presentation fixture, not MyCity's authoritative domain model or a GPU renderer.
+
 ## Living visual showcase
 
 Visualize owns a direct SVG artifact backend for `VisualizerFrame` plus its geometry/material resources. This is the default path for general scene-to-SVG output and does not depend on GUI.Core or GUI.SVG. The [static SVG backend contract](docs/STATIC_SVG_BACKEND.md) documents the supported indexed-triangle path, validation behavior, and explicit CPU/not-presented limitations.
