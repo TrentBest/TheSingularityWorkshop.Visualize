@@ -51,25 +51,17 @@ public sealed class VisualizerWorkloadEncoderTests
     }
 
     [Fact]
-    public void Encode_RejectsNonFinitePositionRatherThanEmittingInvalidBytes()
+    public void GeometryRejectsNonFinitePositionBeforeItCanReachTheEncoder()
     {
-        var catalog = CreateCatalog();
-        catalog.SetGeometry(new VisualizerResourceId(10), new VisualizerGeometry(2,
+        var error = Assert.Throws<ArgumentOutOfRangeException>(() => new VisualizerGeometry(2,
         [
             new VisualizerVertex(new Vector3(float.NaN, 0, 0), Vector3.UnitZ, Vector2.Zero, Vector4.One),
             new VisualizerVertex(Vector3.UnitX, Vector3.UnitZ, Vector2.UnitX, Vector4.One),
             new VisualizerVertex(Vector3.UnitY, Vector3.UnitZ, Vector2.UnitY, Vector4.One)
         ], [0, 1, 2]));
-        var command = new VisualizerDrawCommand(
-            new VisualizerResourceId(10), new VisualizerResourceId(20), Matrix4x4.Identity,
-            3, 0, 0, VisualizerRepresentation.Near);
-        var resolved = VisualizerFrameResolver.Resolve(new VisualizerFrame(
-            new VisualizerView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity), [command]), catalog);
 
-        var error = Assert.Throws<InvalidOperationException>(() => VisualizerWorkloadEncoder.Encode(resolved[0]));
-
-        Assert.Contains("non-finite", error.Message);
-        Assert.Contains("vertex 0 position", error.Message);
+        Assert.Contains("position", error.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("finite", error.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     private static ResolvedVisualizerDrawCommand Resolve(bool instanced)
