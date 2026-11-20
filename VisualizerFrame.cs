@@ -105,6 +105,8 @@ public readonly record struct VisualizerDrawCommand
             throw new ArgumentOutOfRangeException(nameof(indexCount));
         if (firstIndex < 0)
             throw new ArgumentOutOfRangeException(nameof(firstIndex));
+        if (!Enum.IsDefined(representation))
+            throw new ArgumentOutOfRangeException(nameof(representation), representation, "The representation value is not defined.");
         if (instanceCount <= 0)
             throw new ArgumentOutOfRangeException(nameof(instanceCount));
         if (firstInstance < 0)
