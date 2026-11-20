@@ -38,24 +38,15 @@ public sealed class MyCityBlockPipelineTests
     }
 
     [Fact]
-    public async Task InvalidGeometryIndexIsRejectedBeforeBackendSubmission()
+    public async Task InvalidDrawRangeIsRejectedBeforeBackendSubmission()
     {
-        var resources = new VisualizerResourceCatalog();
-        resources.SetGeometry(new VisualizerResourceId(1), new VisualizerGeometry(
-            1,
-            [
-                Vertex(-0.5f, -0.5f),
-                Vertex(0.5f, -0.5f),
-                Vertex(0, 0.5f)
-            ],
-            [0, 1, 99]));
-        resources.SetMaterial(new VisualizerResourceId(2), new VisualizerMaterial(1, Vector4.One));
+        var resources = Resources();
         await using var visualizer = new Visualizer(new SvgVisualizerBackend(_ => { }), resources);
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await visualizer.RenderAsync(Frame()));
+            await visualizer.RenderAsync(Frame(indexCount: 6)));
 
-        Assert.Contains("outside geometry", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("outside geometry index range", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -79,14 +70,14 @@ public sealed class MyCityBlockPipelineTests
         Assert.Equal(2UL, second.Revision);
     }
 
-    private static VisualizerFrame Frame() =>
+    private static VisualizerFrame Frame(int indexCount = 3) =>
         new(
             new VisualizerView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity),
             [new VisualizerDrawCommand(
                 new VisualizerResourceId(1),
                 new VisualizerResourceId(2),
                 Matrix4x4.Identity,
-                3,
+                indexCount,
                 0,
                 0,
                 VisualizerRepresentation.Near,
