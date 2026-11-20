@@ -46,7 +46,30 @@ public sealed class MyCityBlockPipelineTests
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await visualizer.RenderAsync(Frame(indexCount: 6)));
 
-        Assert.Contains("outside geometry index range", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("outside geometry resource", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task MissingMaterialResourceIsRejectedRatherThanRenderedAsEmpty()
+    {
+        var resources = GeometryOnlyResources();
+        await using var visualizer = new Visualizer(new SvgVisualizerBackend(_ => { }), resources);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await visualizer.RenderAsync(Frame()));
+
+        Assert.Contains("missing material", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void GeometryRejectsIndicesOutsideItsVertexSnapshot()
+    {
+        var exception = Assert.Throws<ArgumentException>(() => new VisualizerGeometry(
+            1,
+            [Vertex(-0.5f, -0.5f), Vertex(0.5f, -0.5f), Vertex(0, 0.5f)],
+            [0, 1, 99]));
+
+        Assert.Contains("existing vertex", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -82,6 +105,16 @@ public sealed class MyCityBlockPipelineTests
                 0,
                 VisualizerRepresentation.Near,
                 entity: new VisualizerEntityId(301))]);
+
+    private static VisualizerResourceCatalog GeometryOnlyResources()
+    {
+        var resources = new VisualizerResourceCatalog();
+        resources.SetGeometry(new VisualizerResourceId(1), new VisualizerGeometry(
+            1,
+            [Vertex(-0.5f, -0.5f), Vertex(0.5f, -0.5f), Vertex(0, 0.5f)],
+            [0, 1, 2]));
+        return resources;
+    }
 
     private static VisualizerResourceCatalog Resources()
     {
