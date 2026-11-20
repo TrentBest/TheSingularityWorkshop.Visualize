@@ -408,7 +408,7 @@ jobs:
                          if node.attrib.get("data-occupancy") == "occupied"), entry["outputFile"]
               assert all("data-building-ids" not in node.attrib for node in parcel_groups
                          if node.attrib.get("data-occupancy") == "vacant"), entry["outputFile"]
-              actual = {int(value) for value in re.findall(r'data-entity-id="(\d+)"', svg)}
+              ids = {int(value) for value in re.findall(r'data-entity-id="(\d+)"', svg)}
               assert 1 in ids, f"Missing road-network entity in {entry['outputFile']}"
               assert {item["buildingId"] for item in memberships} == ids - {1}, entry["outputFile"]
               assert len(ids - {1}) == entry["buildings"], (
@@ -458,7 +458,7 @@ jobs:
           expected = set(manifest["stableEntityIds"])
           for filename in ("mycity-block.svg", "mycity-block-distant.svg"):
               svg = (root / filename).read_text(encoding="utf-8")
-              actual = {int(value) for value in re.findall(r'data-entity-id="(\\d+)"', svg)}
+              actual = {int(value) for value in re.findall(r'data-entity-id="(\d+)"', svg)}
               assert actual == expected, (filename, actual, expected)
           near = (root / "mycity-block.svg").read_text(encoding="utf-8")
           distant = (root / "mycity-block-distant.svg").read_text(encoding="utf-8")
