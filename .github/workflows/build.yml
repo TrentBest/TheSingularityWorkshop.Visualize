@@ -408,7 +408,7 @@ jobs:
                          if node.attrib.get("data-occupancy") == "occupied"), entry["outputFile"]
               assert all("data-building-ids" not in node.attrib for node in parcel_groups
                          if node.attrib.get("data-occupancy") == "vacant"), entry["outputFile"]
-              ids = {int(value) for value in re.findall(r'data-entity-id="(\d+)"', svg)}
+              actual = {int(value) for value in re.findall(r'data-entity-id="(\d+)"', svg)}
               assert 1 in ids, f"Missing road-network entity in {entry['outputFile']}"
               assert {item["buildingId"] for item in memberships} == ids - {1}, entry["outputFile"]
               assert len(ids - {1}) == entry["buildings"], (
