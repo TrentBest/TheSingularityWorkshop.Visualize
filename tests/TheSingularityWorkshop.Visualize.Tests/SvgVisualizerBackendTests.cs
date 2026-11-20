@@ -38,8 +38,6 @@ public sealed class SvgVisualizerBackendTests
     [Theory]
     [InlineData(-0.1f)]
     [InlineData(1.1f)]
-    [InlineData(float.NaN)]
-    [InlineData(float.PositiveInfinity)]
     public void BuildSvg_RejectsInvalidComputedAlpha(float alpha)
     {
         var resources = CreateResources(vertexAlpha: alpha);
@@ -47,6 +45,16 @@ public sealed class SvgVisualizerBackendTests
 
         var exception = Assert.Throws<InvalidOperationException>(() => backend.BuildSvg(CreateFrame(indexCount: 3), resources));
         Assert.Contains("alpha", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData(float.NaN)]
+    [InlineData(float.PositiveInfinity)]
+    public void GeometryRejectsNonFiniteVertexAlphaAtConstruction(float alpha)
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => CreateResources(vertexAlpha: alpha));
+        Assert.Contains("color", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("finite", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
