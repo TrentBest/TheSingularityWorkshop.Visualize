@@ -14,7 +14,7 @@ This separation is important to the Workshop's core hypothesis: reduce cost by r
 
 ## MicroBundle delivery and runtime composition
 
-Visualize and Renderer are runtime capabilities composed by FSM_COS as MicroBundles. They are not delivered to consumers as NuGet capability packages. Ordinary NuGet dependencies may be used for unrelated implementation needs, but they must not become a substitute for MicroBundle identity, resolution, verification, loading, or composition.
+Visualize and Renderer are runtime capabilities composed by FSM_COS as MicroBundles. They are not delivered to consumers as NuGet capability packages. Ordinary NuGet dependencies may be used for unrelated implementation needs, but they must not become a substitute for MicroBundle identity, resolution, verification, loading, or composition. The [Visualize MicroBundle guide](MICROBUNDLE.md) records its proposed portable identity and the evidence required for runtime composition.
 
 The Renderer source project reference in the adapter project is strictly a build/test dependency. It validates the adapter against the current source API and is not a runtime dependency-resolution mechanism. At runtime, FSM_COS owns the capability graph and composition lifecycle. Visualize must remain independently buildable as a source project while being non-packable as a capability.
 
