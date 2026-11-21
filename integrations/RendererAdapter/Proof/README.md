@@ -1,23 +1,31 @@
-# Renderer → Visualize → GUI.SVG proof
+# Renderer → Visualize tri-view proof
 
-This proof exercises the real .NET contracts across the integration boundary:
+This executable proof emits three views from **one canonical Renderer frame**:
 
-1. Observer distances are passed through Renderer’s real `ObserverDistance.Select` and ordered `EventHorizon` policies.
-2. The selected horizon chooses a desired representation; `RendererComputationMachine` and FSM_API advance to that representation. The resulting state is recorded in a platform-neutral `RenderDrawCommand` and `RenderFrame`.
-3. `RendererFrameAdapter` translates the frame to Visualize contracts while preserving representation and resource identity.
-4. `Visualizer` validates the frame's resources and submits it to `GuiSvgVisualizerBackend`.
-5. GUI.SVG emits the SVG output.
+1. **Documentation SVG** — GUI.SVG output for human-facing documentation.
+2. **Renderer structure** — JSON projection of the actual Renderer `RenderFrame`, including ordered commands, stable entity IDs, resource IDs, selected representations, transforms, and draw ranges.
+3. **Visualization output** — Visualize's own `SvgVisualizerBackend` consumes the exact same adapted `VisualizerFrame` and resource catalog and emits CPU/SVG output.
 
-Run from the Visualize repository root:
+The proof adapts the Renderer frame exactly once. Runtime assertions verify command count, order, entity identity, geometry/material resource identity, and representation mapping before either backend receives it. Both backends must report the same submitted draw count as the source frame.
+
+## Run
+
+From the Visualize repository root:
 
 ```bash
 dotnet run --project integrations/RendererAdapter/Proof/RendererFrameToSvgProof.csproj --configuration Release -- ./samples/PrimitiveGallery/generated/10-renderer-selected-frame.svg
 ```
 
-The project uses the source checkout path in CI when available, the shared sibling Renderer repository when `WorkshopUseRepositorySources=true`, and the declared Renderer package when neither source path is available.
+The command emits:
 
-## What this proves—and what it does not
+- `10-renderer-selected-frame.svg` — documentation-facing GUI.SVG artifact;
+- `10-renderer-selected-frame.renderer.json` — structured Renderer composition;
+- `10-renderer-selected-frame.visualize.svg` — Visualize backend output.
 
-This is a first executable **CPU-side integration proof**: actual Renderer distance-based horizon selection and FSM-backed representation state reach a real Visualize frame and a real GUI.SVG backend. The sample deliberately maps each selected state to a simple specimen shape and color so the states can be distinguished.
+The adapter project requires the Renderer source checkout (the shared sibling repository or CI's `RendererSource` checkout). Its source `ProjectReference` exists only to compile and test the adapter against Renderer contracts. There is no Renderer NuGet fallback, and this source reference is not runtime MicroBundle composition.
 
-It is not yet the production observer → Event Horizon/bucket → selected-work → frame-assembly pipeline, not a GPU backend, and not a benchmark. The sample's geometry mapping is demonstration code, not a universal representation policy. Those are separate milestones in Renderer’s implementation roadmap. The [Renderer observer/bucket coordinator work](https://github.com/TrentBest/TheSingularityWorkshop.Renderer/pull/14) is the next policy handoff; this proof intentionally does not claim that its pending API is already consumed here.
+## Evidence boundary
+
+This is an executable **CPU-side tri-view integration proof**. It exercises Renderer observer-distance horizon selection and FSM-backed representation selection, verifies the adapter's semantic handoff, and submits the same adapted frame to GUI.SVG and Visualize's own SVG/CPU backend.
+
+It is not GPU execution, an interactive desktop surface, a benchmark, or proof of the production observer → Event Horizon/bucket → selected-work → frame-assembly pipeline. The specimen geometry mapping is demonstrator code, not a universal representation policy.
