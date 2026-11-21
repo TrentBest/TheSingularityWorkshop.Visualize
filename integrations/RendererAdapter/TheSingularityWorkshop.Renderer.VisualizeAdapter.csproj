@@ -7,6 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>false</IsPackable>
     <WorkshopSourceRoot Condition="'$(WorkshopSourceRoot)' == ''">$(MSBuildThisFileDirectory)../../../</WorkshopSourceRoot>
+    <WorkshopRendererProjectPath Condition="Exists('$(WorkshopSourceRoot)/TheSingularityWorkshop.Renderer/TheSingularityWorkshop.Renderer.csproj')">$(WorkshopSourceRoot)/TheSingularityWorkshop.Renderer/TheSingularityWorkshop.Renderer.csproj</WorkshopRendererProjectPath>
     <WorkshopRendererProjectPath Condition="'$(WorkshopRendererProjectPath)' == '' and Exists('$(MSBuildThisFileDirectory)RendererSource/TheSingularityWorkshop.Renderer.csproj')">$(MSBuildThisFileDirectory)RendererSource/TheSingularityWorkshop.Renderer.csproj</WorkshopRendererProjectPath>
   </PropertyGroup>
 
