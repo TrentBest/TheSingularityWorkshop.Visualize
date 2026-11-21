@@ -79,7 +79,7 @@ TheSingularityWorkshop.Visualize is the presentation-execution project for The S
 
 ## MicroBundle delivery and composition
 
-Visualize and Renderer are runtime capabilities composed by **FSM_COS as MicroBundles**, not capabilities consumed through NuGet package references. NuGet may remain appropriate for ordinary implementation dependencies, but it is not the capability-distribution contract for either project.
+Visualize and Renderer are runtime capabilities composed by **FSM_COS as MicroBundles**, not capabilities consumed through NuGet package references. NuGet may remain appropriate for ordinary implementation dependencies, but it is not the capability-distribution contract for either project. See the [Visualize MicroBundle identity and evidence boundary](docs/MICROBUNDLE.md).
 
 The Renderer adapter's source `ProjectReference` exists only so builds and tests can validate the narrow adapter against the current Renderer API. It is not runtime composition. FSM_COS owns discovery, resolution, verification, loading, and composition of the Renderer and Visualize MicroBundles. A passing source build or SVG proof does not establish those runtime capabilities; they require their own executable integration tests.
  It turns observer-aware presentation data from [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into visual output without making a particular windowing toolkit or graphics API the definition of the world. The direct SVG artifact backend is CPU-only; a production GPU renderer remains a separate implementation milestone.
