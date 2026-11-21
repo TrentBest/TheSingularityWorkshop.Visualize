@@ -7,13 +7,14 @@
   ],
   "actual_branches": [
     "architecture/renderer-microbundle-consumption",
+    "architecture/visualize-microbundle-delivery",
     "development",
     "master",
     "work/renderer-visualize-triview-proof"
   ],
-  "branch_count": 4,
+  "branch_count": 5,
   "status": "NON-COMPLIANT",
-  "evaluated_at": "2026-11-20T12:59:52Z",
-  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/44740396481",
-  "triggering_commit": "3d582af697dac1aff6ff1459326f2468191aefc8"
+  "evaluated_at": "2026-11-21T12:43:29Z",
+  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/44905302191",
+  "triggering_commit": "a09ea6c25cc6cf0cb0fa8794d1f5788f235af097"
 }
