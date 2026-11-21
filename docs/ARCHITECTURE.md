@@ -12,6 +12,14 @@ Visualizer asks: *How do we efficiently execute the resulting presentation work 
 
 This separation is important to the Workshop's core hypothesis: reduce cost by reducing unnecessary computational detail before drawing, then execute the remaining parallel presentation work efficiently.
 
+## MicroBundle delivery and runtime composition
+
+Visualize and Renderer are runtime capabilities composed by FSM_COS as MicroBundles. They are not delivered to consumers as NuGet capability packages. Ordinary NuGet dependencies may be used for unrelated implementation needs, but they must not become a substitute for MicroBundle identity, resolution, verification, loading, or composition.
+
+The Renderer source project reference in the adapter project is strictly a build/test dependency. It validates the adapter against the current source API and is not a runtime dependency-resolution mechanism. At runtime, FSM_COS owns the capability graph and composition lifecycle. Visualize must remain independently buildable as a source project while being non-packable as a capability.
+
+A complete integration proof must load the actual Visualize and Renderer MicroBundle artifacts through FSM_COS, verify their portable identities and content integrity, compose them in the expected dependency order, execute a frame, and observe the resulting host output. A source-level adapter test or CPU/SVG artifact alone is not sufficient evidence.
+
 ## 2. Data flow
 
 ~~~text
