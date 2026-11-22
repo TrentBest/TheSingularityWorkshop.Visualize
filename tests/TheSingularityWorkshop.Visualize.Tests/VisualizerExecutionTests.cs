@@ -1,6 +1,5 @@
 using System.Numerics;
-using FSM_API;
-using TheSingularityWorkshop.FSM_API;
+using WorkshopFsmApi = FSM_API.FsmApi;
 using TheSingularityWorkshop.Visualize;
 using Xunit;
 
@@ -21,16 +20,16 @@ public sealed class VisualizerExecutionTests
 
         Assert.Equal("Queued", submission.State);
 
-        FsmApi.Interact.Update(group);
+        WorkshopFsmApi.Interact.Update(group);
         Assert.Equal("Preparing", submission.State);
 
-        FsmApi.Interact.Update(group);
+        WorkshopFsmApi.Interact.Update(group);
         Assert.Equal("Submitting", submission.State);
         Assert.False(submission.IsTerminal);
         Assert.Equal(1, backend.SubmissionCount);
 
         backend.Completion.SetResult(new VisualizerFrameResult(1, 0));
-        FsmApi.Interact.Update(group);
+        WorkshopFsmApi.Interact.Update(group);
 
         Assert.Equal("Completed", submission.State);
         Assert.True(submission.IsTerminal);
