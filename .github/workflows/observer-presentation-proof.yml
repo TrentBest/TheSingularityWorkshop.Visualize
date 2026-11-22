@@ -28,7 +28,18 @@ jobs:
           repository: TrentBest/FSM_API
           ref: development
           path: FSM_API
-      - name: Checkout Renderer source for actual observer policy and RenderFrame
+      - name: Checkout ProtocolAi development source
+        uses: actions/checkout@v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.ProtocolAi
+          ref: development
+          path: TheSingularityWorkshop.ProtocolAi
+      - name: Checkout MicroBundleDomain development source
+        uses: actions/checkout@v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.MicroBundleDomain
+          ref: development
+          path: TheSingularityWorkshop.MicroBundleDomain
         uses: actions/checkout@v7
         with:
           repository: TrentBest/TheSingularityWorkshop.Renderer
