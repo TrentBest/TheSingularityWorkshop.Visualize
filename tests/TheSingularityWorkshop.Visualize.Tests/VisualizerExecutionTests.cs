@@ -34,7 +34,7 @@ public sealed class VisualizerExecutionTests
 
         Assert.Equal("Completed", submission.State);
         Assert.True(submission.IsTerminal);
-        Assert.Equal(1UL, submission.Result?.FrameId);
+        Assert.Equal(1UL, submission.Result?.FrameNumber);
         Assert.Null(submission.Error);
 
         await visualizer.DisposeAsync();
