@@ -154,9 +154,11 @@ internal sealed class VisualizerExecutionContext : IStateContext
         _visualizer = visualizer;
         _frame = frame;
         _cancellationToken = cancellationToken;
+        Name = $"VisualizerFrame:{Guid.NewGuid():N}";
         IsValid = true;
     }
 
+    public string Name { get; set; }
     public bool IsValid { get; set; }
     internal bool IsReady { get; private set; }
     internal bool IsCompleted { get; private set; }
