@@ -57,6 +57,7 @@ jobs:
           root = Path("_site")
           required = [
               "index.html",
+              "docs/assets/moniker.svg",
               "docs/GALLERY.md",
               "docs/ARCHITECTURE.md",
               "docs/FSM_API_BOUNDARY.md",
@@ -76,6 +77,7 @@ jobs:
               "samples/SoldierField/WebGpuRunner/",
               "samples/NormalLightingLab/",
               "docs/GALLERY.md",
+              "docs/assets/moniker.svg",
               "https://github.com/TrentBest/TheSingularityWorkshop.Visualize/blob/master/docs/ARCHITECTURE.md",
               "https://github.com/TrentBest/TheSingularityWorkshop.Visualize/blob/master/docs/FSM_API_BOUNDARY.md",
           ):
