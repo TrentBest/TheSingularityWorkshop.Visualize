@@ -69,7 +69,7 @@ public sealed class VisualizerExecution : IDisposable
             if (!_submissions.Remove(submission))
                 return;
 
-            submission.Context.IsValid = false;
+            submission.Context.InvalidateAndCancel();
             WorkshopFsmApi.Interact.DestroyInstance(submission.Handle);
         }
     }
@@ -85,7 +85,7 @@ public sealed class VisualizerExecution : IDisposable
             _disposed = true;
             foreach (var submission in _submissions.ToArray())
             {
-                submission.Context.IsValid = false;
+                submission.Context.InvalidateAndCancel();
                 WorkshopFsmApi.Interact.DestroyInstance(submission.Handle);
                 submission.MarkReleased();
             }
@@ -127,6 +127,13 @@ public sealed class VisualizerExecutionSubmission : IDisposable
     /// <summary>Gets the backend exception after failure.</summary>
     public Exception? Error => Context.Error;
 
+    /// <summary>Requests cancellation; the FSM observes the cancelled backend task on a later update.</summary>
+    public void Cancel()
+    {
+        if (!_released)
+            Context.Cancel();
+    }
+
     /// <summary>Explicitly releases this submission's FSM handle.</summary>
     public void Dispose()
     {
@@ -143,7 +150,7 @@ internal sealed class VisualizerExecutionContext : IStateContext
 {
     private readonly Visualizer _visualizer;
     private readonly VisualizerFrame _frame;
-    private readonly CancellationToken _cancellationToken;
+    private readonly CancellationTokenSource _cancellationSource;
     private Task<VisualizerFrameResult>? _submission;
 
     internal VisualizerExecutionContext(
@@ -153,7 +160,7 @@ internal sealed class VisualizerExecutionContext : IStateContext
     {
         _visualizer = visualizer;
         _frame = frame;
-        _cancellationToken = cancellationToken;
+        _cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         Name = $"VisualizerFrame:{Guid.NewGuid():N}";
         IsValid = true;
     }
@@ -169,11 +176,44 @@ internal sealed class VisualizerExecutionContext : IStateContext
 
     internal void MarkReady() => IsReady = true;
 
-    internal void BeginSubmission()
+    internal void Cancel()
     {
         try
         {
-            _submission = _visualizer.RenderAsync(_frame, _cancellationToken).AsTask();
+            _cancellationSource.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+    }
+
+    internal void InvalidateAndCancel()
+    {
+        IsValid = false;
+        Cancel();
+
+        if (_submission is not { IsCompleted: false } submission)
+        {
+            _cancellationSource.Dispose();
+            return;
+        }
+
+        _ = submission.ContinueWith(
+            static (_, state) => ((CancellationTokenSource)state!).Dispose(),
+            _cancellationSource,
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+    }
+
+    internal void BeginSubmission()
+    {
+        if (!IsValid)
+            return;
+
+        try
+        {
+            _submission = _visualizer.RenderAsync(_frame, _cancellationSource.Token).AsTask();
         }
         catch (Exception exception)
         {
