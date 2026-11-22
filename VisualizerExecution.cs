@@ -86,7 +86,7 @@ public sealed class VisualizerExecution : IDisposable
             foreach (var submission in _submissions.ToArray())
             {
                 submission.Context.IsValid = false;
-                WorkshopFsmApi.Interaction.DestroyInstance(submission.Handle);
+                WorkshopFsmApi.Interact.DestroyInstance(submission.Handle);
                 submission.MarkReleased();
             }
 
