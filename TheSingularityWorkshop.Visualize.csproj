@@ -20,6 +20,9 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="TheSingularityWorkshop.FSM_API" Version="1.0.13" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
     <Compile Remove="samples/**/*.cs" />
     <Compile Remove="integrations/**/*.cs" />
