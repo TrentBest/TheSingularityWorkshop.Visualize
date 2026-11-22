@@ -58,7 +58,7 @@ FsmApi.Interact.Update("Visualize");
 
 The string-backed context contract is `TheSingularityWorkshop.FSM_API.IStateContext`. The host advances the group; Visualize does not run a competing update loop.
 
-Important version boundary: the published `TheSingularityWorkshop.FSM_API` 1.0.13 package remains on the legacy API surface and does not provide the current concise facade or the current context-lifecycle semantics. Visualize therefore references `FSM_API/FSM_API/FSM_API.csproj` directly. Its build workflows check out `TrentBest/FSM_API` on `development` at the matching workspace path. This is a source-level development dependency, not a NuGet package fallback; a standalone source build must provide that sibling checkout. No NuGet package is published by this integration.
+Important version boundary: the published `TheSingularityWorkshop.FSM_API` 1.0.13 package remains on the legacy API surface and does not provide the current concise facade or the current context-lifecycle semantics. Visualize therefore references `FSM_API/FSM_API/FSM_API.csproj` directly. Its build workflows check out `TrentBest/FSM_API` on `development` at the matching workspace path. This is a source-level development dependency, not a NuGet package fallback; a standalone source build must provide that sibling checkout. Renderer integration builds also set `WorkshopUseFsmApiRepositorySource=true` and `WorkshopSourceRoot` to the workspace root, so Renderer binds to the same FSM_API project rather than loading its legacy 1.0.13 package alongside the development assembly. No NuGet package is published by this integration.
 
 ## Delivery boundary
 
