@@ -8,6 +8,7 @@
     <IsPackable>false</IsPackable>
     <!-- Package mode is the default. Source mode can use the shared workspace or the CI checkout path. -->
     <WorkshopUseRepositorySources Condition="'$(WorkshopUseRepositorySources)' == ''">false</WorkshopUseRepositorySources>
+    <WorkshopSourceRoot Condition="'$(WorkshopSourceRoot)' == '' and Exists('$(MSBuildThisFileDirectory)../../FSM_API/FSM_API/FSM_API.csproj')">$(MSBuildThisFileDirectory)../../</WorkshopSourceRoot>
     <WorkshopSourceRoot Condition="'$(WorkshopSourceRoot)' == ''">$(MSBuildThisFileDirectory)../../../</WorkshopSourceRoot>
     <WorkshopRendererProjectPath Condition="'$(WorkshopUseRepositorySources)' == 'true' and Exists('$(WorkshopSourceRoot)/TheSingularityWorkshop.Renderer/TheSingularityWorkshop.Renderer.csproj')">$(WorkshopSourceRoot)/TheSingularityWorkshop.Renderer/TheSingularityWorkshop.Renderer.csproj</WorkshopRendererProjectPath>
     <WorkshopRendererProjectPath Condition="'$(WorkshopRendererProjectPath)' == '' and Exists('$(MSBuildThisFileDirectory)RendererSource/TheSingularityWorkshop.Renderer.csproj')">$(MSBuildThisFileDirectory)RendererSource/TheSingularityWorkshop.Renderer.csproj</WorkshopRendererProjectPath>
@@ -30,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(WorkshopRendererProjectPath)' != ''">
-    <ProjectReference Include="$(WorkshopRendererProjectPath)" />
+    <ProjectReference Include="$(WorkshopRendererProjectPath)" AdditionalProperties="WorkshopUseRepositorySources=true;WorkshopSourceRoot=$(WorkshopSourceRoot)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(WorkshopRendererProjectPath)' == ''">
