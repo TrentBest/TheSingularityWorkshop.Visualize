@@ -24,6 +24,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
+    <!-- FSM_API is checked out beside this project for its ProjectReference; do not compile its source into Visualize. -->
+    <Compile Remove="FSM_API/**/*.cs" />
     <Compile Remove="samples/**/*.cs" />
     <Compile Remove="integrations/**/*.cs" />
     <Compile Remove="ExperiencesSource/**/*.cs" />
