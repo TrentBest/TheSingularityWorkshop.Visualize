@@ -17,7 +17,7 @@ jobs:
   observer-presentation-proof:
     runs-on: ubuntu-24.04
     env:
-      WorkshopUseFsmApiRepositorySource: "true"
+      WorkshopUseRepositorySources: "true"
       WorkshopSourceRoot: ${{ github.workspace }}
     steps:
       - name: Checkout Visualize
