@@ -1,3 +1,4 @@
+using FSM_API;
 using TheSingularityWorkshop.FSM_API;
 
 namespace TheSingularityWorkshop.Visualize;
@@ -69,7 +70,7 @@ public sealed class VisualizerExecution : IDisposable
                 return;
 
             submission.Context.IsValid = false;
-            FsmApi.Interaction.DestroyInstance(submission.Handle);
+            FsmApi.Interact.DestroyInstance(submission.Handle);
         }
     }
 
@@ -90,7 +91,7 @@ public sealed class VisualizerExecution : IDisposable
             }
 
             _submissions.Clear();
-            FsmApi.Interaction.DestroyFiniteStateMachine(_definitionName, ProcessingGroup);
+            FsmApi.Interact.DestroyFiniteStateMachine(_definitionName, ProcessingGroup);
         }
     }
 }
