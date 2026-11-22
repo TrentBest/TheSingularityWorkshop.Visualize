@@ -49,15 +49,17 @@ jobs:
           python3 - <<'PY'
           import json
           import os
-          import subprocess
           from datetime import datetime, timezone
+          from html.parser import HTMLParser
           from pathlib import Path
+          from urllib.parse import urlparse
 
           root = Path("_site")
           required = [
               "index.html",
               "docs/GALLERY.md",
               "docs/ARCHITECTURE.md",
+              "docs/FSM_API_BOUNDARY.md",
               "samples/PrimitiveGallery/index.html",
               "samples/ArrayFirstWorkload/WebGpuRunner/index.html",
               "samples/SoldierField/WebGpuRunner/index.html",
@@ -74,7 +76,8 @@ jobs:
               "samples/SoldierField/WebGpuRunner/",
               "samples/NormalLightingLab/",
               "docs/GALLERY.md",
-              "docs/ARCHITECTURE.md",
+              "https://github.com/TrentBest/TheSingularityWorkshop.Visualize/blob/master/docs/ARCHITECTURE.md",
+              "https://github.com/TrentBest/TheSingularityWorkshop.Visualize/blob/master/docs/FSM_API_BOUNDARY.md",
           ):
               if required_link not in html:
                   raise SystemExit(f"Landing page lost required local destination: {required_link}")
