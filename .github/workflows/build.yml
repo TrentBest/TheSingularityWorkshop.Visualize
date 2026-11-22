@@ -162,7 +162,7 @@ jobs:
   build-and-test:
     runs-on: ubuntu-24.04
     env:
-      WorkshopUseFsmApiRepositorySource: "true"
+      WorkshopUseRepositorySources: "true"
       WorkshopSourceRoot: ${{ github.workspace }}
     steps:
       - name: Checkout
@@ -660,7 +660,7 @@ jobs:
   drone-construction-frame-proof:
     runs-on: ubuntu-24.04
     env:
-      WorkshopUseFsmApiRepositorySource: "true"
+      WorkshopUseRepositorySources: "true"
       WorkshopSourceRoot: ${{ github.workspace }}
     steps:
       - name: Checkout Visualize
