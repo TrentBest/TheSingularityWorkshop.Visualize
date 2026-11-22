@@ -174,8 +174,18 @@ jobs:
           repository: TrentBest/FSM_API
           ref: development
           path: FSM_API
-
-      - name: Checkout Renderer source for the explicit integration adapter
+      - name: Checkout ProtocolAi development source
+        uses: actions/checkout@v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.ProtocolAi
+          ref: development
+          path: TheSingularityWorkshop.ProtocolAi
+      - name: Checkout MicroBundleDomain development source
+        uses: actions/checkout@v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.MicroBundleDomain
+          ref: development
+          path: TheSingularityWorkshop.MicroBundleDomain
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: TrentBest/TheSingularityWorkshop.Renderer
