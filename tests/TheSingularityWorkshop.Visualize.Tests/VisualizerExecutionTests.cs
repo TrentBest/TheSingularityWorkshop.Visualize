@@ -29,7 +29,11 @@ public sealed class VisualizerExecutionTests
         Assert.Equal(1, backend.SubmissionCount);
 
         backend.Completion.SetResult(new VisualizerFrameResult(1, 0));
-        WorkshopFsmApi.Interact.Update(group);
+        for (var attempt = 0; attempt < 10 && !submission.IsTerminal; attempt++)
+        {
+            await Task.Delay(1);
+            WorkshopFsmApi.Interact.Update(group);
+        }
 
         Assert.Equal("Completed", submission.State);
         Assert.True(submission.IsTerminal);
