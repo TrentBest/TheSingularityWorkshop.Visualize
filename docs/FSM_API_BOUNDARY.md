@@ -28,7 +28,7 @@ This is not a second scheduler inside Visualize. Visualize may own execution con
 
 The current `development` implementation has a backend-neutral `VisualizerFrame`, resource validation, serialized asynchronous submission, and an `IVisualizerBackend` contract. Those are useful execution operations, but the current `Visualizer` API exposes them as direct `RenderAsync` calls.
 
-The current core project has no direct FSM_API reference, and the current core does not yet own FSM_API contexts or handles. Therefore the current code does **not** yet prove FSM-driven Visualize execution.
+The core now has a direct project reference to the FSM_API development source and a `VisualizerExecution` owner. Each accepted frame receives a Visualize-owned `IStateContext` and `FSMHandle`; the context advances through Queued, Preparing, Submitting, and a terminal state. The backend task is observed by later FSM updates rather than awaited by the FSM update action.
 
 ## Required execution model
 
@@ -48,7 +48,7 @@ Visualize owns the contexts it creates and the FSM handles/definitions it regist
 
 ## FSM_API contract and version boundary
 
-The FSM_API `development` source currently exposes the concise `FSM_API.FsmApi` facade, including:
+The FSM_API `development` source exposes the concise `FSM_API.FsmApi` facade, including:
 
 ```csharp
 FsmApi.Create.CreateFiniteStateMachine(...);
@@ -58,7 +58,7 @@ FsmApi.Interact.Update("Visualize");
 
 The string-backed context contract is `TheSingularityWorkshop.FSM_API.IStateContext`. The host advances the group; Visualize does not run a competing update loop.
 
-Important version boundary: the published `TheSingularityWorkshop.FSM_API` 1.0.13 package remains on the legacy API surface. The concise `FsmApi` facade described above is part of FSM_API 2.0 development and is not available merely by referencing the published 1.0.13 package. Visualize must not claim or compile against the development facade through a package reference that does not contain it. The direct dependency strategy must be selected and verified against the actual downstream build graph before implementation is declared complete.
+Important version boundary: the published `TheSingularityWorkshop.FSM_API` 1.0.13 package remains on the legacy API surface and does not provide the current concise facade or the current context-lifecycle semantics. Visualize therefore references `FSM_API/FSM_API/FSM_API.csproj` directly. Its build workflows check out `TrentBest/FSM_API` on `development` at the matching workspace path. This is a source-level development dependency, not a NuGet package fallback; a standalone source build must provide that sibling checkout. No NuGet package is published by this integration.
 
 ## Delivery boundary
 
@@ -79,4 +79,4 @@ A source `ProjectReference` used to compile or test an adapter is not proof of r
 
 ## Current status
 
-The existing renderer-to-visualizer frame handoff and backend contract are useful foundations. FSM-driven execution, direct FSM_API integration, and FSM_COS runtime composition remain implementation milestones—not completed capabilities.
+The first FSM-driven execution owner and frame-submission context are implemented on `development`. The required automated proof must still pass on the current commit. FSM_COS runtime MicroBundle discovery/composition remains a separate integration milestone; a project reference is not accepted as runtime-composition proof.
