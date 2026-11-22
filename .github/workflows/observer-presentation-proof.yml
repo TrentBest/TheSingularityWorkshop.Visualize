@@ -19,6 +19,12 @@ jobs:
     steps:
       - name: Checkout Visualize
         uses: actions/checkout@v7
+      - name: Checkout FSM_API development source
+        uses: actions/checkout@v7
+        with:
+          repository: TrentBest/FSM_API
+          ref: development
+          path: FSM_API
       - name: Checkout Renderer source for actual observer policy and RenderFrame
         uses: actions/checkout@v7
         with:
