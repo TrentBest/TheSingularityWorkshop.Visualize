@@ -43,6 +43,32 @@ public sealed class VisualizerExecutionTests
         await visualizer.DisposeAsync();
     }
 
+    [Fact]
+    public async Task SubmissionCancellationIsObservedOnALaterGroupUpdate()
+    {
+        var group = $"Visualize.Tests.{Guid.NewGuid():N}";
+        var backend = new DeferredBackend();
+        var visualizer = new Visualizer(backend, new VisualizerResourceCatalog());
+        using var execution = new VisualizerExecution(visualizer, group);
+        using var submission = execution.Submit(new VisualizerFrame(
+            new VisualizerView(Vector3.Zero, Matrix4x4.Identity, Matrix4x4.Identity),
+            []));
+
+        WorkshopFsmApi.Interact.Update(group);
+        WorkshopFsmApi.Interact.Update(group);
+        Assert.Equal("Submitting", submission.State);
+
+        submission.Cancel();
+        for (var attempt = 0; attempt < 10 && !submission.IsTerminal; attempt++)
+        {
+            await Task.Delay(1);
+            WorkshopFsmApi.Interact.Update(group);
+        }
+
+        Assert.Equal("Cancelled", submission.State);
+        await visualizer.DisposeAsync();
+    }
+
     private sealed class DeferredBackend : IVisualizerBackend
     {
         public TaskCompletionSource<VisualizerFrameResult> Completion { get; } =
@@ -59,6 +85,7 @@ public sealed class VisualizerExecutionTests
             CancellationToken cancellationToken = default)
         {
             SubmissionCount++;
+            cancellationToken.Register(() => Completion.TrySetCanceled(cancellationToken));
             return new ValueTask<VisualizerFrameResult>(Completion.Task);
         }
 
