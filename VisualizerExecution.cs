@@ -1,4 +1,4 @@
-using FSM_API;
+using WorkshopFsmApi = FSM_API.FsmApi;
 using TheSingularityWorkshop.FSM_API;
 
 namespace TheSingularityWorkshop.Visualize;
@@ -25,8 +25,8 @@ public sealed class VisualizerExecution : IDisposable
         ProcessingGroup = processingGroup;
         _definitionName = $"Visualize.FrameSubmission.{Guid.NewGuid():N}";
 
-        FsmApi.Create.CreateProcessingGroup(ProcessingGroup);
-        FsmApi.Create.CreateFiniteStateMachine(_definitionName, processRate: -1, processingGroup: ProcessingGroup)
+        WorkshopFsmApi.Create.CreateProcessingGroup(ProcessingGroup);
+        WorkshopFsmApi.Create.CreateFiniteStateMachine(_definitionName, processRate: -1, processingGroup: ProcessingGroup)
             .State("Queued", null, context => ((VisualizerExecutionContext)context).MarkReady(), null)
             .State("Preparing", context => ((VisualizerExecutionContext)context).BeginSubmission(), null, null)
             .State("Submitting", null, context => ((VisualizerExecutionContext)context).ObserveCompletion(), null)
@@ -55,7 +55,7 @@ public sealed class VisualizerExecution : IDisposable
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             var context = new VisualizerExecutionContext(_visualizer, frame, cancellationToken);
-            var handle = FsmApi.Create.CreateInstance(_definitionName, context, ProcessingGroup);
+            var handle = WorkshopFsmApi.Create.CreateInstance(_definitionName, context, ProcessingGroup);
             var submission = new VisualizerExecutionSubmission(this, context, handle);
             _submissions.Add(submission);
             return submission;
@@ -70,7 +70,7 @@ public sealed class VisualizerExecution : IDisposable
                 return;
 
             submission.Context.IsValid = false;
-            FsmApi.Interact.DestroyInstance(submission.Handle);
+            WorkshopFsmApi.Interact.DestroyInstance(submission.Handle);
         }
     }
 
@@ -86,12 +86,12 @@ public sealed class VisualizerExecution : IDisposable
             foreach (var submission in _submissions.ToArray())
             {
                 submission.Context.IsValid = false;
-                FsmApi.Interaction.DestroyInstance(submission.Handle);
+                WorkshopFsmApi.Interaction.DestroyInstance(submission.Handle);
                 submission.MarkReleased();
             }
 
             _submissions.Clear();
-            FsmApi.Interact.DestroyFiniteStateMachine(_definitionName, ProcessingGroup);
+            WorkshopFsmApi.Interact.DestroyFiniteStateMachine(_definitionName, ProcessingGroup);
         }
     }
 }
