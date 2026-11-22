@@ -73,7 +73,7 @@ jobs:
         env:
           WorkshopVisualizeRoot: ${{ github.workspace }}
           WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
-        run: dotnet build integrations/RendererAdapter/CapsuleClinicProof/CapsuleClinicFrameProof.csproj --configuration Release --no-restore
+        run: dotnet build integrations/RendererAdapter/CapsuleClinicProof/CapsuleClinicFrameProof.csproj --configuration Release --no-restore --maxcpucount:1
       - name: Render Capsule Clinic snapshot
         env:
           WorkshopVisualizeRoot: ${{ github.workspace }}
