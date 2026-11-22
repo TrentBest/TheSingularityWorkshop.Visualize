@@ -53,6 +53,8 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
+      - name: Restore Renderer development dependency graph
+        run: dotnet restore integrations/RendererAdapter/RendererSource/TheSingularityWorkshop.Renderer.csproj -p:WorkshopUseRepositorySources=true -p:WorkshopSourceRoot="${{ github.workspace }}"
       - name: Restore observer presentation proof
         env:
           WorkshopGuiSvgProjectPath: ${{ github.workspace }}/integrations/GuiSvg/GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
