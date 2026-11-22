@@ -1,15 +1,19 @@
 using System.Numerics;
+using System.Text.Json;
 using TheSingularityWorkshop.Renderer;
 using TheSingularityWorkshop.Renderer.VisualizeAdapter;
 using TheSingularityWorkshop.Visualize;
 using TheSingularityWorkshop.Visualize.GuiSvg;
 
-// This is an executable integration proof, not a production scene system.
-// Renderer FSM transitions select representations; this sample maps those states to
-// simple test geometry, adapts the resulting RenderFrame, and submits it to GUI.SVG.
+// One canonical Renderer frame feeds all three observable representations:
+// documentation SVG, AI-inspectable Renderer structure, and Visualize backend output.
 var output = args.Length > 0
     ? Path.GetFullPath(args[0])
-    : Path.GetFullPath("samples/PrimitiveGallery/generated/08-renderer-selected-frame.svg");
+    : Path.GetFullPath("samples/PrimitiveGallery/generated/10-renderer-selected-frame.svg");
+var outputDirectory = Path.GetDirectoryName(output)!;
+Directory.CreateDirectory(outputDirectory);
+var rendererJsonPath = Path.ChangeExtension(output, ".renderer.json");
+var visualizeSvgPath = Path.ChangeExtension(output, ".visualize.svg");
 
 var catalog = new VisualizerResourceCatalog();
 var commands = new List<RenderDrawCommand>();
@@ -35,6 +39,7 @@ for (var index = 0; index < observerDistances.Length; index++)
 
     var geometryId = new RenderResourceId((ulong)(100 + index));
     var materialId = new RenderResourceId((ulong)(200 + index));
+    var entityId = new RenderEntityId((ulong)(300 + index));
     var shape = GeometryFor(selected);
     catalog.SetGeometry(new VisualizerResourceId(geometryId.Value), shape.Geometry);
     catalog.SetMaterial(new VisualizerResourceId(materialId.Value), new VisualizerMaterial(1, shape.Color));
@@ -57,8 +62,9 @@ for (var index = 0; index < observerDistances.Length; index++)
         shape.Geometry.Indices.Count,
         firstIndex: 0,
         baseVertex: 0,
-        Enum.Parse<RendererRepresentation>(selected.ToString())));
-    Console.WriteLine($"distance {distance,5:0.0} -> horizon {horizon.Name,-11} -> FSM {selected,-11} -> geometry {geometryId.Value}");
+        Enum.Parse<RendererRepresentation>(selected.ToString()),
+        entity: entityId));
+    Console.WriteLine($"distance {distance,5:0.0} -> horizon {horizon.Name,-11} -> FSM {selected,-11} -> entity {entityId.Value}");
 }
 
 var renderFrame = new RenderFrame(
@@ -67,11 +73,86 @@ var renderFrame = new RenderFrame(
 var adapter = new RendererFrameAdapter();
 var visualizerFrame = adapter.Adapt(renderFrame);
 
-await using var visualizer = new Visualizer(
-    new GuiSvgVisualizerBackend(output),
-    catalog);
-var result = await visualizer.RenderAsync(visualizerFrame);
-Console.WriteLine($"Renderer -> RendererFrameAdapter -> Visualizer -> GUI.SVG: {result.SubmittedDrawCount} draw command(s) -> {output}");
+// Assert that the adapter preserves the semantic identity, resources, selected
+// representation, and command order before any backend is allowed to consume it.
+if (visualizerFrame.Commands.Count != renderFrame.Commands.Count)
+    throw new InvalidOperationException("Renderer-to-Visualize adaptation changed the command count.");
+
+for (var index = 0; index < renderFrame.Commands.Count; index++)
+{
+    var source = renderFrame.Commands[index];
+    var adapted = visualizerFrame.Commands[index];
+    if (adapted.Entity.Value != source.Entity.Value ||
+        adapted.Geometry.Value != source.Geometry.Value ||
+        adapted.Material.Value != source.Material.Value ||
+        adapted.Representation.ToString() != source.Representation.ToString())
+    {
+        throw new InvalidOperationException($"Renderer-to-Visualize adaptation changed command identity or meaning at index {index}.");
+    }
+}
+
+// The Renderer artifact is deliberately explicit rather than relying on implicit
+// System.Numerics serialization. It is intended to be inspectable by tools and AI.
+var rendererDocument = new
+{
+    schema = "workshop.renderer-frame.v1",
+    source = "TheSingularityWorkshop.Renderer",
+    commandCount = renderFrame.Commands.Count,
+    view = new
+    {
+        observerPosition = new[] { renderFrame.View.ObserverPosition.X, renderFrame.View.ObserverPosition.Y, renderFrame.View.ObserverPosition.Z },
+        viewMatrix = MatrixValues(renderFrame.View.View),
+        projectionMatrix = MatrixValues(renderFrame.View.Projection)
+    },
+    commands = renderFrame.Commands.Select((command, index) => new
+    {
+        order = index,
+        entityId = command.Entity.Value,
+        geometryResourceId = command.Geometry.Value,
+        materialResourceId = command.Material.Value,
+        representation = command.Representation.ToString(),
+        worldTransform = MatrixValues(command.WorldTransform),
+        command.IndexCount,
+        command.FirstIndex,
+        command.BaseVertex,
+        command.InstanceCount,
+        command.FirstInstance
+    }).ToArray()
+};
+await File.WriteAllTextAsync(rendererJsonPath,
+    JsonSerializer.Serialize(rendererDocument, new JsonSerializerOptions { WriteIndented = true }));
+
+// View 1: documentation-facing SVG emitted by the existing GUI.SVG integration.
+await using (var documentationVisualizer = new Visualizer(new GuiSvgVisualizerBackend(output), catalog))
+{
+    var documentationResult = await documentationVisualizer.RenderAsync(visualizerFrame);
+    if (documentationResult.SubmittedDrawCount != renderFrame.Commands.Count)
+        throw new InvalidOperationException(
+            $"GUI.SVG submitted {documentationResult.SubmittedDrawCount} of {renderFrame.Commands.Count} Renderer commands.");
+    Console.WriteLine($"Documentation SVG (GUI.SVG): {documentationResult.SubmittedDrawCount} commands -> {output}");
+}
+
+// View 2: the actual Visualize-owned CPU/SVG backend consumes the exact same adapted frame.
+await using (var visualizeBackend = new SvgVisualizerBackend(svg => File.WriteAllText(visualizeSvgPath, svg)))
+await using (var visualizer = new Visualizer(visualizeBackend, catalog))
+{
+    var visualizeResult = await visualizer.RenderAsync(visualizerFrame);
+    if (visualizeResult.SubmittedDrawCount != renderFrame.Commands.Count)
+        throw new InvalidOperationException(
+            $"Visualize submitted {visualizeResult.SubmittedDrawCount} of {renderFrame.Commands.Count} Renderer commands.");
+    Console.WriteLine($"Visualization output (Visualize SVG/CPU): {visualizeResult.SubmittedDrawCount} commands -> {visualizeSvgPath}");
+}
+
+Console.WriteLine($"Renderer structure (AI-inspectable JSON): {rendererJsonPath}");
+Console.WriteLine("Tri-view identity/order/representation checks: PASS");
+
+static float[] MatrixValues(Matrix4x4 value) =>
+[
+    value.M11, value.M12, value.M13, value.M14,
+    value.M21, value.M22, value.M23, value.M24,
+    value.M31, value.M32, value.M33, value.M34,
+    value.M41, value.M42, value.M43, value.M44
+];
 
 static (VisualizerGeometry Geometry, Vector4 Color) GeometryFor(RepresentationTarget target)
 {

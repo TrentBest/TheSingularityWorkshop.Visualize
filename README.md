@@ -69,13 +69,20 @@ The C# proof now submits an indexed octahedron through Visualizer's geometry, ma
 This is a perspective-projection proof, not a finished 3D renderer: the sample uses a convex opaque mesh and painter ordering, while the GUI.SVG backend remains a CPU-side manifestation adapter without GPU depth testing, general clipping, or production lighting. Keeping that boundary visible is part of the proof, not a disclaimer to hide.
 
 
-Development CI checks out the GUI repository's `development` branch and tests this integration against the actual GUI.SVG project. The package project declares `TheSingularityWorkshop.GUI.SVG` version `0.1.0-alpha.1` and is packed by the GUI workflow; NuGet Trusted Publishing remains hard-gated off. The package is **not published**, and nothing has been deployed.
+Development CI checks out the GUI repository's `development` branch and tests this integration against the actual GUI.SVG project. The GUI repository independently builds and verifies its GUI.SVG package as a GUI-owned adapter deliverable. That does not make Renderer or Visualize NuGet capabilities. Visualize itself is not packable: FSM_COS composes it as a MicroBundle.
 
 The larger [living SVG illustration](docs/assets/living-showcase.svg) shows the direction for documentation visuals. The [interactive SVG Primitive Lab source](samples/PrimitiveGallery/index.html) is the browser-only sandbox for changing primitive type, count, positions, colour, and spread; it is intentionally a separate execution path. The generated GUI.SVG feature gallery now includes a real SVG anchor from its title to the [adapter guide](https://github.com/TrentBest/TheSingularityWorkshop.GUI/blob/development/docs/SVG_ADAPTER.md), so navigation can be part of the manifested scene without hand-written browser event code. The GUI.SVG package also carries its own package README, adapter guide, and checked-in generated gallery snapshot; CI regenerates and compares that snapshot before packaging. The [Primitive Gallery guide](samples/PrimitiveGallery/README.md) puts the contract-backed output, browser experiment, and their evidence boundaries side by side. The [SVG living-documentation guide](docs/SVG_LIVING_DOCUMENTATION.md) consolidates the executable proof ladder from primitive frames through Renderer-to-GUI.SVG city output.
 
 Next, we will replace more illustrative motion with behavior and scene data controlled by the Workshop's own code, keeping the SVG surface subordinate to your state and composition rules. Consumer-specific scenes, such as raWWar's soldier and exoskeleton, belong in the consuming Experience and should exercise Visualize through its public contracts, not define Visualize's own sample identity.
 
-TheSingularityWorkshop.Visualize is the presentation-execution project for The Singularity Workshop. It turns observer-aware presentation data from [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into visual output without making a particular windowing toolkit or graphics API the definition of the world. The direct SVG artifact backend is CPU-only; a production GPU renderer remains a separate implementation milestone.
+TheSingularityWorkshop.Visualize is the presentation-execution project for The Singularity Workshop.
+
+## MicroBundle delivery and composition
+
+Visualize and Renderer are runtime capabilities composed by **FSM_COS as MicroBundles**, not capabilities consumed through NuGet package references. NuGet may remain appropriate for ordinary implementation dependencies, but it is not the capability-distribution contract for either project. See the [Visualize MicroBundle identity and evidence boundary](docs/MICROBUNDLE.md).
+
+The Renderer adapter's source `ProjectReference` exists only so builds and tests can validate the narrow adapter against the current Renderer API. It is not runtime composition. FSM_COS owns discovery, resolution, verification, loading, and composition of the Renderer and Visualize MicroBundles. A passing source build or SVG proof does not establish those runtime capabilities; they require their own executable integration tests.
+ It turns observer-aware presentation data from [TheSingularityWorkshop.Renderer](https://github.com/TrentBest/TheSingularityWorkshop.Renderer) into visual output without making a particular windowing toolkit or graphics API the definition of the world. The direct SVG artifact backend is CPU-only; a production GPU renderer remains a separate implementation milestone.
 
 The first desktop host is **AnyApp on WPF**. **No production graphics API has been selected.** The next milestone is to connect the Workshop's array-first data model to a backend without binding world meaning to one display technology. A real Experience such as raWWar should provide the domain-specific scene and demonstrate consumption of Visualize; this repository's examples should stay small, neutral, and contract-focused.
 
@@ -113,7 +120,7 @@ The responsibility flow is deliberate:
 
 ![](docs/assets/dividers/green.svg)
 
-This repository has backend-neutral frame contracts, revisioned geometry/material resources, and an immutable instance-buffer contract for indexed instancing. Draw commands can address an explicit range in a contiguous instance array, and Visualizer validates resource/range correctness before backend submission. A narrow adapter maps Renderer output into VisualizerFrame; the contract is deliberately independent of the Renderer package version. These are data/API contracts—not yet a concrete GPU upload or draw implementation.
+This repository has backend-neutral frame contracts, revisioned geometry/material resources, and an immutable instance-buffer contract for indexed instancing. Draw commands can address an explicit range in a contiguous instance array, and Visualizer validates resource/range correctness before backend submission. A narrow adapter maps Renderer output into VisualizerFrame; the contract is deliberately independent of Renderer release cadence. These are data/API contracts—not yet a concrete GPU upload or draw implementation.
 
 ### What is real, what is illustrative, and what remains to build
 
@@ -178,13 +185,13 @@ The tests verify the current contracts. To explore the first visible SVG sequenc
 
 ![](docs/assets/dividers/green.svg)
 
-The commands above use the solution file and the installed .NET 10 SDK. CI also collects Cobertura coverage and uploads build, test, and package artifacts for review.
+The commands above use the solution file and the installed .NET 10 SDK. CI collects Cobertura coverage and uploads build and test artifacts for review. GUI.SVG's separate package proof remains owned by the GUI repository.
 
 ## 🟣 Release discipline
 
 ![](docs/assets/dividers/violet.svg)
 
-The package is not ready for NuGet merely because its contracts compile. A selected and supported GPU backend, host integration, tests, documented device requirements, performance evidence, package review, and dependency/license audit are required. Any NuGet publishing workflow must remain disabled by default and may only be enabled with explicit approval.
+Visualize is delivered and composed as a MicroBundle, not published or consumed as a NuGet capability. A production GPU backend, host integration, durable artifact storage, repository resolution, FSM_COS loading, executable composition tests, documented device requirements, and performance evidence remain separate milestones. Ordinary NuGet dependencies may be used for unrelated implementation needs, but they do not define Visualize's runtime delivery.
 
 ---
 

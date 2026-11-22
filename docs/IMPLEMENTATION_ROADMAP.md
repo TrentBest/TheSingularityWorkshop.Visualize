@@ -4,7 +4,7 @@ This roadmap separates architectural preparation from evidence of a functioning 
 
 ## Milestone 0 — Array-first backend decision
 
-- Verify the existing Renderer public API and package version.
+- Verify the Renderer MicroBundle ontology identity, artifact version, and adapter contract; do not bind runtime composition to a NuGet package version.
 - Verify AnyApp's actual WPF lifecycle and target framework.
 - Record dependencies, licensing, CI, release-gate conventions, and current package/runtime footprints.
 - Define the initial data-oriented workload: contiguous geometry/index arrays, revisioned instance-transform/color arrays, visibility/material indices, bulk updates, and compute output consumed by rendering. The initial backend-neutral geometry and instance-buffer contracts now exist; concrete GPU upload, indexed/instanced execution, and compute-to-render remain unimplemented.
@@ -57,6 +57,17 @@ This roadmap separates architectural preparation from evidence of a functioning 
 - Keep FSM transitions, authoritative movement, and interaction validity outside presentation-only results.
 
 **Exit evidence:** deterministic test vectors and a visible moving squad.
+
+## Milestone 4A — FSM_COS MicroBundle composition
+
+- Define the portable Renderer and Visualize artifact identities and version/integrity metadata with FSM_COS.
+- Resolve artifacts from the Workshop's durable MicroBundle repository rather than NuGet capability packages.
+- Verify artifact identity and content integrity before loading.
+- Compose Visualize with Renderer through FSM_COS and keep the source adapter reference confined to build/test validation.
+- Exercise lifecycle, missing-artifact, incompatible-version, integrity-failure, and unload/reload paths.
+- Prove the composed capability can consume a real Renderer frame and submit it to a backend.
+
+**Exit evidence:** a repeatable integration test that loads both MicroBundles through FSM_COS, rejects invalid or missing artifacts fail-closed, and demonstrates a frame reaching the selected backend. No source-only or CPU/SVG proof may be labelled runtime composition or GPU execution.
 
 ## Milestone 5 — Renderer integration
 
