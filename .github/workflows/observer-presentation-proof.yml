@@ -16,9 +16,6 @@ permissions:
 jobs:
   observer-presentation-proof:
     runs-on: ubuntu-24.04
-    env:
-      WorkshopUseRepositorySources: "true"
-      WorkshopSourceRoot: ${{ github.workspace }}
     steps:
       - name: Checkout Visualize
         uses: actions/checkout@v7
