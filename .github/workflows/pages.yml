@@ -1,0 +1,111 @@
+name: Build and deploy Visualize Pages
+
+on:
+  push:
+    branches:
+      - development
+      - master
+    paths:
+      - "index.html"
+      - "assets/**"
+      - "docs/**"
+      - "samples/**"
+      - ".github/workflows/pages.yml"
+  pull_request:
+    branches:
+      - development
+      - master
+    paths:
+      - "index.html"
+      - "assets/**"
+      - "docs/**"
+      - "samples/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: visualize-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Assemble the Pages experience
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          cp index.html _site/index.html
+          cp -R docs samples _site/
+          if [ -d assets ]; then cp -R assets _site/; fi
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          root = Path("_site")
+          required = [
+              "index.html",
+              "docs/GALLERY.md",
+              "docs/ARCHITECTURE.md",
+              "samples/PrimitiveGallery/index.html",
+              "samples/ArrayFirstWorkload/WebGpuRunner/index.html",
+              "samples/SoldierField/WebGpuRunner/index.html",
+              "samples/NormalLightingLab/index.html",
+          ]
+          missing = [path for path in required if not (root / path).is_file()]
+          if missing:
+              raise SystemExit("Pages assembly is missing required entrypoints: " + ", ".join(missing))
+
+          html = (root / "index.html").read_text(encoding="utf-8")
+          for required_link in (
+              "samples/PrimitiveGallery/index.html",
+              "samples/ArrayFirstWorkload/WebGpuRunner/",
+              "samples/SoldierField/WebGpuRunner/",
+              "samples/NormalLightingLab/",
+              "docs/GALLERY.md",
+              "docs/ARCHITECTURE.md",
+          ):
+              if required_link not in html:
+                  raise SystemExit(f"Landing page lost required local destination: {required_link}")
+
+          info = {
+              "branch": os.environ.get("GITHUB_REF_NAME", "local"),
+              "commit": os.environ.get("GITHUB_SHA", "unknown"),
+              "builtAt": datetime.now(timezone.utc).isoformat(),
+          }
+          (root / "build-info.json").write_text(json.dumps(info, indent=2) + "\n", encoding="utf-8")
+          print("Pages entrypoints and local destinations validated.")
+          PY
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-24.04
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy master Pages artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
