@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1421">
+<title>Visualize — The Singularity Workshop</title>
+<style>
+:root{color-scheme:dark;--bg:#09131f;--panel:#122438;--panel2:#172d43;--line:#34516a;--ink:#eef6fc;--muted:#adc1d2;--mint:#82e5c2;--gold:#ffd18c;--blue:#93ceff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% -20%,#23435c 0,transparent 48%),var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}a{color:var(--blue)}a:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}.shell{width:min(1240px,100% - 36px);margin:auto}.brand{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 0;border-bottom:1px solid #ffffff20}.brand img{width:min(290px,58vw);height:auto}.brand span,.eyebrow{color:var(--mint);font-size:.76rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.hero{padding:54px 0 30px;max-width:850px}.hero h1{font-size:clamp(2.4rem,6vw,5.2rem);line-height:.98;letter-spacing:-.055em;margin:12px 0 20px}.hero p{font-size:clamp(1.05rem,2vw,1.25rem);color:var(--muted);max-width:760px}.hero strong{color:var(--ink)}.workspace{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(260px,.8fr);gap:18px;align-items:stretch}.stage,.panel,.lab{background:linear-gradient(145deg,#152c42,#0e1d2c);border:1px solid var(--line);border-radius:18px;overflow:hidden}.stage-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}.stage-head h2{font-size:1rem;margin:0}.status{border:1px solid #3f806d;border-radius:99px;color:var(--mint);padding:3px 10px;font-size:.76rem;font-weight:750}.stage iframe{display:block;width:100%;height:690px;border:0;background:#0b1421}.panel{padding:22px}.panel h2{margin:0 0 10px;font-size:1.25rem}.panel p,.lab p{color:var(--muted)}.steps{padding:0;list-style:none;counter-reset:step}.steps li{counter-increment:step;position:relative;padding:0 0 18px 42px;color:var(--muted)}.steps li:before{content:counter(step);position:absolute;left:0;top:0;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#21445a;color:var(--mint);font-weight:850}.steps strong{color:var(--ink)}.section{padding:46px 0 10px}.section h2{font-size:clamp(1.7rem,3vw,2.4rem);margin:0 0 8px}.section>p{color:var(--muted);max-width:760px}.labs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0 42px}.lab{padding:20px}.lab .eyebrow{letter-spacing:.1em}.lab h3{margin:8px 0}.lab p{min-height:76px}.lab a{font-weight:750}.truth{border-left:3px solid var(--gold);padding:14px 18px;background:#1b2b38;border-radius:0 12px 12px 0;color:var(--muted)}.truth strong{color:var(--ink)}footer{border-top:1px solid #ffffff20;padding:26px 0 34px;color:var(--muted);font-size:.88rem}footer img{display:block;width:220px;max-width:70%;height:auto;margin:12px 0}.build{font: .8rem ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+@media(max-width:850px){.workspace{grid-template-columns:1fr}.stage iframe{height:650px}.labs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.shell{width:min(100% - 24px,1240px)}.hero{padding-top:38px}.stage iframe{height:720px}.labs{grid-template-columns:1fr}.lab p{min-height:0}.brand{align-items:flex-start;flex-direction:column}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="brand">
+<img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop">
+<span>Visualize · Execution made observable</span>
+</header>
+<main>
+<section class="hero">
+<div class="eyebrow">A living picture, not a brochure</div>
+<h1>See the work.<br>Change the work.</h1>
+<p>Visualize is where presentation work becomes observable. Start with a running experiment, change its inputs, watch the output respond, and follow the path from data to representation. <strong>Play first. Understand the machinery as you go.</strong></p>
+</section>
+<section class="workspace" aria-label="Interactive Visualize playground">
+<div class="stage">
+<div class="stage-head"><h2>01 · Primitive Lab — your first execution</h2><span class="status">Browser SVG experiment</span></div>
+<iframe src="samples/PrimitiveGallery/index.html" title="Interactive SVG primitive lab" loading="eager"></iframe>
+</div>
+<aside class="panel">
+<div class="eyebrow">Observe the execution</div>
+<h2>What is happening?</h2>
+<p>This first lab runs in your browser. Change primitive type, count, spread, and colour. The scene is rebuilt from data and the counters report the SVG elements and browser-side build time.</p>
+<ol class="steps">
+<li><strong>Choose work.</strong> Pick a point, cloud, connected shape, or line workload.</li>
+<li><strong>Change inputs.</strong> Adjust count, size, spread, and palette.</li>
+<li><strong>Observe output.</strong> Watch the scene and its reported work change.</li>
+<li><strong>Inspect the boundary.</strong> This browser experiment is not the C# backend or a GPU benchmark.</li>
+</ol>
+<p><a href="samples/PrimitiveGallery/README.md">Read the lab recipe and evidence notes →</a></p>
+</aside>
+</section>
+<section class="section">
+<div class="eyebrow">Choose another execution</div>
+<h2>Run a different kind of work</h2>
+<p>Each experiment exposes a different part of the presentation problem. Some execute WebGPU in the browser; others generate deterministic artifacts from the .NET contracts. Their evidence labels tell you which is which.</p>
+<div class="labs">
+<article class="lab"><div class="eyebrow">02 · WebGPU</div><h3>Array-first workload</h3><p>Explore packed instance data and a browser WebGPU execution path. Compare input structure with the visible result.</p><a href="samples/ArrayFirstWorkload/WebGpuRunner/">Open array-first runner →</a></article>
+<article class="lab"><div class="eyebrow">03 · WebGPU</div><h3>Soldier field</h3><p>Watch a large field of procedural geometry and inspect how array-driven work is represented.</p><a href="samples/SoldierField/WebGpuRunner/">Open soldier-field runner →</a></article>
+<article class="lab"><div class="eyebrow">04 · Browser experiment</div><h3>Surface normals &amp; light</h3><p>Change surface orientation and lighting inputs to explore how geometry and illumination interact.</p><a href="samples/NormalLightingLab/">Open lighting lab →</a></article>
+</div>
+</section>
+<section class="section">
+<div class="eyebrow">Understand what is real</div>
+<h2>One repository. Multiple evidence paths.</h2>
+<p class="truth"><strong>Browser WebGPU</strong> means the browser runner executes WebGPU work. <strong>.NET-generated SVG</strong> means the C# contracts and CPU backend generated a static artifact. <strong>Concept artwork</strong> explains an idea; it is not implementation evidence. We keep those claims separate.</p>
+<div class="labs">
+<article class="lab"><h3>Gallery &amp; recipes</h3><p>Walk through the existing visual proofs, generated artifacts, and runnable recipes.</p><a href="docs/GALLERY.md">Explore the gallery →</a></article>
+<article class="lab"><h3>Execution architecture</h3><p>See where Experience state, FSM behavior, observer policy, and presentation execution belong.</p><a href="docs/ARCHITECTURE.md">Read the architecture →</a></article>
+<article class="lab"><h3>MicroBundle delivery</h3><p>Follow the capability boundary: portable identity and composition belong to FSM_COS, not a NuGet capability dependency.</p><a href="docs/IMPLEMENTATION_ROADMAP.md">Explore the roadmap →</a></article>
+</div>
+</section>
+</main>
+<footer>
+<strong>The Singularity Workshop</strong>
+<img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop mark">
+<div>Visualize presents the world; it does not own the world's meaning.</div>
+<div class="build" id="buildInfo">Build provenance is supplied by the Pages workflow.</div>
+<div><a href="https://github.com/TrentBest/TheSingularityWorkshop.Visualize">Repository</a> · <a href="https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions">Build evidence</a></div>
+</footer>
+</div>
+<script>
+fetch("build-info.json").then(r=>r.ok?r.json():null).then(info=>{if(info){document.getElementById("buildInfo").textContent="Published from "+info.branch+" · commit "+info.commit+" · "+info.builtAt;}}).catch(()=>{});
+</script>
+</body>
+</html>
