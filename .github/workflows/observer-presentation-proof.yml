@@ -40,6 +40,7 @@ jobs:
           repository: TrentBest/TheSingularityWorkshop.MicroBundleDomain
           ref: development
           path: TheSingularityWorkshop.MicroBundleDomain
+      - name: Checkout Renderer source
         uses: actions/checkout@v7
         with:
           repository: TrentBest/TheSingularityWorkshop.Renderer
