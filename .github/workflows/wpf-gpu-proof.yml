@@ -23,6 +23,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Checkout FSM_API development source
+        uses: actions/checkout@v4
+        with:
+          repository: TrentBest/FSM_API
+          ref: development
+          path: FSM_API
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
