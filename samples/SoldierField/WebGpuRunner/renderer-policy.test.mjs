@@ -56,5 +56,11 @@ assert.ok(html.includes("rendererPolicy.selectionMatrix"));
 assert.ok(html.includes("if(!stressAll&&groupIndex!==activeHorizonIndex)"));
 assert.ok(html.includes("const visibleGroups=stressAll?groups:[groups[activeHorizonIndex]]"));
 assert.ok(html.includes("Policy skips"));
+assert.ok(html.includes('id="dust-budget"'));
+assert.ok(html.includes('id="dust-triangles"'));
+assert.ok(html.includes("dustBudgetByState=Object.freeze({Semantic:0,Aggregate:64,Distant:256,Near:1024,Interactive:4096})"));
+assert.ok(html.includes("pass.draw(dustVertices.length/6,dustCount,0,0)"));
+assert.ok(html.includes("rebuildDust()"));
+
 
 console.log("Renderer policy matrix validated: 45 observer decisions drive selected WebGPU horizon work.");
