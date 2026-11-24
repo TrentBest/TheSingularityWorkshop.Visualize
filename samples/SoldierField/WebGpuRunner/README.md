@@ -56,7 +56,7 @@ The generated manifest carries:
 - deterministic distance-selection probes;
 - an attention-floor example in which an entity 64 m away is promoted to the `Interactive` representation by the policy.
 
-The WebGPU runner loads this manifest and uses its frame intervals to govern per-horizon instance-buffer refreshes. It displays the selected representation alongside measured update/reuse counters. CI regenerates the manifest from the current Renderer `development` source and compares it byte-for-byte with the committed browser input.
+The WebGPU runner loads this manifest and uses its 8 × 5 distance/attention decision matrix to select the exact Renderer decision for the chosen observer distance and minimum representation. In default observer mode, only the selected horizon is refreshed and drawn; the other horizon workloads are skipped and counted. An explicit all-horizon stress toggle restores the eight-workload comparison. The selected representation and cadence are displayed beside update, reuse, skip, byte and draw-submission counters. CI regenerates the manifest from the current Renderer `development` source and compares it byte-for-byte with the committed browser input.
 
 This is a real **Renderer policy → Visualize WebGPU workload** bridge, but it is intentionally a first integration step:
 - Renderer policy is evaluated in the .NET generator, not executed inside the browser.
