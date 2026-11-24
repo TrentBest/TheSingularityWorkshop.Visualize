@@ -46,9 +46,15 @@ const canvas=document.querySelector("#view"),status=document.querySelector("#sta
 const rendererPolicy=await fetch("./renderer-policy.json").then(response=>{if(!response.ok)throw new Error("Renderer policy manifest unavailable ("+response.status+")");return response.json();});
 if(rendererPolicy.schemaVersion!==1||rendererPolicy.generatedBy!=="TheSingularityWorkshop.Renderer.ObserverRepresentationPolicy"||!Array.isArray(rendererPolicy.horizons)||rendererPolicy.horizons.length!==8)throw new Error("Unsupported Renderer policy manifest.");
 const hs=rendererPolicy.horizons.map(h=>({n:h.name,c:h.color,rate:h.frameInterval,z:h.depth,representation:h.representation,updatesPerSecond:h.updatesPerSecond}));
+const policyMatrix=rendererPolicy.selectionMatrix;
+if(!Array.isArray(policyMatrix)||policyMatrix.length!==40)throw new Error("Renderer policy decision matrix is incomplete.");
+const distanceSelect=document.querySelector("#observer-distance"),minimumSelect=document.querySelector("#minimum-representation"),stressAllToggle=document.querySelector("#stress-all-horizons");
+distanceSelect.innerHTML=rendererPolicy.selectionProbes.map(probe=>'<option value="'+probe.distance+'">'+probe.distance+' m</option>').join("");
+minimumSelect.innerHTML=["Semantic","Aggregate","Distant","Near","Interactive"].map(value=>'<option value="'+value+'">'+value+'</option>').join("");
+distanceSelect.value="0.5";minimumSelect.value="Interactive";
 document.querySelector("#renderer-policy-status").textContent="Renderer policy active · "+hs.length+" horizon rules · "+rendererPolicy.attentionOverride.minimumRepresentation+" focus override at "+rendererPolicy.attentionOverride.distance+" m selects "+rendererPolicy.attentionOverride.horizon+" / "+rendererPolicy.attentionOverride.representation+".";
 document.querySelector("#legend").innerHTML=hs.map(h=>'<span><i class="swatch" style="background:rgb('+h.c.map(v=>Math.round(v*255)).join(",")+')"></i>'+h.n+'</span>').join("");
-let device,context,pipeline,meshBuffer,depthTexture,thermalBuffer,frameNumber=0,submissions=0,lastFrame=0,population=1,groups=[];
+let device,context,pipeline,meshBuffer,depthTexture,thermalBuffer,frameNumber=0,submissions=0,lastFrame=0,population=1,activeHorizonIndex=0,activePolicyDecision=null,groups=[];
 const frameSamples=[],submitSamples=[],updateSamples=[];const fmt=n=>Math.round(n).toLocaleString();
 function pct(a,p){if(!a.length)return 0;const s=a.slice().sort((x,y)=>x-y);return s[Math.min(s.length-1,Math.floor((s.length-1)*p))];}
 function sample(a,v){a.push(v);if(a.length>180)a.shift();}
