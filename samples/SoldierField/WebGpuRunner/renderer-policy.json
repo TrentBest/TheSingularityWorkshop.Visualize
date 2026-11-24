@@ -175,14 +175,6 @@
       "frameInterval": 64
     }
   ],
-  "attentionOverride": {
-    "distance": 64,
-    "minimumRepresentation": "Interactive",
-    "horizon": "Contact",
-    "representation": "Interactive",
-    "updatesPerSecond": 60,
-    "frameInterval": 1
-  },
   "selectionMatrix": [
     {
       "distance": 0.5,
@@ -544,5 +536,13 @@
       "updatesPerSecond": 60,
       "frameInterval": 1
     }
-  ]
+  ],
+  "attentionOverride": {
+    "distance": 64,
+    "minimumRepresentation": "Interactive",
+    "horizon": "Contact",
+    "representation": "Interactive",
+    "updatesPerSecond": 60,
+    "frameInterval": 1
+  }
 }
