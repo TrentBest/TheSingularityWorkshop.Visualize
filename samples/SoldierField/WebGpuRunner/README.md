@@ -69,9 +69,9 @@ The next integration should replace the repeated-per-horizon stress fixture with
 
 ## Deliberate stress-test behavior
 
-The selected population is repeated independently in every horizon workload. At population 1, the harness processes eight soldier instances across eight horizons; at population 100, it processes 800. This deliberately makes per-horizon cost visible even when a real near-field volume could not physically contain that many full-size soldiers. It is a stress model, not a physically valid occupancy simulation.
+In all-horizon stress mode, the selected population is repeated independently in every horizon workload. At population 1, the harness processes eight soldier instances across eight horizons; at population 100, it processes 800. Default observer-selected mode submits only the one horizon returned by the generated Renderer decision matrix. The repeated eight-horizon layout is a stress model, not a physically valid occupancy simulation.
 
-Cadences are demonstration values (1, 1, 2, 4, 8, 16, 32, and 64 frames). They are not imported from the Renderer bucket model yet. This page is not evidence that Renderer already drives the draw schedule.
+Cadence intervals (1, 1, 2, 4, 8, 16, 32, and 64 frames at the 60 Hz presentation target) are derived from Renderer Event Horizon update frequencies by the .NET policy generator. The browser consumes a deterministic 8-distance × 5-minimum-representation decision matrix. This is evidence that Renderer policy selects the active WebGPU workload, but it is not evidence that the live Renderer/FSM_API bucket scheduler is executing in the browser.
 
 ## Measurement limits
 
@@ -81,7 +81,7 @@ Frame interval includes browser scheduling. JavaScript encode/submit timing is n
 
 1. Validate the first soldier on actual WebGPU hardware and tune the mesh/camera.
 2. Add controlled quality variants and focal-beam detail selection.
-3. Feed refresh, invalidation, and reuse decisions from actual Renderer Event Horizon bucket APIs rather than a duplicate page-owned cadence policy.
+3. Replace the static generated policy matrix with a live host handoff from actual Renderer Event Horizon bucket decisions, including invalidation and safe cached reuse; do not duplicate Renderer policy inside the browser.
 4. Connect the selected part to a VR hand/grab adapter when a spatial host exists; keep the experiment record and part identity host-independent.
 5. Replace the render-space crater overlay with a geometry/damage representation that can feed collision, inspection, and cutaway views.
 6. Add procedural breath/grunt audio, a visibly glowing barrel, animated heat distortion, and sensor-aware presentation without confusing these effects with measured temperatures.
