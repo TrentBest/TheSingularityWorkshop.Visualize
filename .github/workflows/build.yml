@@ -213,6 +213,23 @@ jobs:
       - name: Build
         run: dotnet build TheSingularityWorkshop.Visualize.slnx --configuration Release --no-restore
 
+      - name: Generate and verify Renderer policy consumed by the WebGPU lab
+        run: |
+          dotnet run --project samples/RendererPolicyManifest/RendererPolicyManifest.csproj --configuration Release -p:WorkshopUseRepositorySources=true -p:WorkshopSourceRoot="${{ github.workspace }}" -- ./artifacts/renderer-policy.json
+          cmp ./artifacts/renderer-policy.json ./samples/SoldierField/WebGpuRunner/renderer-policy.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path("artifacts/renderer-policy.json").read_text(encoding="utf-8"))
+          assert manifest["generatedBy"] == "TheSingularityWorkshop.Renderer.ObserverRepresentationPolicy"
+          assert len(manifest["horizons"]) == 8
+          assert [item["frameInterval"] for item in manifest["horizons"]] == [1, 1, 2, 4, 8, 16, 32, 64]
+          assert manifest["attentionOverride"]["representation"] == "Interactive"
+          assert manifest["attentionOverride"]["horizon"] == "Contact"
+          print("Renderer policy manifest matches the checked-in WebGPU workload contract.")
+          PY
+
       - name: Generate and verify deterministic array-first workload
         shell: bash
         run: |
