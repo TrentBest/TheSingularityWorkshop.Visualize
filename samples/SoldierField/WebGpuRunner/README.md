@@ -41,7 +41,9 @@ The research board retains each run so the baseline and funded cooling iteration
 
 - Renders a procedural 3D exoskeleton mesh through WebGPU.
 - Uses instancing for a selectable population from 1 to 100,000 soldiers per horizon workload.
-- Gives eight horizons independent instance buffers, field depths, tints, and refresh cadences.
+- Gives eight horizons independent instance buffers, field depths, tints, and Renderer-derived refresh cadences.
+- Uses the generated Renderer/FSM decision to draw one selected horizon by default; all-horizon stress mode remains available.
+- Allocates 0 / 64 / 256 / 1,024 / 4,096 dust motes for Semantic / Aggregate / Distant / Near / Interactive states. Interactive detail draws 4,096 octahedra (32,768 triangles).
 - Includes ×10 and ×100 population steps.
 - Reports frame interval p50/p95, JavaScript encode/submit-call p50/p95, CPU-side instance-update timing, bytes submitted through instance-buffer writes, and per-horizon update/reuse counters.
 
@@ -53,16 +55,17 @@ The generated manifest carries:
 - the eight horizon distance bands;
 - Renderer-selected representation labels;
 - preferred updates per second, converted to frame intervals for a 60 Hz presentation target;
-- deterministic distance-selection probes;
+- nine deterministic observer-distance probes across the eight horizon bands;
+- a 9 × 5 decision matrix covering distance and minimum representation;
 - an attention-floor example in which an entity 64 m away is promoted to the `Interactive` representation by the policy.
 
-The WebGPU runner loads this manifest and uses its 9 × 5 distance/attention decision matrix to select the exact Renderer decision for the chosen observer distance and minimum representation. In default observer mode, only the selected horizon is refreshed and drawn; the other horizon workloads are skipped and counted. An explicit all-horizon stress toggle restores the eight-workload comparison. The selected representation and cadence are displayed beside update, reuse, skip, byte and draw-submission counters. CI regenerates the manifest from the current Renderer `development` source and compares it byte-for-byte with the committed browser input.
+The WebGPU runner loads this manifest and uses its 9 × 5 distance/attention decision matrix to select the exact Renderer decision and verified FSM state for the chosen observer distance and minimum representation. In default observer mode, only the selected horizon is refreshed and drawn; the other horizon workloads are skipped and counted. An explicit all-horizon stress toggle restores the eight-workload comparison. Visualize then maps the selected FSM state to a concrete dust-detail budget: 0 motes at Semantic, 64 at Aggregate, 256 at Distant, 1,024 at Near, and 4,096 at Interactive. Each mote is an eight-triangle octahedron, so Interactive allocates 32,768 detail triangles. This mapping belongs to Visualize, not Renderer; Renderer chooses the state, Visualize spends the detail budget. CI regenerates the manifest from the current Renderer `development` source and compares it byte-for-byte with the committed browser input.
 
 This is a real **Renderer policy → Visualize WebGPU workload** bridge, but it is intentionally a first integration step:
 - Renderer policy and `RendererComputationMachine`/FSM_API transitions are evaluated in the .NET generator, not executed inside the browser.
 - The browser consumes the generated policy snapshot; it does not call Renderer dynamically as the camera moves.
-- Representation labels are exposed and inspected, but the current stress fixture still draws every horizon workload with one soldier mesh.
-- The focus override is an evaluated policy example, not yet a live focal-beam geometry promotion.
+- The soldier mesh is still one geometry across all representation states; the state currently changes the active horizon and dust-mote budget, not soldier mesh LOD. All-horizon stress mode draws all eight workloads.
+- The focus override can promote a distant observer sample to Interactive and its 4,096-mote budget, but it is a manual observer control, not eye tracking or a live focal-beam geometry promotion.
 - The existing browser cadence loop remains Visualize presentation code; it is not the Renderer/FSM_API bucket scheduler.
 
 The next integration should replace the repeated-per-horizon stress fixture with observer-positioned entities, feed their distance/attention requirements through the same Renderer policy, and prove that promotion, demotion, visibility, and cached reuse change actual submitted geometry and work while preserving stable entity identity.
@@ -71,11 +74,11 @@ The next integration should replace the repeated-per-horizon stress fixture with
 
 In all-horizon stress mode, the selected population is repeated independently in every horizon workload. At population 1, the harness processes eight soldier instances across eight horizons; at population 100, it processes 800. Default observer-selected mode submits only the one horizon returned by the generated Renderer decision matrix. The repeated eight-horizon layout is a stress model, not a physically valid occupancy simulation.
 
-Cadence intervals (1, 1, 2, 4, 8, 16, 32, and 64 frames at the 60 Hz presentation target) are derived from Renderer Event Horizon update frequencies by the .NET policy generator. The browser consumes a deterministic 8-distance × 5-minimum-representation decision matrix. This is evidence that Renderer policy selects the active WebGPU workload, but it is not evidence that the live Renderer/FSM_API bucket scheduler is executing in the browser.
+Cadence intervals (1, 1, 2, 4, 8, 16, 32, and 64 frames at the 60 Hz presentation target) are derived from Renderer Event Horizon update frequencies by the .NET policy generator. The browser consumes a deterministic 9-distance × 5-minimum-representation decision matrix. This is evidence that Renderer policy selects the active WebGPU workload, but it is not evidence that the live Renderer/FSM_API bucket scheduler is executing in the browser.
 
 ## Measurement limits
 
-Frame interval includes browser scheduling. JavaScript encode/submit timing is not GPU execution time. Upload counts represent data submitted by this sample, not measured physical memory-bus traffic. GPU timestamp queries, skeletal animation, production camera behavior, focal-beam quality allocation, and repeatable benchmark automation are not yet implemented. Treat the numbers as initial diagnostic telemetry, not a performance claim.
+Frame interval includes browser scheduling. JavaScript encode/submit timing is not GPU execution time. Upload counts represent data submitted by this sample, not measured physical memory-bus traffic. GPU timestamp queries, skeletal animation, production camera behavior, screen-space dust budgeting, particle lifetime/physics, focal-beam quality allocation, soldier mesh LOD, and repeatable benchmark automation are not yet implemented. The current dust count is a fixed Visualize-owned budget per FSM representation, not a screen-space measurement. Treat the numbers as initial diagnostic telemetry, not a performance claim.
 
 ## Next engineering steps
 
