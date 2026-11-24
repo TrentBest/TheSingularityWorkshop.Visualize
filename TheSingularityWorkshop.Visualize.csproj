@@ -20,7 +20,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="FSM_API/FSM_API/FSM_API.csproj" />
+    <ProjectReference Include="FSM_API/FSM_API.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
