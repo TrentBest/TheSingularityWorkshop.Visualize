@@ -216,7 +216,11 @@ jobs:
       - name: Generate and verify Renderer policy consumed by the WebGPU lab
         run: |
           dotnet run --project samples/RendererPolicyManifest/RendererPolicyManifest.csproj --configuration Release -p:WorkshopUseRepositorySources=true -p:WorkshopSourceRoot="${{ github.workspace }}" -- ./artifacts/renderer-policy.json
-          cmp ./artifacts/renderer-policy.json ./samples/SoldierField/WebGpuRunner/renderer-policy.json
+          if ! cmp -s ./artifacts/renderer-policy.json ./samples/SoldierField/WebGpuRunner/renderer-policy.json; then
+            echo "Generated Renderer policy differs from the checked-in browser manifest:"
+            diff -u ./samples/SoldierField/WebGpuRunner/renderer-policy.json ./artifacts/renderer-policy.json || true
+            exit 1
+          fi
           python3 - <<'PY'
           import json
           from pathlib import Path
