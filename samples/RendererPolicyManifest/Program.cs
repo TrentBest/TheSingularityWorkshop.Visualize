@@ -50,11 +50,15 @@ var probes = distances
     })
     .ToArray();
 
+var matrixOrdinal = 0;
 var selectionMatrix = distances
     .SelectMany(distance => Enum.GetValues<RepresentationTarget>().Select(minimumRepresentation =>
     {
         var decision = policy.Select(distance, minimumRepresentation);
         var horizonId = Array.FindIndex(horizons, horizon => ReferenceEquals(horizon, decision.Horizon));
+        var fsmState = AdvanceRendererState($"RendererPolicyManifest.Decision.{matrixOrdinal++}", decision.Representation);
+        if (fsmState != decision.Representation)
+            throw new InvalidOperationException("Renderer FSM state did not accept its selected representation.");
         return new
         {
             distance,
@@ -62,6 +66,7 @@ var selectionMatrix = distances
             horizonId,
             horizon = decision.HorizonName,
             representation = decision.Representation.ToString(),
+            fsmState = fsmState.ToString(),
             updatesPerSecond = decision.UpdatesPerSecond,
             frameInterval = FrameInterval(decision.UpdatesPerSecond)
         };
@@ -75,18 +80,23 @@ var manifest = new
 {
     schemaVersion = 1,
     generatedBy = "TheSingularityWorkshop.Renderer.ObserverRepresentationPolicy",
-    executionBoundary = "Renderer policy is evaluated by this .NET generator; the browser consumes this deterministic manifest. The page does not run the .NET policy or claim a GPU benchmark.",
+    executionBoundary = "Renderer policy is evaluated by this .NET generator; the browser consumes this deterministic manifest. Renderer policy and FSM state transitions are evaluated by this .NET generator; the browser consumes the deterministic manifest and does not run the .NET policy or claim a GPU benchmark.",
     targetFrameRate,
-    horizons = definitions.Select((definition, index) => new
+    horizons = definitions.Select((definition, index) =>
     {
-        id = index,
-        name = definition.Name,
-        maxDistance = definition.MaximumDistance,
-        updatesPerSecond = definition.UpdatesPerSecond,
-        frameInterval = FrameInterval(definition.UpdatesPerSecond),
-        representation = definition.Representation.ToString(),
-        color = definition.Color,
-        depth = definition.Depth
+        var fsmState = AdvanceRendererState($"RendererPolicyManifest.Horizon.{index}", definition.Representation);
+        return new
+        {
+            id = index,
+            name = definition.Name,
+            maxDistance = definition.MaximumDistance,
+            updatesPerSecond = definition.UpdatesPerSecond,
+            frameInterval = FrameInterval(definition.UpdatesPerSecond),
+            representation = definition.Representation.ToString(),
+            fsmState = fsmState.ToString(),
+            color = definition.Color,
+            depth = definition.Depth
+        };
     }).ToArray(),
     selectionProbes = probes,
     selectionMatrix,
@@ -96,6 +106,7 @@ var manifest = new
         minimumRepresentation = RepresentationTarget.Interactive.ToString(),
         horizon = focusDecision.HorizonName,
         representation = focusDecision.Representation.ToString(),
+        fsmState = AdvanceRendererState("RendererPolicyManifest.AttentionOverride", focusDecision.Representation).ToString(),
         updatesPerSecond = focusDecision.UpdatesPerSecond,
         frameInterval = FrameInterval(focusDecision.UpdatesPerSecond)
     }
@@ -111,7 +122,14 @@ await File.WriteAllTextAsync(outputPath, JsonSerializer.Serialize(
     new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine);
 
 Console.WriteLine($"Renderer policy manifest written: {outputPath}");
-Console.WriteLine($"Horizon rules: {horizons.Length}; selection probes: {probes.Length}; attention override: {focusDecision.HorizonName}/{focusDecision.Representation}");
+Console.WriteLine($"Horizon rules: {horizons.Length}; selection decisions: {selectionMatrix.Length}; FSM transitions verified; attention override: {focusDecision.HorizonName}/{focusDecision.Representation}");
+
+static RepresentationTarget AdvanceRendererState(string name, RepresentationTarget desired)
+{
+    var context = new RendererComputationContext(name, desired);
+    using var machine = new RendererComputationMachine(context);
+    return machine.Advance();
+}
 
 internal sealed record HorizonDefinition(
     string Name,
