@@ -182,5 +182,367 @@
     "representation": "Interactive",
     "updatesPerSecond": 60,
     "frameInterval": 1
-  }
+  },
+  "selectionMatrix": [
+    {
+      "distance": 0.5,
+      "minimumRepresentation": "Semantic",
+      "horizonId": 0,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 0.5,
+      "minimumRepresentation": "Aggregate",
+      "horizonId": 0,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 0.5,
+      "minimumRepresentation": "Distant",
+      "horizonId": 0,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 0.5,
+      "minimumRepresentation": "Near",
+      "horizonId": 0,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 0.5,
+      "minimumRepresentation": "Interactive",
+      "horizonId": 0,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 1.5,
+      "minimumRepresentation": "Semantic",
+      "horizonId": 1,
+      "horizon": "1 m",
+      "representation": "Near",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 1.5,
+      "minimumRepresentation": "Aggregate",
+      "horizonId": 1,
+      "horizon": "1 m",
+      "representation": "Near",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 1.5,
+      "minimumRepresentation": "Distant",
+      "horizonId": 1,
+      "horizon": "1 m",
+      "representation": "Near",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 1.5,
+      "minimumRepresentation": "Near",
+      "horizonId": 1,
+      "horizon": "1 m",
+      "representation": "Near",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 1.5,
+      "minimumRepresentation": "Interactive",
+      "horizonId": 0,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 3,
+      "minimumRepresentation": "Semantic",
+      "horizonId": 2,
+      "horizon": "2 m",
+      "representation": "Near",
+      "updatesPerSecond": 30,
+      "frameInterval": 2
+    },
+    {
+      "distance": 3,
+      "minimumRepresentation": "Aggregate",
+      "horizonId": 2,
+      "horizon": "2 m",
+      "representation": "Near",
+      "updatesPerSecond": 30,
+      "frameInterval": 2
+    },
+    {
+      "distance": 3,
+      "minimumRepresentation": "Distant",
+      "horizonId": 2,
+      "horizon": "2 m",
+      "representation": "Near",
+      "updatesPerSecond": 30,
+      "frameInterval": 2
+    },
+    {
+      "distance": 3,
+      "minimumRepresentation": "Near",
+      "horizonId": 2,
+      "horizon": "2 m",
+      "representation": "Near",
+      "updatesPerSecond": 30,
+      "frameInterval": 2
+    },
+    {
+      "distance": 3,
+      "minimumRepresentation": "Interactive",
+      "horizonId": 0,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 6,
+      "minimumRepresentation": "Semantic",
+      "horizonId": 3,
+      "horizon": "4 m",
+      "representation": "Distant",
+      "updatesPerSecond": 15,
+      "frameInterval": 4
+    },
+    {
+      "distance": 6,
+      "minimumRepresentation": "Aggregate",
+      "horizonId": 3,
+      "horizon": "4 m",
+      "representation": "Distant",
+      "updatesPerSecond": 15,
+      "frameInterval": 4
+    },
+    {
+      "distance": 6,
+      "minimumRepresentation": "Distant",
+      "horizonId": 3,
+      "horizon": "4 m",
+      "representation": "Distant",
+      "updatesPerSecond": 15,
+      "frameInterval": 4
+    },
+    {
+      "distance": 6,
+      "minimumRepresentation": "Near",
+      "horizonId": 1,
+      "horizon": "1 m",
+      "representation": "Near",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 6,
+      "minimumRepresentation": "Interactive",
+      "horizonId": 0,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 12,
+      "minimumRepresentation": "Semantic",
+      "horizonId": 4,
+      "horizon": "16 m",
+      "representation": "Distant",
+      "updatesPerSecond": 7.5,
+      "frameInterval": 8
+    },
+    {
+      "distance": 12,
+      "minimumRepresentation": "Aggregate",
+      "horizonId": 4,
+      "horizon": "16 m",
+      "representation": "Distant",
+      "updatesPerSecond": 7.5,
+      "frameInterval": 8
+    },
+    {
+      "distance": 12,
+      "minimumRepresentation": "Distant",
+      "horizonId": 4,
+      "horizon": "16 m",
+      "representation": "Distant",
+      "updatesPerSecond": 7.5,
+      "frameInterval": 8
+    },
+    {
+      "distance": 12,
+      "minimumRepresentation": "Near",
+      "horizonId": 1,
+      "horizon": "1 m",
+      "representation": "Near",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 12,
+      "minimumRepresentation": "Interactive",
+      "horizonId": 0,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 24,
+      "minimumRepresentation": "Semantic",
+      "horizonId": 5,
+      "horizon": "32 m",
+      "representation": "Aggregate",
+      "updatesPerSecond": 3.75,
+      "frameInterval": 16
+    },
+    {
+      "distance": 24,
+      "minimumRepresentation": "Aggregate",
+      "horizonId": 5,
+      "horizon": "32 m",
+      "representation": "Aggregate",
+      "updatesPerSecond": 3.75,
+      "frameInterval": 16
+    },
+    {
+      "distance": 24,
+      "minimumRepresentation": "Distant",
+      "horizonId": 3,
+      "horizon": "4 m",
+      "representation": "Distant",
+      "updatesPerSecond": 15,
+      "frameInterval": 4
+    },
+    {
+      "distance": 24,
+      "minimumRepresentation": "Near",
+      "horizonId": 1,
+      "horizon": "1 m",
+      "representation": "Near",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 24,
+      "minimumRepresentation": "Interactive",
+      "horizonId": 0,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 48,
+      "minimumRepresentation": "Semantic",
+      "horizonId": 6,
+      "horizon": "64 m",
+      "representation": "Aggregate",
+      "updatesPerSecond": 1.875,
+      "frameInterval": 32
+    },
+    {
+      "distance": 48,
+      "minimumRepresentation": "Aggregate",
+      "horizonId": 6,
+      "horizon": "64 m",
+      "representation": "Aggregate",
+      "updatesPerSecond": 1.875,
+      "frameInterval": 32
+    },
+    {
+      "distance": 48,
+      "minimumRepresentation": "Distant",
+      "horizonId": 3,
+      "horizon": "4 m",
+      "representation": "Distant",
+      "updatesPerSecond": 15,
+      "frameInterval": 4
+    },
+    {
+      "distance": 48,
+      "minimumRepresentation": "Near",
+      "horizonId": 1,
+      "horizon": "1 m",
+      "representation": "Near",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 48,
+      "minimumRepresentation": "Interactive",
+      "horizonId": 0,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 96,
+      "minimumRepresentation": "Semantic",
+      "horizonId": 7,
+      "horizon": "128 m\u002B",
+      "representation": "Semantic",
+      "updatesPerSecond": 0.9375,
+      "frameInterval": 64
+    },
+    {
+      "distance": 96,
+      "minimumRepresentation": "Aggregate",
+      "horizonId": 5,
+      "horizon": "32 m",
+      "representation": "Aggregate",
+      "updatesPerSecond": 3.75,
+      "frameInterval": 16
+    },
+    {
+      "distance": 96,
+      "minimumRepresentation": "Distant",
+      "horizonId": 3,
+      "horizon": "4 m",
+      "representation": "Distant",
+      "updatesPerSecond": 15,
+      "frameInterval": 4
+    },
+    {
+      "distance": 96,
+      "minimumRepresentation": "Near",
+      "horizonId": 1,
+      "horizon": "1 m",
+      "representation": "Near",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 96,
+      "minimumRepresentation": "Interactive",
+      "horizonId": 0,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    }
+  ]
 }
