@@ -57,4 +57,4 @@ assert.ok(html.includes("if(!stressAll&&groupIndex!==activeHorizonIndex)"));
 assert.ok(html.includes("const visibleGroups=stressAll?groups:[groups[activeHorizonIndex]]"));
 assert.ok(html.includes("Policy skips"));
 
-console.log("Renderer policy matrix validated: 40 observer decisions drive selected WebGPU horizon work.");
+console.log("Renderer policy matrix validated: 45 observer decisions drive selected WebGPU horizon work.");
