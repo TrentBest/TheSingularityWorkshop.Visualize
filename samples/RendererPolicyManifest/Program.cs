@@ -79,8 +79,8 @@ var focusDecision = policy.Select(focusDistance, RepresentationTarget.Interactiv
 var manifest = new
 {
     schemaVersion = 1,
-    generatedBy = "TheSingularityWorkshop.Renderer.ObserverRepresentationPolicy",
-    executionBoundary = "Renderer policy is evaluated by this .NET generator; the browser consumes this deterministic manifest. Renderer policy and FSM state transitions are evaluated by this .NET generator; the browser consumes the deterministic manifest and does not run the .NET policy or claim a GPU benchmark.",
+    generatedBy = "TheSingularityWorkshop.Renderer.ObserverRepresentationPolicy+RendererComputationMachine",
+    executionBoundary = "Renderer policy and FSM state transitions are evaluated by this .NET generator; the browser consumes the deterministic manifest and does not run the .NET policy or claim a GPU benchmark.",
     targetFrameRate,
     horizons = definitions.Select((definition, index) =>
     {
