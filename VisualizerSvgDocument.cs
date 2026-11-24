@@ -61,6 +61,10 @@ public sealed class VisualizerSvgDocument
         {
             VisualizerSvgRectangle rectangle => new VisualizerSvgRectangle(
                 rectangle.Id, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, rectangle.Fill, attributes),
+            VisualizerSvgCircle circle => new VisualizerSvgCircle(
+                circle.Id, circle.CenterX, circle.CenterY, circle.Radius, circle.Fill, attributes),
+            VisualizerSvgText text => new VisualizerSvgText(
+                text.Id, text.X, text.Y, text.Text, text.Fill, text.FontSize, text.FontFamily, text.FontWeight, text.TextAnchor, attributes),
             VisualizerSvgPolygon polygon => new VisualizerSvgPolygon(
                 polygon.Id, polygon.Points, polygon.Fill, attributes),
             _ => throw new NotSupportedException(
@@ -191,6 +195,88 @@ public sealed record VisualizerSvgRectangle(string Id, double X, double Y, doubl
         writer.WriteAttributeString("height", VisualizerSvgDocument.Format(Height));
         writer.WriteAttributeString("fill", Fill);
         WriteAttributes(writer);
+        writer.WriteEndElement();
+    }
+}
+
+
+/// <summary>A filled circle in SVG viewport coordinates, useful for stable map markers and tokens.</summary>
+public sealed record VisualizerSvgCircle(
+    string Id,
+    double CenterX,
+    double CenterY,
+    double Radius,
+    string Fill,
+    IReadOnlyDictionary<string, string>? Attributes = null)
+    : VisualizerSvgPrimitive(Id, Fill, Attributes)
+{
+    internal override void Validate()
+    {
+        ValidateCommon();
+        if (!double.IsFinite(CenterX) || !double.IsFinite(CenterY))
+            throw new ArgumentOutOfRangeException(nameof(CenterX), "Circle coordinates must be finite.");
+        if (!double.IsFinite(Radius) || Radius < 0)
+            throw new ArgumentOutOfRangeException(nameof(Radius), "Circle radius must be finite and non-negative.");
+    }
+
+    internal override void WriteTo(XmlWriter writer)
+    {
+        writer.WriteStartElement("circle");
+        writer.WriteAttributeString("id", Id);
+        writer.WriteAttributeString("cx", VisualizerSvgDocument.Format(CenterX));
+        writer.WriteAttributeString("cy", VisualizerSvgDocument.Format(CenterY));
+        writer.WriteAttributeString("r", VisualizerSvgDocument.Format(Radius));
+        writer.WriteAttributeString("fill", Fill);
+        WriteAttributes(writer);
+        writer.WriteEndElement();
+    }
+}
+
+/// <summary>Accessible text positioned in SVG viewport coordinates.</summary>
+public sealed record VisualizerSvgText(
+    string Id,
+    double X,
+    double Y,
+    string Text,
+    string Fill,
+    double FontSize = 14,
+    string FontFamily = "sans-serif",
+    string FontWeight = "normal",
+    string TextAnchor = "start",
+    IReadOnlyDictionary<string, string>? Attributes = null)
+    : VisualizerSvgPrimitive(Id, Fill, Attributes)
+{
+    internal override void Validate()
+    {
+        ValidateCommon();
+        if (!double.IsFinite(X) || !double.IsFinite(Y))
+            throw new ArgumentOutOfRangeException(nameof(X), "Text coordinates must be finite.");
+        ArgumentNullException.ThrowIfNull(Text);
+        if (Text.Any(char.IsControl))
+            throw new ArgumentException("SVG text cannot contain control characters.", nameof(Text));
+        if (!double.IsFinite(FontSize) || FontSize <= 0)
+            throw new ArgumentOutOfRangeException(nameof(FontSize), "Font size must be finite and greater than zero.");
+        if (string.IsNullOrWhiteSpace(FontFamily) || FontFamily.Any(char.IsControl))
+            throw new ArgumentException("Font family must be non-empty and contain no control characters.", nameof(FontFamily));
+        if (FontWeight is not ("normal" or "bold"))
+            throw new ArgumentException("Font weight must be normal or bold.", nameof(FontWeight));
+        if (TextAnchor is not ("start" or "middle" or "end"))
+            throw new ArgumentException("Text anchor must be start, middle, or end.", nameof(TextAnchor));
+    }
+
+    internal override void WriteTo(XmlWriter writer)
+    {
+        writer.WriteStartElement("text");
+        writer.WriteAttributeString("id", Id);
+        writer.WriteAttributeString("x", VisualizerSvgDocument.Format(X));
+        writer.WriteAttributeString("y", VisualizerSvgDocument.Format(Y));
+        writer.WriteAttributeString("fill", Fill);
+        writer.WriteAttributeString("font-size", VisualizerSvgDocument.Format(FontSize));
+        writer.WriteAttributeString("font-family", FontFamily);
+        writer.WriteAttributeString("font-weight", FontWeight);
+        writer.WriteAttributeString("text-anchor", TextAnchor);
+        WriteAttributes(writer);
+        writer.WriteString(Text);
         writer.WriteEndElement();
     }
 }
