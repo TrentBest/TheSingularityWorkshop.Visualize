@@ -169,7 +169,7 @@ public sealed class VisualizerSvgDocumentTests
         attributes["data-entity-id"] = "8";
 
         Assert.Equal(original, document.ToSvg());
-        Assert.Contains("data-entity-id=\\"7\\"", document.ToSvg(), StringComparison.Ordinal);
+        Assert.Contains("data-entity-id=\"7\"", document.ToSvg(), StringComparison.Ordinal);
     }
 
     [Theory]
