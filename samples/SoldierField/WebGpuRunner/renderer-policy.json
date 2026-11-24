@@ -104,7 +104,7 @@
     },
     {
       "id": 7,
-      "name": "128 m+",
+      "name": "128 m\u002B",
       "maxDistance": 128,
       "updatesPerSecond": 0.9375,
       "frameInterval": 64,
@@ -169,7 +169,7 @@
     },
     {
       "distance": 96,
-      "horizon": "128 m+",
+      "horizon": "128 m\u002B",
       "representation": "Semantic",
       "updatesPerSecond": 0.9375,
       "frameInterval": 64
