@@ -19,8 +19,14 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+  <PropertyGroup>
+    <!-- In the standalone repository CI, FSM_API is checked out beneath this repository.
+         In a Workshop workspace, FSM_API is a sibling repository beside Visualize. -->
+    <FsmApiProjectReference Condition="Exists('FSM_API/FSM_API/FSM_API.csproj')">FSM_API/FSM_API/FSM_API.csproj</FsmApiProjectReference>
+    <FsmApiProjectReference Condition="'$(FsmApiProjectReference)' == '' and Exists('../FSM_API/FSM_API/FSM_API.csproj')">../FSM_API/FSM_API/FSM_API.csproj</FsmApiProjectReference>
+  </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="FSM_API/FSM_API.csproj" />
+    <ProjectReference Include="$(FsmApiProjectReference)" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
