@@ -500,6 +500,51 @@ jobs:
             ./artifacts/mycity-block/*.json
           if-no-files-found: error
 
+      - name: Generate deterministic tactical map authoring SVG
+        run: >
+          dotnet run --project samples/TacticalMapProof/TacticalMapProof.csproj
+          --configuration Release
+          -- ./artifacts/tactical-map
+
+      - name: Verify tactical map semantic identities and SVG authoring output
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path("./artifacts/tactical-map")
+          manifest = json.loads((root / "tactical-map-manifest.json").read_text(encoding="utf-8"))
+          svg = (root / "tactical-map.svg").read_text(encoding="utf-8")
+          assert manifest["schemaVersion"] == 1
+          assert manifest["fixture"] == "tactical-map-authoring"
+          assert manifest["fixtureKind"] == "illustrative-vector-scene-not-game-state"
+          assert manifest["locationCount"] == 6
+          assert manifest["doorCount"] == 5
+          assert manifest["tokenCount"] == 4
+          assert manifest["backend"] == "VisualizerSvgDocument"
+          assert manifest["execution"] == "CPU/static SVG"
+          assert manifest["gpuExecution"] is False
+          assert manifest["deterministicRepeat"] is True
+          assert manifest["output"]["bytes"] == len(svg.encode("utf-8"))
+          for entity_id in manifest["locationIds"] + manifest["doorIds"] + manifest["tokenIds"] + [manifest["objectiveId"]]:
+              assert f'data-entity-id="{entity_id}"' in svg, entity_id
+          for label in ("ENTRY", "SECURITY", "LABORATORY", "CONTAINMENT", "OBJECTIVE"):
+              assert label in svg, label
+          assert "<circle" in svg and "<text" in svg and "<rect" in svg
+          print(json.dumps(manifest, indent=2))
+          PY
+
+      - name: Upload tactical map authoring proof
+        uses: actions/upload-artifact@c2acdedd35a8824a1552c7137f8c18288c3ea469 # v7.0.2
+        with:
+          name: visualize-tactical-map-authoring-proof
+          path: |
+            ./artifacts/tactical-map/*.svg
+            ./artifacts/tactical-map/*.json
+          if-no-files-found: error
+
       - name: Generate deterministic Extremus crowd instance SVG proof
         env:
           WorkshopGuiSvgProjectPath: GuiSource/src/SVG/TheSingularityWorkshop.GUI.SVG.csproj
