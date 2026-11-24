@@ -176,6 +176,13 @@
       "frameInterval": 32
     },
     {
+      "distance": 64,
+      "horizon": "64 m",
+      "representation": "Aggregate",
+      "updatesPerSecond": 1.875,
+      "frameInterval": 32
+    },
+    {
       "distance": 96,
       "horizon": "128 m\u002B",
       "representation": "Semantic",
@@ -526,6 +533,56 @@
     },
     {
       "distance": 48,
+      "minimumRepresentation": "Interactive",
+      "horizonId": 0,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "fsmState": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 64,
+      "minimumRepresentation": "Semantic",
+      "horizonId": 6,
+      "horizon": "64 m",
+      "representation": "Aggregate",
+      "fsmState": "Aggregate",
+      "updatesPerSecond": 1.875,
+      "frameInterval": 32
+    },
+    {
+      "distance": 64,
+      "minimumRepresentation": "Aggregate",
+      "horizonId": 6,
+      "horizon": "64 m",
+      "representation": "Aggregate",
+      "fsmState": "Aggregate",
+      "updatesPerSecond": 1.875,
+      "frameInterval": 32
+    },
+    {
+      "distance": 64,
+      "minimumRepresentation": "Distant",
+      "horizonId": 3,
+      "horizon": "4 m",
+      "representation": "Distant",
+      "fsmState": "Distant",
+      "updatesPerSecond": 15,
+      "frameInterval": 4
+    },
+    {
+      "distance": 64,
+      "minimumRepresentation": "Near",
+      "horizonId": 1,
+      "horizon": "1 m",
+      "representation": "Near",
+      "fsmState": "Near",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 64,
       "minimumRepresentation": "Interactive",
       "horizonId": 0,
       "horizon": "Contact",
