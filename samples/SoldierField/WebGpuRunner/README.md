@@ -45,7 +45,7 @@ The research board retains each run so the baseline and funded cooling iteration
 - Uses the generated Renderer/FSM decision to draw one selected horizon by default; all-horizon stress mode remains available.
 - Allocates 0 / 64 / 256 / 1,024 / 4,096 dust motes for Semantic / Aggregate / Distant / Near / Interactive states. Interactive detail draws 4,096 octahedra (32,768 triangles).
 - Includes ×10 and ×100 population steps.
-- Reports frame interval p50/p95, JavaScript encode/submit-call p50/p95, CPU-side instance-update timing, bytes submitted through instance-buffer writes, and per-horizon update/reuse counters.
+- Reports frame interval p50/p95, JavaScript encode/submit-call p50/p95, CPU-side instance-update timing, bytes submitted through instance-buffer writes, per-horizon update/reuse/policy-skip counters, main-field draw calls, and the active dust-mote/triangle budget.
 
 ## Renderer policy bridge
 
