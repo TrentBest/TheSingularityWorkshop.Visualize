@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedBy": "TheSingularityWorkshop.Renderer.ObserverRepresentationPolicy",
-  "executionBoundary": "Renderer policy is evaluated by this .NET generator; the browser consumes this deterministic manifest. The page does not run the .NET policy or claim a GPU benchmark.",
+  "generatedBy": "TheSingularityWorkshop.Renderer.ObserverRepresentationPolicy\u002BRendererComputationMachine",
+  "executionBoundary": "Renderer policy and FSM state transitions are evaluated by this .NET generator; the browser consumes the deterministic manifest and does not run the .NET policy or claim a GPU benchmark.",
   "targetFrameRate": 60,
   "horizons": [
     {
@@ -11,6 +11,7 @@
       "updatesPerSecond": 60,
       "frameInterval": 1,
       "representation": "Interactive",
+      "fsmState": "Interactive",
       "color": [
         0.25,
         0.95,
@@ -25,6 +26,7 @@
       "updatesPerSecond": 60,
       "frameInterval": 1,
       "representation": "Near",
+      "fsmState": "Near",
       "color": [
         0.36,
         0.88,
@@ -39,6 +41,7 @@
       "updatesPerSecond": 30,
       "frameInterval": 2,
       "representation": "Near",
+      "fsmState": "Near",
       "color": [
         0.42,
         0.82,
@@ -53,6 +56,7 @@
       "updatesPerSecond": 15,
       "frameInterval": 4,
       "representation": "Distant",
+      "fsmState": "Distant",
       "color": [
         0.49,
         0.72,
@@ -67,6 +71,7 @@
       "updatesPerSecond": 7.5,
       "frameInterval": 8,
       "representation": "Distant",
+      "fsmState": "Distant",
       "color": [
         0.59,
         0.63,
@@ -81,6 +86,7 @@
       "updatesPerSecond": 3.75,
       "frameInterval": 16,
       "representation": "Aggregate",
+      "fsmState": "Aggregate",
       "color": [
         0.68,
         0.56,
@@ -95,6 +101,7 @@
       "updatesPerSecond": 1.875,
       "frameInterval": 32,
       "representation": "Aggregate",
+      "fsmState": "Aggregate",
       "color": [
         0.76,
         0.51,
@@ -109,6 +116,7 @@
       "updatesPerSecond": 0.9375,
       "frameInterval": 64,
       "representation": "Semantic",
+      "fsmState": "Semantic",
       "color": [
         0.86,
         0.55,
@@ -182,6 +190,7 @@
       "horizonId": 0,
       "horizon": "Contact",
       "representation": "Interactive",
+      "fsmState": "Interactive",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -191,6 +200,7 @@
       "horizonId": 0,
       "horizon": "Contact",
       "representation": "Interactive",
+      "fsmState": "Interactive",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -200,6 +210,7 @@
       "horizonId": 0,
       "horizon": "Contact",
       "representation": "Interactive",
+      "fsmState": "Interactive",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -209,6 +220,7 @@
       "horizonId": 0,
       "horizon": "Contact",
       "representation": "Interactive",
+      "fsmState": "Interactive",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -218,6 +230,7 @@
       "horizonId": 0,
       "horizon": "Contact",
       "representation": "Interactive",
+      "fsmState": "Interactive",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -227,6 +240,7 @@
       "horizonId": 1,
       "horizon": "1 m",
       "representation": "Near",
+      "fsmState": "Near",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -236,6 +250,7 @@
       "horizonId": 1,
       "horizon": "1 m",
       "representation": "Near",
+      "fsmState": "Near",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -245,6 +260,7 @@
       "horizonId": 1,
       "horizon": "1 m",
       "representation": "Near",
+      "fsmState": "Near",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -254,6 +270,7 @@
       "horizonId": 1,
       "horizon": "1 m",
       "representation": "Near",
+      "fsmState": "Near",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -263,6 +280,7 @@
       "horizonId": 0,
       "horizon": "Contact",
       "representation": "Interactive",
+      "fsmState": "Interactive",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -272,6 +290,7 @@
       "horizonId": 2,
       "horizon": "2 m",
       "representation": "Near",
+      "fsmState": "Near",
       "updatesPerSecond": 30,
       "frameInterval": 2
     },
@@ -281,6 +300,7 @@
       "horizonId": 2,
       "horizon": "2 m",
       "representation": "Near",
+      "fsmState": "Near",
       "updatesPerSecond": 30,
       "frameInterval": 2
     },
@@ -290,6 +310,7 @@
       "horizonId": 2,
       "horizon": "2 m",
       "representation": "Near",
+      "fsmState": "Near",
       "updatesPerSecond": 30,
       "frameInterval": 2
     },
@@ -299,6 +320,7 @@
       "horizonId": 2,
       "horizon": "2 m",
       "representation": "Near",
+      "fsmState": "Near",
       "updatesPerSecond": 30,
       "frameInterval": 2
     },
@@ -308,6 +330,7 @@
       "horizonId": 0,
       "horizon": "Contact",
       "representation": "Interactive",
+      "fsmState": "Interactive",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -317,6 +340,7 @@
       "horizonId": 3,
       "horizon": "4 m",
       "representation": "Distant",
+      "fsmState": "Distant",
       "updatesPerSecond": 15,
       "frameInterval": 4
     },
@@ -326,6 +350,7 @@
       "horizonId": 3,
       "horizon": "4 m",
       "representation": "Distant",
+      "fsmState": "Distant",
       "updatesPerSecond": 15,
       "frameInterval": 4
     },
@@ -335,6 +360,7 @@
       "horizonId": 3,
       "horizon": "4 m",
       "representation": "Distant",
+      "fsmState": "Distant",
       "updatesPerSecond": 15,
       "frameInterval": 4
     },
@@ -344,6 +370,7 @@
       "horizonId": 1,
       "horizon": "1 m",
       "representation": "Near",
+      "fsmState": "Near",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -353,6 +380,7 @@
       "horizonId": 0,
       "horizon": "Contact",
       "representation": "Interactive",
+      "fsmState": "Interactive",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -362,6 +390,7 @@
       "horizonId": 4,
       "horizon": "16 m",
       "representation": "Distant",
+      "fsmState": "Distant",
       "updatesPerSecond": 7.5,
       "frameInterval": 8
     },
@@ -371,6 +400,7 @@
       "horizonId": 4,
       "horizon": "16 m",
       "representation": "Distant",
+      "fsmState": "Distant",
       "updatesPerSecond": 7.5,
       "frameInterval": 8
     },
@@ -380,6 +410,7 @@
       "horizonId": 4,
       "horizon": "16 m",
       "representation": "Distant",
+      "fsmState": "Distant",
       "updatesPerSecond": 7.5,
       "frameInterval": 8
     },
@@ -389,6 +420,7 @@
       "horizonId": 1,
       "horizon": "1 m",
       "representation": "Near",
+      "fsmState": "Near",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -398,6 +430,7 @@
       "horizonId": 0,
       "horizon": "Contact",
       "representation": "Interactive",
+      "fsmState": "Interactive",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -407,6 +440,7 @@
       "horizonId": 5,
       "horizon": "32 m",
       "representation": "Aggregate",
+      "fsmState": "Aggregate",
       "updatesPerSecond": 3.75,
       "frameInterval": 16
     },
@@ -416,6 +450,7 @@
       "horizonId": 5,
       "horizon": "32 m",
       "representation": "Aggregate",
+      "fsmState": "Aggregate",
       "updatesPerSecond": 3.75,
       "frameInterval": 16
     },
@@ -425,6 +460,7 @@
       "horizonId": 3,
       "horizon": "4 m",
       "representation": "Distant",
+      "fsmState": "Distant",
       "updatesPerSecond": 15,
       "frameInterval": 4
     },
@@ -434,6 +470,7 @@
       "horizonId": 1,
       "horizon": "1 m",
       "representation": "Near",
+      "fsmState": "Near",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -443,6 +480,7 @@
       "horizonId": 0,
       "horizon": "Contact",
       "representation": "Interactive",
+      "fsmState": "Interactive",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -452,6 +490,7 @@
       "horizonId": 6,
       "horizon": "64 m",
       "representation": "Aggregate",
+      "fsmState": "Aggregate",
       "updatesPerSecond": 1.875,
       "frameInterval": 32
     },
@@ -461,6 +500,7 @@
       "horizonId": 6,
       "horizon": "64 m",
       "representation": "Aggregate",
+      "fsmState": "Aggregate",
       "updatesPerSecond": 1.875,
       "frameInterval": 32
     },
@@ -470,6 +510,7 @@
       "horizonId": 3,
       "horizon": "4 m",
       "representation": "Distant",
+      "fsmState": "Distant",
       "updatesPerSecond": 15,
       "frameInterval": 4
     },
@@ -479,6 +520,7 @@
       "horizonId": 1,
       "horizon": "1 m",
       "representation": "Near",
+      "fsmState": "Near",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -488,6 +530,7 @@
       "horizonId": 0,
       "horizon": "Contact",
       "representation": "Interactive",
+      "fsmState": "Interactive",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -497,6 +540,7 @@
       "horizonId": 7,
       "horizon": "128 m\u002B",
       "representation": "Semantic",
+      "fsmState": "Semantic",
       "updatesPerSecond": 0.9375,
       "frameInterval": 64
     },
@@ -506,6 +550,7 @@
       "horizonId": 5,
       "horizon": "32 m",
       "representation": "Aggregate",
+      "fsmState": "Aggregate",
       "updatesPerSecond": 3.75,
       "frameInterval": 16
     },
@@ -515,6 +560,7 @@
       "horizonId": 3,
       "horizon": "4 m",
       "representation": "Distant",
+      "fsmState": "Distant",
       "updatesPerSecond": 15,
       "frameInterval": 4
     },
@@ -524,6 +570,7 @@
       "horizonId": 1,
       "horizon": "1 m",
       "representation": "Near",
+      "fsmState": "Near",
       "updatesPerSecond": 60,
       "frameInterval": 1
     },
@@ -533,6 +580,7 @@
       "horizonId": 0,
       "horizon": "Contact",
       "representation": "Interactive",
+      "fsmState": "Interactive",
       "updatesPerSecond": 60,
       "frameInterval": 1
     }
@@ -542,6 +590,7 @@
     "minimumRepresentation": "Interactive",
     "horizon": "Contact",
     "representation": "Interactive",
+    "fsmState": "Interactive",
     "updatesPerSecond": 60,
     "frameInterval": 1
   }
