@@ -281,6 +281,7 @@ jobs:
           node --check /tmp/soldier-field-webgpu-runner.mjs
           node --test samples/ArrayFirstWorkload/WebGpuRunner/renderer-trace.test.mjs
           node --test samples/SoldierField/WebGpuRunner/soldier-geometry.test.mjs samples/SoldierField/WebGpuRunner/soldier-cut-sheet.test.mjs samples/SoldierField/WebGpuRunner/soldier-research-simulation.test.mjs
+          node --test samples/SoldierField/WebGpuRunner/renderer-policy.test.mjs
 
       - name: Generate Visualizer-backed SVG primitive proof
         run: dotnet run --project samples/PrimitiveGallery/VisualizeSvgProof/VisualizeSvgProof.csproj --configuration Release -- ./samples/PrimitiveGallery/generated
