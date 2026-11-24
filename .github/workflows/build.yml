@@ -226,7 +226,10 @@ jobs:
           from pathlib import Path
 
           manifest = json.loads(Path("artifacts/renderer-policy.json").read_text(encoding="utf-8"))
-          assert manifest["generatedBy"] == "TheSingularityWorkshop.Renderer.ObserverRepresentationPolicy"
+          assert manifest["generatedBy"] == "TheSingularityWorkshop.Renderer.ObserverRepresentationPolicy+RendererComputationMachine"
+          assert all(item["fsmState"] == item["representation"] for item in manifest["horizons"])
+          assert len(manifest["selectionMatrix"]) == 40
+          assert all(item["fsmState"] == item["representation"] for item in manifest["selectionMatrix"])
           assert len(manifest["horizons"]) == 8
           assert [item["frameInterval"] for item in manifest["horizons"]] == [1, 1, 2, 4, 8, 16, 32, 64]
           assert manifest["attentionOverride"]["representation"] == "Interactive"
