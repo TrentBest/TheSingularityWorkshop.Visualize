@@ -47,7 +47,7 @@ const rendererPolicy=await fetch("./renderer-policy.json").then(response=>{if(!r
 if(rendererPolicy.schemaVersion!==1||rendererPolicy.generatedBy!=="TheSingularityWorkshop.Renderer.ObserverRepresentationPolicy+RendererComputationMachine"||!Array.isArray(rendererPolicy.horizons)||rendererPolicy.horizons.length!==8)throw new Error("Unsupported Renderer policy manifest.");
 const hs=rendererPolicy.horizons.map(h=>({n:h.name,c:h.color,rate:h.frameInterval,z:h.depth,representation:h.fsmState,updatesPerSecond:h.updatesPerSecond}));
 const policyMatrix=rendererPolicy.selectionMatrix;
-if(!Array.isArray(policyMatrix)||policyMatrix.length!==40)throw new Error("Renderer policy decision matrix is incomplete.");
+if(!Array.isArray(policyMatrix)||policyMatrix.length!==45)throw new Error("Renderer policy decision matrix is incomplete.");
 const distanceSelect=document.querySelector("#observer-distance"),minimumSelect=document.querySelector("#minimum-representation"),stressAllToggle=document.querySelector("#stress-all-horizons");
 distanceSelect.innerHTML=rendererPolicy.selectionProbes.map(probe=>'<option value="'+probe.distance+'">'+probe.distance+' m</option>').join("");
 minimumSelect.innerHTML=["Semantic","Aggregate","Distant","Near","Interactive"].map(value=>'<option value="'+value+'">'+value+'</option>').join("");
