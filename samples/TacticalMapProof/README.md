@@ -10,7 +10,7 @@ dotnet run --project samples/TacticalMapProof/TacticalMapProof.csproj --configur
 
 The sample writes `tactical-map.svg` and a machine-readable manifest. The SVG is generated entirely from the typed `VisualizerSvgDocument` primitive model—rectangles, polygons, circles, and text. Text is XML-escaped by the serializer. Stable author-supplied entity IDs are emitted as `data-entity-id` metadata so downstream authoring tools can inspect and correlate visual elements.
 
-![Generated tactical map](generated/tactical-map.svg)
+The generated SVG and manifest are uploaded by CI as the `visualize-tactical-map-authoring-proof` artifact.
 
 ## What this proves
 
