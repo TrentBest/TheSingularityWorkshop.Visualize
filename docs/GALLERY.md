@@ -89,6 +89,14 @@ Gradients, clipping, patterns, markers, symbols, animation, filters, and lightin
 
 **See:** [GUI.SVG feature-gallery recipe](gallery/gui-svg-features.md); download `gui-svg-feature-gallery` from the [proof workflow](https://github.com/TrentBest/TheSingularityWorkshop.Visualize/actions/runs/39369513107).
 
+## 09 — Tactical map authoring primitives
+
+The [Tactical Map Authoring Proof](../samples/TacticalMapProof/README.md) demonstrates Visualize-owned semantic SVG primitives for authored maps and structured illustrations: rectangles, circles, and accessible text alongside the existing polygon primitive. Stable location, door, token, and objective identities are emitted as inspectable `data-entity-id` metadata.
+
+**See:** [sample source and authoring boundaries](../samples/TacticalMapProof/README.md). CI uploads `visualize-tactical-map-authoring-proof`.
+
+**Evidence boundary:** this is deterministic CPU-side SVG generation from a typed C# source model. It is not an interactive editor, authoritative game state, or GPU rendering.
+
 ## What “alive” means here
 
 SVG animation can make a picture feel alive, but animation alone is not a live simulation. A genuinely living Visualize proof must show a real input changing the frame or submitted work, with reproducible measurements and explicit backend status. See [Performance and benchmark rules](PERFORMANCE.md) and the [SVG living-documentation guide](SVG_LIVING_DOCUMENTATION.md).
