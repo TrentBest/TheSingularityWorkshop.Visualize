@@ -131,4 +131,74 @@ public sealed class VisualizerSvgDocumentTests
             "#000000"));
     }
 
+
+    [Fact]
+    public void CircleAndTextPrimitivesSerializeAsSemanticSvgElements()
+    {
+        var document = new VisualizerSvgDocument(320, 200,
+        [
+            new VisualizerSvgCircle("actor-token", 48.5, 72, 12, "#55B8A6",
+                new Dictionary<string, string> { ["data-entity-id"] = "4101" }),
+            new VisualizerSvgText("actor-label", 48.5, 96, "Scout & Guide", "#FFFFFF",
+                12, "sans-serif", "bold", "middle")
+        ]);
+
+        var svg = document.ToSvg();
+        var xml = XDocument.Parse(svg);
+        XNamespace ns = "http://www.w3.org/2000/svg";
+        var circle = xml.Root!.Element(ns + "circle")!;
+        var label = xml.Root.Element(ns + "text")!;
+
+        Assert.Equal("48.5", (string?)circle.Attribute("cx"));
+        Assert.Equal("4101", (string?)circle.Attribute("data-entity-id"));
+        Assert.Equal("Scout & Guide", label.Value);
+        Assert.Equal("middle", (string?)label.Attribute("text-anchor"));
+        Assert.Contains("Scout &amp; Guide", svg, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CircleAndTextPrimitivesAreSnapshottedAndDeterministic()
+    {
+        var attributes = new Dictionary<string, string> { ["data-entity-id"] = "7" };
+        var document = new VisualizerSvgDocument(100, 100,
+        [
+            new VisualizerSvgCircle("token", 10, 20, 5, "#ffffff", attributes),
+            new VisualizerSvgText("label", 10, 32, "Token", "#ffffff")
+        ]);
+        var original = document.ToSvg();
+        attributes["data-entity-id"] = "8";
+
+        Assert.Equal(original, document.ToSvg());
+        Assert.Contains("data-entity-id=\\"7\\"", document.ToSvg(), StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(double.NaN, 0, 2)]
+    [InlineData(0, double.PositiveInfinity, 2)]
+    [InlineData(0, 0, -1)]
+    public void CircleRejectsInvalidGeometry(double x, double y, double radius)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new VisualizerSvgDocument(10, 10, [new VisualizerSvgCircle("circle", x, y, radius, "#ffffff")]));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(double.NaN)]
+    [InlineData(double.PositiveInfinity)]
+    public void TextRejectsInvalidFontSize(double fontSize)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new VisualizerSvgDocument(10, 10, [new VisualizerSvgText("label", 0, 0, "text", "#ffffff", fontSize)]));
+    }
+
+    [Fact]
+    public void TextRejectsUnsupportedPresentationValues()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            new VisualizerSvgDocument(10, 10, [new VisualizerSvgText("label", 0, 0, "text", "#ffffff", FontWeight: "900")]));
+        Assert.Throws<ArgumentException>(() =>
+            new VisualizerSvgDocument(10, 10, [new VisualizerSvgText("label", 0, 0, "text", "#ffffff", TextAnchor: "unsafe")]));
+    }
+
 }
