@@ -7,7 +7,8 @@ const html = await readFile(new URL("index.html", root), "utf8");
 const ranks = ["Semantic", "Aggregate", "Distant", "Near", "Interactive"];
 const distances = manifest.selectionProbes.map(probe => probe.distance);
 
-assert.equal(manifest.generatedBy, "TheSingularityWorkshop.Renderer.ObserverRepresentationPolicy");
+assert.equal(manifest.generatedBy, "TheSingularityWorkshop.Renderer.ObserverRepresentationPolicy+RendererComputationMachine");
+assert.ok(manifest.horizons.every(horizon => horizon.fsmState === horizon.representation));
 assert.equal(manifest.horizons.length, 8);
 assert.equal(manifest.selectionMatrix.length, distances.length * ranks.length);
 assert.equal(manifest.horizons[7].name, "128 m+");
@@ -32,6 +33,7 @@ for (const distance of distances) {
     assert.equal(actual.horizonId, expected.id);
     assert.equal(actual.horizon, expected.name);
     assert.equal(actual.representation, expected.representation);
+    assert.equal(actual.fsmState, expected.representation);
     assert.equal(actual.updatesPerSecond, expected.updatesPerSecond);
     assert.equal(actual.frameInterval, Math.max(1, Math.round(manifest.targetFrameRate / expected.updatesPerSecond)));
   }
@@ -43,6 +45,8 @@ const focus = manifest.selectionMatrix.find(entry =>
 assert.equal(focus.horizon, manifest.attentionOverride.horizon);
 assert.equal(focus.representation, manifest.attentionOverride.representation);
 assert.equal(focus.representation, "Interactive");
+assert.equal(focus.fsmState, "Interactive");
+assert.equal(manifest.attentionOverride.fsmState, "Interactive");
 assert.equal(focus.horizon, "Contact");
 
 assert.ok(html.includes('id="observer-distance"'));
