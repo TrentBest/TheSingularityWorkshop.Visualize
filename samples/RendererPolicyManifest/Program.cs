@@ -33,7 +33,9 @@ var policy = new ObserverRepresentationPolicy(rules);
 int FrameInterval(double updatesPerSecond) =>
     Math.Max(1, (int)Math.Round(targetFrameRate / updatesPerSecond, MidpointRounding.AwayFromZero));
 
-var probes = new[] { 0.5, 1.5, 3d, 6d, 12d, 24d, 48d, 96d }
+var distances = new[] { 0.5, 1.5, 3d, 6d, 12d, 24d, 48d, 96d };
+
+var probes = distances
     .Select(distance =>
     {
         var decision = policy.Select(distance);
@@ -46,6 +48,24 @@ var probes = new[] { 0.5, 1.5, 3d, 6d, 12d, 24d, 48d, 96d }
             frameInterval = FrameInterval(decision.UpdatesPerSecond)
         };
     })
+    .ToArray();
+
+var selectionMatrix = distances
+    .SelectMany(distance => Enum.GetValues<RepresentationTarget>().Select(minimumRepresentation =>
+    {
+        var decision = policy.Select(distance, minimumRepresentation);
+        var horizonId = Array.FindIndex(horizons, horizon => ReferenceEquals(horizon, decision.Horizon));
+        return new
+        {
+            distance,
+            minimumRepresentation = minimumRepresentation.ToString(),
+            horizonId,
+            horizon = decision.HorizonName,
+            representation = decision.Representation.ToString(),
+            updatesPerSecond = decision.UpdatesPerSecond,
+            frameInterval = FrameInterval(decision.UpdatesPerSecond)
+        };
+    }))
     .ToArray();
 
 var focusDistance = 64d;
@@ -69,6 +89,7 @@ var manifest = new
         depth = definition.Depth
     }).ToArray(),
     selectionProbes = probes,
+    selectionMatrix,
     attentionOverride = new
     {
         distance = focusDistance,
