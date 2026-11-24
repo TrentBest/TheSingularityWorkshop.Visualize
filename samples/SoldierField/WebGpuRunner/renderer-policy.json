@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "TheSingularityWorkshop.Renderer.ObserverRepresentationPolicy",
+  "executionBoundary": "Renderer policy is evaluated by this .NET generator; the browser consumes this deterministic manifest. The page does not run the .NET policy or claim a GPU benchmark.",
+  "targetFrameRate": 60,
+  "horizons": [
+    {
+      "id": 0,
+      "name": "Contact",
+      "maxDistance": 1,
+      "updatesPerSecond": 60,
+      "frameInterval": 1,
+      "representation": "Interactive",
+      "color": [
+        0.25,
+        0.95,
+        0.95
+      ],
+      "depth": 3
+    },
+    {
+      "id": 1,
+      "name": "1 m",
+      "maxDistance": 2,
+      "updatesPerSecond": 60,
+      "frameInterval": 1,
+      "representation": "Near",
+      "color": [
+        0.36,
+        0.88,
+        0.91
+      ],
+      "depth": 5
+    },
+    {
+      "id": 2,
+      "name": "2 m",
+      "maxDistance": 4,
+      "updatesPerSecond": 30,
+      "frameInterval": 2,
+      "representation": "Near",
+      "color": [
+        0.42,
+        0.82,
+        0.91
+      ],
+      "depth": 8
+    },
+    {
+      "id": 3,
+      "name": "4 m",
+      "maxDistance": 8,
+      "updatesPerSecond": 15,
+      "frameInterval": 4,
+      "representation": "Distant",
+      "color": [
+        0.49,
+        0.72,
+        0.96
+      ],
+      "depth": 13
+    },
+    {
+      "id": 4,
+      "name": "16 m",
+      "maxDistance": 16,
+      "updatesPerSecond": 7.5,
+      "frameInterval": 8,
+      "representation": "Distant",
+      "color": [
+        0.59,
+        0.63,
+        0.98
+      ],
+      "depth": 24
+    },
+    {
+      "id": 5,
+      "name": "32 m",
+      "maxDistance": 32,
+      "updatesPerSecond": 3.75,
+      "frameInterval": 16,
+      "representation": "Aggregate",
+      "color": [
+        0.68,
+        0.56,
+        0.96
+      ],
+      "depth": 40
+    },
+    {
+      "id": 6,
+      "name": "64 m",
+      "maxDistance": 64,
+      "updatesPerSecond": 1.875,
+      "frameInterval": 32,
+      "representation": "Aggregate",
+      "color": [
+        0.76,
+        0.51,
+        0.9
+      ],
+      "depth": 64
+    },
+    {
+      "id": 7,
+      "name": "128 m+",
+      "maxDistance": 128,
+      "updatesPerSecond": 0.9375,
+      "frameInterval": 64,
+      "representation": "Semantic",
+      "color": [
+        0.86,
+        0.55,
+        0.78
+      ],
+      "depth": 100
+    }
+  ],
+  "selectionProbes": [
+    {
+      "distance": 0.5,
+      "horizon": "Contact",
+      "representation": "Interactive",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 1.5,
+      "horizon": "1 m",
+      "representation": "Near",
+      "updatesPerSecond": 60,
+      "frameInterval": 1
+    },
+    {
+      "distance": 3,
+      "horizon": "2 m",
+      "representation": "Near",
+      "updatesPerSecond": 30,
+      "frameInterval": 2
+    },
+    {
+      "distance": 6,
+      "horizon": "4 m",
+      "representation": "Distant",
+      "updatesPerSecond": 15,
+      "frameInterval": 4
+    },
+    {
+      "distance": 12,
+      "horizon": "16 m",
+      "representation": "Distant",
+      "updatesPerSecond": 7.5,
+      "frameInterval": 8
+    },
+    {
+      "distance": 24,
+      "horizon": "32 m",
+      "representation": "Aggregate",
+      "updatesPerSecond": 3.75,
+      "frameInterval": 16
+    },
+    {
+      "distance": 48,
+      "horizon": "64 m",
+      "representation": "Aggregate",
+      "updatesPerSecond": 1.875,
+      "frameInterval": 32
+    },
+    {
+      "distance": 96,
+      "horizon": "128 m+",
+      "representation": "Semantic",
+      "updatesPerSecond": 0.9375,
+      "frameInterval": 64
+    }
+  ],
+  "attentionOverride": {
+    "distance": 64,
+    "minimumRepresentation": "Interactive",
+    "horizon": "Contact",
+    "representation": "Interactive",
+    "updatesPerSecond": 60,
+    "frameInterval": 1
+  }
+}
