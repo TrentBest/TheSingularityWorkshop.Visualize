@@ -63,6 +63,7 @@ Evidence boundary: this is still a deterministic CPU/SVG massing proof. It demon
 - Observer decisions can select representations and coordinate bucket refresh/reuse through FSM-backed computation.
 - These executable pieces are not yet one complete world → observer → horizon → bucket work → frame → backend runtime.
 - The city-massing proof now asks Renderer policy for a representation decision per face and carries those labels through `RenderFrame` and the Visualize adapter into GUI.SVG. This is a CPU-side policy-consumption specimen, not yet a full Renderer pipeline: representation labels do not currently reduce geometry, visibility culling and bucket scheduling are not connected, and no GPU backend or FPS navigation is demonstrated.
+- Separately, the Visualize Soldier Field browser lab now has a first Renderer-policy-to-WebGPU handoff. A .NET generator evaluates the actual `ObserverRepresentationPolicy` and emits an 8-distance × 5-minimum-representation decision matrix. The browser's observer controls select one generated decision; default mode refreshes and draws only that horizon, while an explicit stress mode draws all eight. CI regenerates and byte-verifies the manifest. This is not yet live .NET execution in the browser, a City-scene GPU backend, per-entity occlusion, mesh/geometry LOD promotion, or the FSM_API bucket scheduler.
 
 ### WebPage
 
